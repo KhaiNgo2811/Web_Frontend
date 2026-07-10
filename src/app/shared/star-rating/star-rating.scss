@@ -1,0 +1,21 @@
+.rating {
+  display: inline-flex;
+  gap: 4px;
+}
+
+button {
+  border: 0;
+  padding: 0;
+  color: var(--ant-border-strong);
+  background: transparent;
+  font-size: 26px;
+  line-height: 1;
+}
+
+button.active {
+  color: #f5a623;
+}
+
+button:disabled {
+  opacity: 1;
+}

@@ -1,0 +1,8 @@
+@use '../shared/auth-form' as auth;
+
+@include auth.styles;
+
+.google-button svg {
+  width: 19px;
+  height: 19px;
+}

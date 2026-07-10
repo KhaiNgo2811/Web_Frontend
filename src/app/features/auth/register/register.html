@@ -1,0 +1,183 @@
+@switch (step) {
+  @case ('verify') {
+    <app-auth-card
+      eyebrow="Xác thực tài khoản"
+      title="Nhập mã OTP"
+      subtitle="Mã gồm 6 chữ số đã được gửi đến số điện thoại bạn vừa đăng ký."
+    >
+      <form class="auth-form" (ngSubmit)="verifyOtp()" novalidate>
+        <div class="auth-group">
+          <label class="ant-label" for="register-otp">Mã xác thực</label>
+          <div
+            class="otp-code"
+            [class.otp-code--invalid]="otpControl.touched && otpControl.invalid"
+          >
+            <input
+              #otpInput
+              id="register-otp"
+              class="otp-code__input"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="6"
+              [value]="otpControl.value"
+              aria-describedby="register-otp-hint"
+              (input)="normalizeOtp($event)"
+            />
+            @for (slot of otpSlots; track slot) {
+              <span
+                class="otp-code__box"
+                [class.otp-code__box--active]="otpControl.value.length === slot"
+              >
+                {{ otpDigit(slot) }}
+              </span>
+            }
+          </div>
+          <p id="register-otp-hint" class="auth-hint">Mã demo: <strong>000000</strong></p>
+          @if (otpControl.touched && otpControl.invalid) {
+            <p class="ant-error">Vui lòng nhập đủ 6 chữ số.</p>
+          }
+        </div>
+
+        @if (otpError()) {
+          <p class="auth-alert" role="alert">{{ otpError() }}</p>
+        }
+        @if (resendMessage()) {
+          <p class="resend-message" role="status">{{ resendMessage() }}</p>
+        }
+
+        <button class="ant-btn ant-btn--primary" type="submit">Xác nhận</button>
+        <button class="auth-link resend-button" type="button" (click)="resendOtp()">
+          Gửi lại mã
+        </button>
+      </form>
+      <p class="auth-footer"><a routerLink="/auth/register">← Quay lại thông tin đăng ký</a></p>
+    </app-auth-card>
+  }
+  @case ('success') {
+    <app-auth-card
+      eyebrow="Chào mừng đến AntGo"
+      title="Đăng ký thành công!"
+      subtitle="Tài khoản của bạn đã sẵn sàng."
+    >
+      <app-auth-success
+        message="Bắt đầu khám phá những nhu cầu quanh bạn và cùng xây dựng một cộng đồng tử tế hơn."
+        actionLabel="Khám phá AntGo"
+        actionLink="/feed"
+      />
+    </app-auth-card>
+  }
+  @default {
+    <app-auth-card
+      eyebrow="Tham gia cộng đồng AntGo"
+      title="Tạo tài khoản"
+      subtitle="Chỉ mất một phút để bắt đầu kết nối và san sẻ."
+    >
+      <form class="auth-form" [formGroup]="detailsForm" (ngSubmit)="submitDetails()" novalidate>
+        <div class="auth-group">
+          <label class="ant-label" for="register-name">Họ và tên</label>
+          <input
+            class="ant-field"
+            id="register-name"
+            formControlName="displayName"
+            autocomplete="name"
+            placeholder="Nguyễn Văn An"
+          />
+          @if (
+            detailsForm.controls.displayName.touched && detailsForm.controls.displayName.invalid
+          ) {
+            <p class="ant-error">Vui lòng nhập ít nhất 2 ký tự.</p>
+          }
+        </div>
+
+        <div class="form-grid">
+          <div class="auth-group">
+            <label class="ant-label" for="register-phone">Số điện thoại</label>
+            <input
+              class="ant-field"
+              id="register-phone"
+              formControlName="phone"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="090 123 4567"
+            />
+            @if (detailsForm.controls.phone.touched && detailsForm.controls.phone.invalid) {
+              <p class="ant-error">Số điện thoại chưa hợp lệ.</p>
+            }
+          </div>
+          <div class="auth-group">
+            <label class="ant-label" for="register-email"
+              >Email <span>(không bắt buộc)</span></label
+            >
+            <input
+              class="ant-field"
+              id="register-email"
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              placeholder="ban@email.com"
+            />
+            @if (detailsForm.controls.email.touched && detailsForm.controls.email.invalid) {
+              <p class="ant-error">Email chưa đúng định dạng.</p>
+            }
+          </div>
+        </div>
+
+        <div class="auth-group">
+          <label class="ant-label" for="register-password">Mật khẩu</label>
+          <div class="auth-field-wrap">
+            <input
+              class="ant-field"
+              id="register-password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="new-password"
+              placeholder="Tối thiểu 8 ký tự"
+            />
+            <button
+              class="auth-field-action"
+              type="button"
+              (click)="showPassword.update((visible) => !visible)"
+            >
+              {{ showPassword() ? 'Ẩn' : 'Hiện' }}
+            </button>
+          </div>
+          @if (detailsForm.controls.password.touched && detailsForm.controls.password.invalid) {
+            <p class="ant-error">Mật khẩu phải có ít nhất 8 ký tự.</p>
+          }
+        </div>
+
+        <div class="auth-group">
+          <label class="ant-label" for="register-confirmation">Nhập lại mật khẩu</label>
+          <input
+            class="ant-field"
+            id="register-confirmation"
+            type="password"
+            formControlName="passwordConfirmation"
+            autocomplete="new-password"
+            placeholder="Nhập lại mật khẩu"
+          />
+          @if (
+            detailsForm.controls.passwordConfirmation.touched &&
+            detailsForm.hasError('passwordMismatch')
+          ) {
+            <p class="ant-error">Mật khẩu nhập lại chưa khớp.</p>
+          }
+        </div>
+
+        <label class="auth-check terms-check">
+          <input type="checkbox" formControlName="acceptTerms" />
+          <span
+            >Tôi đồng ý với <a href="#terms">Điều khoản sử dụng</a> và
+            <a href="#privacy">Chính sách bảo mật</a>.</span
+          >
+        </label>
+        @if (detailsForm.controls.acceptTerms.touched && detailsForm.controls.acceptTerms.invalid) {
+          <p class="ant-error terms-error">Bạn cần đồng ý trước khi tiếp tục.</p>
+        }
+        <button class="ant-btn ant-btn--primary" type="submit">Tiếp tục</button>
+      </form>
+      <p class="auth-footer">Đã có tài khoản? <a routerLink="/auth/login">Đăng nhập</a></p>
+    </app-auth-card>
+  }
+}

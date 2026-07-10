@@ -1,0 +1,129 @@
+.messenger {
+  display: grid;
+  height: 856px;
+  grid-template-columns: 410px 1fr;
+  overflow: hidden;
+  margin-block: 24px 48px;
+  border-radius: 18px;
+}
+
+aside {
+  border-right: 1px solid var(--ant-border);
+}
+
+.messenger-title,
+article > header,
+article > footer,
+.conversation-list button {
+  display: flex;
+  align-items: center;
+}
+
+.messenger-title {
+  height: 76px;
+  justify-content: space-between;
+  padding: 12px 18px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+.role-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  border-block: 1px solid var(--ant-border);
+  padding: 7px;
+}
+
+.role-tabs button {
+  border: 0;
+  border-radius: 9px;
+  padding: 9px;
+  color: var(--ant-muted);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.role-tabs button.active {
+  color: var(--ant-orange-deep);
+  background: var(--ant-orange-soft);
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px;
+  border: 1px solid var(--ant-border);
+  border-radius: 12px;
+  padding: 9px 12px;
+  color: var(--ant-subtle);
+}
+
+.search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  font-size: 12px;
+}
+
+.conversation-list button {
+  width: 100%;
+  gap: 11px;
+  border: 0;
+  border-bottom: 1px solid var(--ant-border);
+  padding: 13px 16px;
+  color: var(--ant-ink);
+  background: #fff;
+  text-align: left;
+}
+
+.conversation-list button.active {
+  border-left: 3px solid var(--ant-orange);
+  background: var(--ant-surface-soft);
+}
+
+.avatar {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ant-orange-deep);
+  background: var(--ant-orange-soft);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.conversation-list span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+
+.conversation-list strong,
+.conversation-list small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conversation-list strong {
+  font-size: 12px;
+}
+
+.conversation-list small,
+.conversation-list time {
+  margin-top: 3px;
+  color: var(--ant-muted);
+  font-size: 10px;
+}

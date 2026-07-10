@@ -1,0 +1,137 @@
+.account {
+  min-height: 850px;
+  padding-block: 55px 80px;
+}
+
+header {
+  margin-bottom: 25px;
+}
+
+h1 {
+  margin: 3px 0 0;
+  font-size: 40px;
+}
+
+header p,
+.account-form p {
+  margin: 0;
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: 330px 1fr;
+  gap: 22px;
+}
+
+.profile-card {
+  padding: 30px 24px;
+  text-align: center;
+}
+
+.avatar {
+  display: grid;
+  width: 82px;
+  height: 82px;
+  place-items: center;
+  margin: 0 auto 15px;
+  border: 5px solid var(--ant-orange-soft);
+  border-radius: 50%;
+  color: #fff;
+  background: var(--ant-gradient);
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.profile-card h2,
+.profile-card p {
+  margin: 0;
+}
+
+.profile-card h2 {
+  font-size: 23px;
+}
+
+.profile-card p {
+  margin-bottom: 10px;
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+.reputation {
+  display: grid;
+  justify-items: center;
+  margin-top: 25px;
+  border-block: 1px solid var(--ant-border);
+  padding: 22px 0;
+}
+
+.reputation strong {
+  margin-top: 5px;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 30px;
+}
+
+.reputation span {
+  color: var(--ant-muted);
+  font-size: 10px;
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 20px;
+}
+
+.profile-stats span {
+  color: var(--ant-muted);
+  font-size: 9px;
+}
+
+.profile-stats strong {
+  display: block;
+  color: var(--ant-ink);
+  font-size: 16px;
+}
+
+.account-form {
+  padding: 28px 32px;
+}
+
+.form-heading,
+.security {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.form-heading {
+  border-bottom: 1px solid var(--ant-border);
+  padding-bottom: 20px;
+}
+
+.form-heading h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding-block: 26px;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.security {
+  border-top: 1px solid var(--ant-border);
+  padding-top: 22px;
+}
+
+.security strong {
+  font-size: 13px;
+}

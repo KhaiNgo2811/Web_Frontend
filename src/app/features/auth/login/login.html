@@ -1,0 +1,84 @@
+<app-auth-card
+  title="Chào mừng trở lại!"
+  subtitle="Đăng nhập để tiếp tục kết nối và san sẻ cùng cộng đồng AntGo."
+>
+  <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="auth-group">
+      <label class="ant-label" for="login-identifier">Số điện thoại hoặc email</label>
+      <input
+        class="ant-field"
+        id="login-identifier"
+        type="text"
+        formControlName="identifier"
+        autocomplete="username"
+        placeholder="Nhập số điện thoại hoặc email"
+      />
+      @if (form.controls.identifier.touched && form.controls.identifier.invalid) {
+        <p class="ant-error">Vui lòng nhập số điện thoại hoặc email.</p>
+      }
+    </div>
+
+    <div class="auth-group">
+      <label class="ant-label" for="login-password">Mật khẩu</label>
+      <div class="auth-field-wrap">
+        <input
+          class="ant-field"
+          id="login-password"
+          [type]="showPassword() ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="current-password"
+          placeholder="Nhập mật khẩu"
+        />
+        <button
+          class="auth-field-action"
+          type="button"
+          [attr.aria-label]="showPassword() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+          (click)="showPassword.update((visible) => !visible)"
+        >
+          {{ showPassword() ? 'Ẩn' : 'Hiện' }}
+        </button>
+      </div>
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <p class="ant-error">Vui lòng nhập mật khẩu.</p>
+      }
+    </div>
+
+    <div class="auth-row">
+      <label class="auth-check"
+        ><input type="checkbox" formControlName="remember" /> Ghi nhớ đăng nhập</label
+      >
+      <a class="auth-link" routerLink="/auth/forgot-password">Quên mật khẩu?</a>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="auth-alert" role="alert">{{ errorMessage() }}</p>
+    }
+
+    <button class="ant-btn ant-btn--primary" type="submit">Đăng nhập</button>
+    <div class="auth-divider"><span>Hoặc tiếp tục với</span></div>
+    <button
+      class="ant-btn ant-btn--secondary google-button"
+      type="button"
+      (click)="loginWithGoogle()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          fill="#4285f4"
+          d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.3c1.9-1.8 2.9-4.4 2.9-7.4Z"
+        />
+        <path
+          fill="#34a853"
+          d="M12 22c2.7 0 5-.9 6.7-2.4l-3.3-2.5c-.9.6-2.1 1-3.4 1a5.9 5.9 0 0 1-5.5-4.1H3.1v2.6A10 10 0 0 0 12 22Z"
+        />
+        <path fill="#fbbc05" d="M6.5 14a6 6 0 0 1 0-3.9V7.5H3.1a10 10 0 0 0 0 9.1L6.5 14Z" />
+        <path
+          fill="#ea4335"
+          d="M12 6a5.4 5.4 0 0 1 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 12 2a10 10 0 0 0-8.9 5.5l3.4 2.6A5.9 5.9 0 0 1 12 6Z"
+        />
+      </svg>
+      Đăng nhập với Google
+    </button>
+  </form>
+
+  <p class="auth-footer">Chưa có tài khoản? <a routerLink="/auth/register">Đăng ký ngay</a></p>
+</app-auth-card>

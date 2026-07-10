@@ -1,0 +1,123 @@
+.nav-menu {
+  position: absolute;
+  z-index: 20;
+  top: 48px;
+  right: 0;
+  width: 290px;
+  overflow: hidden;
+  border: 1px solid var(--ant-border);
+  border-radius: var(--ant-radius-lg);
+  background: #fff;
+  box-shadow: var(--ant-shadow-md);
+}
+
+.nav-menu strong,
+.nav-menu a,
+.nav-menu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  padding: 12px 16px;
+  color: var(--ant-ink-soft);
+  background: transparent;
+  font-size: 13px;
+  text-align: left;
+}
+
+.nav-menu a:hover,
+.nav-menu button:hover {
+  background: var(--ant-surface-soft);
+}
+
+.nav-menu--location {
+  width: 220px;
+}
+
+.nav-menu--location strong {
+  border-bottom: 1px solid var(--ant-border);
+  color: var(--ant-ink);
+}
+
+.menu-heading,
+.account-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--ant-border);
+  padding: 14px 16px;
+}
+
+.menu-heading strong {
+  padding: 0;
+  color: var(--ant-ink);
+}
+
+.menu-heading span {
+  color: var(--ant-orange);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.menu-all {
+  justify-content: center;
+  border-top: 1px solid var(--ant-border);
+  color: var(--ant-orange-deep) !important;
+  font-weight: 700;
+}
+
+.account-summary {
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.account-summary > span {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--ant-gradient);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.account-summary strong,
+.account-summary small {
+  display: block;
+}
+
+.account-summary small {
+  margin-top: 2px;
+  color: var(--ant-muted);
+  font-size: 11px;
+}
+
+.site-main {
+  min-height: calc(100vh - 197px);
+}
+
+.site-footer {
+  border-top: 1px solid var(--ant-border);
+  background: #fff;
+}
+
+.site-footer__top {
+  height: 88px;
+  gap: 18px;
+}
+
+.site-footer__top nav {
+  gap: 26px;
+  margin-left: auto;
+}
+
+.site-footer__bottom {
+  border-top: 1px solid var(--ant-border);
+  padding: 14px;
+  color: var(--ant-subtle);
+  font-size: 11px;
+  text-align: center;
+}

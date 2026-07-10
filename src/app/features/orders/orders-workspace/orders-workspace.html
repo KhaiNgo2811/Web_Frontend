@@ -1,0 +1,44 @@
+<section class="workspace ant-container">
+  <aside class="workspace-sidebar ant-card">
+    <div class="sidebar-heading"><h1>Đơn hàng</h1><app-status-pill status="pending">3 cần xử lý</app-status-pill></div>
+    <div class="stats"><span><strong>{{ ownPosts().length }}</strong>Bài đăng</span><span><strong>{{ store.applications().length }}</strong>Chờ chốt</span><span><strong>{{ store.orders().length }}</strong>Đơn hàng</span></div>
+    <div class="tabs" role="tablist">
+      <button type="button" [class.active]="tab() === 'posts'" (click)="chooseTab('posts')">Bài đăng</button>
+      <button type="button" [class.active]="tab() === 'accepted'" (click)="chooseTab('accepted')">Việc nhận</button>
+      <button type="button" [class.active]="tab() === 'booked'" (click)="chooseTab('booked')">Đã đặt</button>
+    </div>
+
+    <div class="sidebar-list">
+      @if (tab() === 'posts') {
+        @for (post of ownPosts(); track post.id) { <a [routerLink]="['/posts', post.id, 'edit']"><span class="list-avatar">{{ post.type === 'request' ? 'CG' : 'DV' }}</span><span><strong>{{ post.title }}</strong><small>{{ post.price.toLocaleString('vi-VN') }}đ</small></span><app-status-pill [status]="post.status">{{ post.status }}</app-status-pill></a> }
+      } @else if (tab() === 'accepted') {
+        @for (application of store.applications(); track application.id) { <button type="button" [class.active]="selectedApplication()?.id === application.id" (click)="selectApplication(application.id)"><span class="list-avatar">{{ userName(application.applicantId).slice(0, 2).toUpperCase() }}</span><span><strong>{{ selectedPost()?.title ?? 'Đề nghị nhận việc' }}</strong><small>{{ userName(application.applicantId) }}</small></span><app-status-pill [status]="application.status">{{ application.status }}</app-status-pill></button> }
+      } @else {
+        @for (order of store.orders(); track order.id) { <button type="button" [class.active]="selectedOrder()?.id === order.id" (click)="selectedOrderId.set(order.id)"><span class="list-avatar">{{ order.code.slice(-2) }}</span><span><strong>{{ store.posts().find(p => p.id === order.postId)?.title }}</strong><small>{{ order.code }}</small></span><app-status-pill [status]="order.status">{{ order.status }}</app-status-pill></button> }
+      }
+    </div>
+  </aside>
+
+  <article class="workspace-content ant-card">
+    @if (tab() === 'posts') {
+      <div class="welcome"><span class="ant-kicker">Quản lý bài đăng</span><h2>Chào buổi sáng, {{ session.currentUser()?.displayName ?? 'An' }}!</h2><p>Theo dõi ứng viên, trạng thái và cập nhật các bài đăng của bạn.</p></div>
+      <div class="summary-grid">@for (post of ownPosts(); track post.id) { <a [routerLink]="['/posts', post.id, 'edit']"><span>{{ post.type === 'request' ? 'Cần giúp' : 'Dịch vụ' }}</span><strong>{{ post.title }}</strong><small>{{ post.likedBy.length }} lượt quan tâm · {{ post.status }}</small></a> }</div>
+    } @else if (tab() === 'accepted' && selectedApplication(); as application) {
+      <header class="detail-header"><div><span class="ant-kicker">Chi tiết ứng viên</span><h2>{{ userName(application.applicantId) }}</h2></div><app-status-pill [status]="application.status">{{ application.status }}</app-status-pill></header>
+      <div class="candidate-profile"><div class="profile-avatar">{{ userName(application.applicantId).slice(0, 2).toUpperCase() }}</div><div><h3>{{ userName(application.applicantId) }}</h3><p>★ 4.9 · Đã hoàn thành 51 công việc</p></div></div>
+      <div class="message-card"><strong>Lời nhắn</strong><p>{{ application.message }}</p>@if (application.proposedPrice) { <span>Đề xuất: {{ application.proposedPrice.toLocaleString('vi-VN') }}đ</span> }</div>
+      <div class="timeline"><span class="done">Ứng tuyển</span><span [class.done]="application.status === 'selected'">Được chọn</span><span>Đang thực hiện</span><span>Hoàn thành</span></div>
+      <div class="detail-actions"><button class="ant-btn ant-btn--secondary" type="button">Nhắn tin</button>@if (application.status === 'pending') { <button class="ant-btn ant-btn--primary" type="button" (click)="acceptApplication()">Chọn ứng viên</button> }</div>
+    } @else if (selectedOrder(); as order) {
+      <header class="detail-header"><div><span class="ant-kicker">{{ order.code }}</span><h2>{{ selectedPost()?.title }}</h2><p>{{ userName(order.customerId) }} ↔ {{ userName(order.providerId) }}</p></div><app-status-pill [status]="order.status">{{ order.status }}</app-status-pill></header>
+      <div class="timeline"><span class="done">Ứng tuyển</span><span class="done">Được chọn</span><span [class.done]="order.status === 'in_progress' || order.status === 'completed'">Đang thực hiện</span><span [class.done]="order.status === 'completed'">Hoàn thành</span></div>
+      <div class="order-body"><div><span>Giá trị đơn</span><strong>{{ selectedPost()?.price?.toLocaleString('vi-VN') }}đ</strong></div><div><span>Thời gian</span><strong>{{ selectedPost()?.expectedTime }}</strong></div><div><span>Trạng thái đảm bảo</span><strong>{{ order.escrowState === 'none' ? 'Không sử dụng' : order.escrowState }}</strong></div></div>
+      <div class="chat-preview"><span class="profile-avatar">{{ userName(order.providerId).slice(0, 2).toUpperCase() }}</span><p>Trao đổi chi tiết công việc trong Messenger để mọi thông tin được lưu lại.</p><a class="ant-btn ant-btn--secondary" [routerLink]="['/messages', 'conversation-' + order.postId.replace('post-', '')]">Mở chat</a></div>
+      <div class="detail-actions">@if (order.status === 'pending') { <button class="ant-btn ant-btn--primary" type="button" (click)="transition('start')">Bắt đầu công việc</button> } @if (order.status === 'in_progress') { <button class="ant-btn ant-btn--primary" type="button" (click)="transition('confirm_complete')">✓ Hoàn thành</button> } @if (order.status === 'completed') { <button class="ant-btn ant-btn--primary" type="button" (click)="dialog.set('review')">Đánh giá</button> } @if (order.status !== 'completed' && order.status !== 'cancelled') { <button class="ant-btn ant-btn--danger" type="button" (click)="dialog.set('cancel')">Huỷ</button> } <button class="ant-btn ant-btn--ghost" type="button" (click)="dialog.set('complaint')">Báo cáo vấn đề</button></div>
+    } @else { <app-empty-state title="Chưa có đơn hàng" description="Các công việc đã kết nối sẽ xuất hiện tại đây." /> }
+  </article>
+</section>
+
+@if (dialog() === 'review') { <app-ui-dialog title="Đánh giá sau hoàn thành" (closed)="dialog.set(null)"><div class="dialog-form"><app-star-rating [value]="rating()" (valueChange)="rating.set($event)" /><textarea class="ant-field" [(ngModel)]="reviewComment" placeholder="Chia sẻ trải nghiệm của bạn..."></textarea></div><div dialog-actions><button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Để sau</button><button class="ant-btn ant-btn--primary" (click)="submitReview()">Gửi đánh giá</button></div></app-ui-dialog> }
+@if (dialog() === 'cancel') { <app-ui-dialog title="Huỷ đơn có lý do" (closed)="dialog.set(null)"><div class="dialog-form"><p>Vui lòng cho bên còn lại biết lý do bạn muốn huỷ đơn.</p><textarea class="ant-field" [(ngModel)]="reason" placeholder="Nhập lý do huỷ..."></textarea></div><div dialog-actions><button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Quay lại</button><button class="ant-btn ant-btn--danger" [disabled]="!reason.trim()" (click)="transition('cancel')">Xác nhận huỷ</button></div></app-ui-dialog> }
+@if (dialog() === 'complaint') { <app-ui-dialog title="Khiếu nại / Báo cáo vấn đề" [width]="620" (closed)="dialog.set(null)"><div class="dialog-form"><p>Mô tả vấn đề và bằng chứng liên quan. AntGo sẽ ghi nhận để hỗ trợ xử lý.</p><select class="ant-field"><option>Dịch vụ không đúng mô tả</option><option>Không thể liên lạc</option><option>Vấn đề thanh toán</option><option>Khác</option></select><textarea class="ant-field" [(ngModel)]="complaint" placeholder="Mô tả chi tiết..."></textarea></div><div dialog-actions><button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Huỷ</button><button class="ant-btn ant-btn--primary" [disabled]="!complaint.trim()" (click)="submitComplaint()">Gửi báo cáo</button></div></app-ui-dialog> }

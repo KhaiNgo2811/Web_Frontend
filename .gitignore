@@ -54,3 +54,6 @@ CLAUDE.md
 /tmp
 /coverage
 .sass-cache/
+.codex
+AGENTS.md
+.agents

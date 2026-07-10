@@ -1,0 +1,50 @@
+:host {
+  display: inline-flex;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand__mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 13px 13px 13px 5px;
+  color: #fff;
+  background: var(--ant-gradient);
+  box-shadow: var(--ant-shadow-orange);
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.brand__name {
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 29px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1;
+}
+
+.brand__name span {
+  color: var(--ant-orange);
+}
+
+.brand--compact {
+  gap: 6px;
+}
+
+.brand--compact .brand__mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px 10px 10px 4px;
+  font-size: 18px;
+}
+
+.brand--compact .brand__name {
+  font-size: 24px;
+}

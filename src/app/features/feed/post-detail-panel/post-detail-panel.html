@@ -1,0 +1,82 @@
+<article class="detail-panel">
+  <header class="detail-panel__header">
+    <div>
+      <span class="ant-kicker">Chi tiết bài đăng</span>
+      <p>Thông tin được cung cấp bởi thành viên AntGo</p>
+    </div>
+    <button type="button" class="detail-panel__close" aria-label="Đóng chi tiết" (click)="closed.emit()">
+      ×
+    </button>
+  </header>
+
+  <div class="detail-panel__content">
+    <section class="detail-panel__main">
+      <div class="detail-panel__cover" [class]="'detail-panel__cover detail-panel__cover--' + post().category">
+        <span class="detail-panel__type">{{ typeLabel() }}</span>
+        @if (post().isPriority) { <span class="detail-panel__priority">⚡ Tin ưu tiên</span> }
+        <span class="detail-panel__cover-mark" aria-hidden="true">AG</span>
+      </div>
+
+      <div class="detail-panel__title-row">
+        <div>
+          <span class="detail-panel__category">{{ categoryLabel() }}</span>
+          <h1>{{ post().title }}</h1>
+        </div>
+        <app-status-pill [status]="post().status">{{ statusLabel() }}</app-status-pill>
+      </div>
+      <p class="detail-panel__description">{{ post().description }}</p>
+
+      <dl class="detail-panel__facts">
+        <div>
+          <dt>⌖ Khu vực</dt>
+          <dd>{{ author()?.location?.building ?? 'Khu vực nội thành' }}</dd>
+        </div>
+        <div>
+          <dt>◷ Thời gian mong muốn</dt>
+          <dd>{{ post().expectedTime ?? 'Trao đổi trực tiếp' }}</dd>
+        </div>
+        <div>
+          <dt>◈ Ngân sách</dt>
+          <dd class="detail-panel__price">{{ price() }}đ</dd>
+        </div>
+      </dl>
+
+      <section class="detail-panel__note">
+        <strong>Lưu ý an toàn</strong>
+        <p>Chỉ trao đổi và xác nhận công việc qua AntGo. Không chia sẻ mã xác thực với người khác.</p>
+      </section>
+    </section>
+
+    <aside class="detail-panel__aside">
+      <div class="detail-panel__profile">
+        <span class="detail-panel__avatar" aria-hidden="true">{{ initials() }}</span>
+        <div>
+          <small>Người đăng</small>
+          <h2>{{ author()?.displayName ?? 'Thành viên AntGo' }}</h2>
+          @if (author()?.isVerified) { <span class="detail-panel__verified">✓ Đã xác thực</span> }
+        </div>
+      </div>
+      <div class="detail-panel__rating">
+        <app-star-rating [value]="author()?.reputationScore ?? 0" [readonly]="true" />
+        <strong>{{ author()?.reputationScore ?? 'Mới' }}</strong>
+        <span>({{ author()?.completedCount ?? 0 }} việc đã hoàn thành)</span>
+      </div>
+      <div class="detail-panel__stats">
+        <span><strong>{{ completionPercent() }}%</strong> Hoàn thành</span>
+        <span><strong>{{ reviewPercent() }}%</strong> Phản hồi</span>
+      </div>
+      <button
+        type="button"
+        class="ant-btn ant-btn--primary detail-panel__primary"
+        [disabled]="!isOpen()"
+        (click)="acceptRequested.emit(post())"
+      >
+        {{ isOpen() ? actionLabel() : 'Bài đăng đã kết nối' }}
+      </button>
+      <button type="button" class="ant-btn ant-btn--secondary" (click)="messageRequested.emit(post())">
+        <span aria-hidden="true">◌</span> Nhắn tin trao đổi
+      </button>
+      <p class="detail-panel__hint">Bạn chưa bị tính phí khi gửi yêu cầu kết nối.</p>
+    </aside>
+  </div>
+</article>

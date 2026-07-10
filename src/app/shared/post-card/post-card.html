@@ -1,0 +1,69 @@
+<article class="post-card" [class.post-card--priority]="post().isPriority">
+  <div class="post-card__visual" [class]="'post-card__visual post-card__visual--' + post().category">
+    <span class="post-card__pattern" aria-hidden="true"></span>
+    <span class="post-card__category-icon" aria-hidden="true">{{ category().icon }}</span>
+    <span class="post-card__type" [class.post-card__type--service]="post().type === 'service'">
+      {{ typeLabel() }}
+    </span>
+    @if (post().isPriority) {
+      <app-status-pill status="priority">⚡ Ưu tiên</app-status-pill>
+    }
+    <button
+      type="button"
+      class="post-card__like"
+      [attr.aria-label]="'Yêu thích ' + post().title"
+      (click)="likeRequested.emit(post())"
+    >
+      <span aria-hidden="true">♡</span> {{ post().likedBy.length }}
+    </button>
+  </div>
+
+  <div class="post-card__body">
+    <div class="post-card__category-line">
+      <span>{{ category().label }}</span>
+      <span aria-hidden="true">•</span>
+      <time [attr.datetime]="post().createdAt">{{ timeLabel() }}</time>
+    </div>
+    <button type="button" class="post-card__title" (click)="opened.emit(post())">
+      {{ post().title }}
+    </button>
+    <p class="post-card__description">{{ post().description }}</p>
+
+    <div class="post-card__meta">
+      <span aria-hidden="true">⌖</span>
+      <span>{{ author()?.location?.building ?? 'Trong khu vực của bạn' }}</span>
+    </div>
+    @if (post().expectedTime) {
+      <div class="post-card__meta">
+        <span aria-hidden="true">◷</span>
+        <span>{{ post().expectedTime }}</span>
+      </div>
+    }
+
+    <div class="post-card__author">
+      <span class="post-card__avatar" aria-hidden="true">{{ authorInitials() }}</span>
+      <span>
+        <strong>{{ author()?.displayName ?? 'Thành viên AntGo' }}</strong>
+        <small>
+          @if (author()?.isVerified) { <span class="verified">✓</span> }
+          {{ author()?.reputationScore ?? 'Mới' }} sao
+        </small>
+      </span>
+      <span class="post-card__price">{{ price() }}<small>đ</small></span>
+    </div>
+
+    <div class="post-card__actions">
+      <button type="button" class="ant-btn ant-btn--secondary" (click)="opened.emit(post())">
+        Xem chi tiết
+      </button>
+      <button
+        type="button"
+        class="ant-btn ant-btn--primary"
+        [disabled]="!isOpen()"
+        (click)="acceptRequested.emit(post())"
+      >
+        {{ isOpen() ? actionLabel() : 'Đã kết nối' }}
+      </button>
+    </div>
+  </div>
+</article>

@@ -1,0 +1,40 @@
+<app-ui-dialog title="Xác nhận kết nối" [width]="520" (closed)="cancelled.emit()">
+  <div class="accept-dialog__intro">
+    <span class="accept-dialog__icon" aria-hidden="true">🤝</span>
+    <div>
+      <span class="ant-kicker">AntGo kết nối cộng đồng</span>
+      <p>Bạn sắp gửi yêu cầu kết nối đến {{ author()?.displayName ?? 'người đăng' }}.</p>
+    </div>
+  </div>
+
+  <section class="accept-dialog__summary">
+    <div>
+      <small>{{ post().type === 'request' ? 'Công việc' : 'Dịch vụ' }}</small>
+      <strong>{{ post().title }}</strong>
+    </div>
+    <span>{{ price() }}đ</span>
+  </section>
+
+  <label class="ant-label" for="application-note">Lời nhắn giới thiệu <span>(không bắt buộc)</span></label>
+  <textarea
+    id="application-note"
+    class="ant-field"
+    maxlength="300"
+    placeholder="Ví dụ: Mình đang ở gần và có thể hỗ trợ bạn ngay..."
+    [value]="note()"
+    (input)="updateNote($event)"
+  ></textarea>
+  <div class="accept-dialog__counter">{{ note().length }}/300</div>
+
+  <div class="accept-dialog__assurance">
+    <span aria-hidden="true">✓</span>
+    <p><strong>Chưa phát sinh thanh toán.</strong> Hai bên có thể trao đổi trước khi xác nhận đơn.</p>
+  </div>
+
+  <button dialog-actions type="button" class="ant-btn ant-btn--secondary" (click)="cancelled.emit()">
+    Để sau
+  </button>
+  <button dialog-actions type="button" class="ant-btn ant-btn--primary" (click)="submit()">
+    {{ actionLabel() }}
+  </button>
+</app-ui-dialog>

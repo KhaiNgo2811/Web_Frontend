@@ -1,0 +1,165 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 1200px;
+  background: var(--ant-bg);
+}
+
+body {
+  min-width: 1200px;
+  margin: 0;
+  color: var(--ant-ink);
+  background: var(--ant-bg);
+  font-family: 'Be Vietnam Pro', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+.display-font {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 800;
+}
+
+.ant-container {
+  width: min(var(--ant-content), calc(100% - 64px));
+  margin-inline: auto;
+}
+
+.ant-btn {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--ant-radius-md);
+  padding: 10px 18px;
+  font-weight: 700;
+  transition: transform var(--ant-transition), box-shadow var(--ant-transition),
+    background var(--ant-transition);
+}
+
+.ant-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.ant-btn:focus-visible,
+.ant-field:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid rgb(249 115 22 / 24%);
+  outline-offset: 2px;
+}
+
+.ant-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ant-btn--primary {
+  color: #fff;
+  background: var(--ant-gradient);
+  box-shadow: var(--ant-shadow-orange);
+}
+
+.ant-btn--secondary {
+  color: var(--ant-ink-soft);
+  border-color: var(--ant-border);
+  background: #fff;
+}
+
+.ant-btn--ghost {
+  color: var(--ant-orange-deep);
+  background: var(--ant-orange-soft);
+}
+
+.ant-btn--danger {
+  color: var(--ant-red);
+  border-color: #f5c7c4;
+  background: var(--ant-red-soft);
+}
+
+.ant-card {
+  border: 1px solid var(--ant-border);
+  border-radius: var(--ant-radius-lg);
+  background: var(--ant-surface);
+  box-shadow: var(--ant-shadow-sm);
+}
+
+.ant-field {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--ant-border);
+  border-radius: var(--ant-radius-md);
+  padding: 10px 13px;
+  color: var(--ant-ink);
+  background: #fff;
+}
+
+.ant-field::placeholder {
+  color: var(--ant-subtle);
+}
+
+textarea.ant-field {
+  min-height: 112px;
+  resize: vertical;
+}
+
+.ant-label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--ant-ink-soft);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ant-error {
+  margin-top: 5px;
+  color: var(--ant-red);
+  font-size: 12px;
+}
+
+.ant-muted {
+  color: var(--ant-muted);
+}
+
+.ant-kicker {
+  color: var(--ant-orange-deep);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

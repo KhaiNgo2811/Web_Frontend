@@ -1,0 +1,11 @@
+.post-page {
+  min-height: 820px;
+  padding-block: 30px 60px;
+}
+
+.loading {
+  display: grid;
+  min-height: 500px;
+  place-items: center;
+  color: var(--ant-muted);
+}

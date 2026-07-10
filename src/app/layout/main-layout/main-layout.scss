@@ -1,0 +1,110 @@
+@use './main-layout-menus';
+
+.site-header {
+  position: sticky;
+  z-index: 100;
+  top: 0;
+  height: 63px;
+  border-bottom: 1px solid var(--ant-border);
+  background: rgb(255 255 255 / 94%);
+  backdrop-filter: blur(14px);
+}
+
+.site-header__inner,
+.site-footer__top {
+  position: relative;
+  width: min(var(--ant-nav-content), calc(100% - 64px));
+  height: 100%;
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+}
+
+nav {
+  display: flex;
+  align-items: stretch;
+  gap: 28px;
+  margin-left: 44px;
+  height: 100%;
+}
+
+nav a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: var(--ant-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+nav a.active,
+nav a:hover {
+  color: var(--ant-orange-deep);
+}
+
+nav a.active::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background: var(--ant-orange);
+  content: '';
+}
+
+.site-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
+}
+
+.location-button,
+.icon-button,
+.avatar-button {
+  border: 1px solid var(--ant-border);
+  color: var(--ant-ink-soft);
+  background: #fff;
+}
+
+.location-button {
+  height: 34px;
+  border-radius: 18px;
+  padding: 0 13px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.location-button span:first-child {
+  color: var(--ant-green);
+  font-size: 9px;
+}
+
+.icon-button,
+.avatar-button {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.avatar-button {
+  border: 0;
+  color: #fff;
+  background: var(--ant-gradient);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--ant-orange);
+}
