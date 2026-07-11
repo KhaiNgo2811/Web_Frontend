@@ -126,12 +126,14 @@ export class MarketplaceStore {
 
   transitionOrder(orderId: string, action: OrderAction, reason?: string): void {
     const actorId = this.requireViewer();
-    if (actorId) this.mutate(this.repositories.orders.transition({ orderId, actorId, action, reason }));
+    if (actorId)
+      this.mutate(this.repositories.orders.transition({ orderId, actorId, action, reason }));
   }
 
   reviewOrder(orderId: string, stars: number, comment?: string): void {
     const actorId = this.requireViewer();
-    if (actorId) this.mutate(this.repositories.orders.createReview({ orderId, actorId, stars, comment }));
+    if (actorId)
+      this.mutate(this.repositories.orders.createReview({ orderId, actorId, stars, comment }));
   }
 
   openConversation(id: string): void {
@@ -147,7 +149,13 @@ export class MarketplaceStore {
     const senderId = this.requireViewer();
     if (senderId) {
       this.mutate(
-        this.repositories.conversations.sendMessage({ conversationId, senderId, kind, content, attachment }),
+        this.repositories.conversations.sendMessage({
+          conversationId,
+          senderId,
+          kind,
+          content,
+          attachment,
+        }),
       );
     }
   }

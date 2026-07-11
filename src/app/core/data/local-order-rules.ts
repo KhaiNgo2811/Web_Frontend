@@ -93,4 +93,3 @@ export function applyOrderTransition(order: Order, input: OrderTransitionInput):
 
   throw new RepositoryError('Thao tác đơn hàng không hợp lệ.');
 }
-

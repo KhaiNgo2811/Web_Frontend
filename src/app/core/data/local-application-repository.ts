@@ -1,12 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import type {
-  Application,
-  ApplicationSelection,
-  CreateApplicationInput,
-  Order,
-} from '../models';
+import type { Application, ApplicationSelection, CreateApplicationInput, Order } from '../models';
 import {
   asObservable,
   createEntityId,

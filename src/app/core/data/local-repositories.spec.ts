@@ -46,4 +46,3 @@ describe('local marketplace repositories', () => {
     expect(completed.status).toBe('completed');
   });
 });
-

@@ -40,14 +40,13 @@ export class LocalConversationRepository extends ConversationRepository {
     return asObservable(() => {
       const data = this.db.snapshot();
       const conversation = data.conversations.find(
-        (candidate) =>
-          candidate.id === conversationId && candidate.participantIds.includes(userId),
+        (candidate) => candidate.id === conversationId && candidate.participantIds.includes(userId),
       );
       if (!conversation) {
         throw new RepositoryError('Bạn không thuộc cuộc trò chuyện này.');
       }
       return data.messages
-        .filter((message) => message.conversationId === conversationId)
+        .filter((message) => message.conversationId === conversationId && !message.hidden)
         .sort((left, right) => Date.parse(left.createdAt) - Date.parse(right.createdAt));
     });
   }
@@ -74,6 +73,7 @@ export class LocalConversationRepository extends ConversationRepository {
           senderId: input.senderId,
           kind: input.kind,
           content: input.content.trim(),
+          hidden: false,
           attachment: input.attachment,
           createdAt: now,
         };
@@ -97,4 +97,3 @@ export class LocalConversationRepository extends ConversationRepository {
     );
   }
 }
-

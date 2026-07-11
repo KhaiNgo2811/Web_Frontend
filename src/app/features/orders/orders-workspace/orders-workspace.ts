@@ -31,7 +31,9 @@ export class OrdersWorkspace {
   protected reason = '';
   protected complaint = '';
   protected readonly currentUserId = computed(() => this.session.currentUser()?.id ?? 'user-demo');
-  protected readonly ownPosts = computed(() => this.store.posts().filter((post) => post.authorId === this.currentUserId()));
+  protected readonly ownPosts = computed(() =>
+    this.store.posts().filter((post) => post.authorId === this.currentUserId()),
+  );
   protected readonly selectedOrder = computed<Order | undefined>(() => {
     const orders = this.store.orders();
     return orders.find((order) => order.id === this.selectedOrderId()) ?? orders[0];
@@ -41,7 +43,8 @@ export class OrdersWorkspace {
     return applications.find((item) => item.id === this.selectedApplicationId()) ?? applications[0];
   });
   protected readonly selectedPost = computed(() => {
-    const id = this.tab() === 'accepted' ? this.selectedApplication()?.postId : this.selectedOrder()?.postId;
+    const id =
+      this.tab() === 'accepted' ? this.selectedApplication()?.postId : this.selectedOrder()?.postId;
     return this.store.posts().find((post) => post.id === id);
   });
 

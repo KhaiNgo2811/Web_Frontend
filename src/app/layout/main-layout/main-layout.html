@@ -11,10 +11,22 @@
       <button type="button" class="location-button" (click)="toggle('location')">
         <span aria-hidden="true">●</span> {{ location() }} <span aria-hidden="true">⌄</span>
       </button>
-      <button type="button" class="icon-button" aria-label="Thông báo" (click)="toggle('notifications')">
+      <button
+        type="button"
+        class="icon-button"
+        aria-label="Thông báo"
+        (click)="toggle('notifications')"
+      >
         ♢<span class="notification-dot"></span>
       </button>
-      <button type="button" class="avatar-button" aria-label="Tài khoản" (click)="toggle('account')">AN</button>
+      <button
+        type="button"
+        class="avatar-button"
+        aria-label="Tài khoản"
+        (click)="toggle('account')"
+      >
+        AN
+      </button>
 
       @if (openMenu() === 'location') {
         <div class="nav-menu nav-menu--location">
@@ -27,15 +39,24 @@
       @if (openMenu() === 'notifications') {
         <div class="nav-menu nav-menu--notifications">
           <div class="menu-heading"><strong>Thông báo</strong><span>3 mới</span></div>
-          <a routerLink="/notifications" (click)="openMenu.set(null)">Đơn của bạn vừa có ứng viên mới</a>
-          <a routerLink="/notifications" (click)="openMenu.set(null)">Nguyễn Thảo đã nhắn tin cho bạn</a>
+          <a routerLink="/notifications" (click)="openMenu.set(null)"
+            >Đơn của bạn vừa có ứng viên mới</a
+          >
+          <a routerLink="/notifications" (click)="openMenu.set(null)"
+            >Nguyễn Thảo đã nhắn tin cho bạn</a
+          >
           <a routerLink="/notifications" (click)="openMenu.set(null)">Đơn hàng đã hoàn thành</a>
-          <a class="menu-all" routerLink="/notifications" (click)="openMenu.set(null)">Xem tất cả →</a>
+          <a class="menu-all" routerLink="/notifications" (click)="openMenu.set(null)"
+            >Xem tất cả →</a
+          >
         </div>
       }
       @if (openMenu() === 'account') {
         <div class="nav-menu nav-menu--account">
-          <div class="account-summary"><span>AN</span><div><strong>An Nguyễn</strong><small>an&#64;antgo.vn</small></div></div>
+          <div class="account-summary">
+            <span>AN</span>
+            <div><strong>An Nguyễn</strong><small>an&#64;antgo.vn</small></div>
+          </div>
           <a routerLink="/account" (click)="openMenu.set(null)">Tài khoản của tôi</a>
           <a routerLink="/orders" (click)="openMenu.set(null)">Đơn hàng</a>
           <a routerLink="/auth/login" (click)="openMenu.set(null)">Đăng xuất</a>
@@ -52,7 +73,8 @@
     <app-brand-logo [compact]="true" />
     <span class="ant-muted">Nền tảng giao nhận nội khu</span>
     <nav aria-label="Điều hướng chân trang">
-      <a href="#about">Giới thiệu</a><a href="#privacy">Bảo mật</a><a href="#terms">Điều khoản</a><a href="#help">Hỗ trợ</a>
+      <a href="#about">Giới thiệu</a><a href="#privacy">Bảo mật</a><a href="#terms">Điều khoản</a
+      ><a href="#help">Hỗ trợ</a>
     </nav>
   </div>
   <div class="site-footer__bottom">© 2026 AntGo — Kết nối cộng đồng, giúp đỡ gần nhau hơn.</div>

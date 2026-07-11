@@ -1,6 +1,6 @@
 # Deployment Guide
 
-_Last updated: 2026-07-01 · Status: local build documented; hosting/CI TBD._
+_Last updated: 2026-07-11 · Status: local build documented; hosting/CI TBD._
 
 ## Prerequisites
 
@@ -9,6 +9,7 @@ _Last updated: 2026-07-01 · Status: local build documented; hosting/CI TBD._
   this repo before building.
 - **npm 10.9.8** (declared as `packageManager` in `package.json`).
 - Install deps: `npm install`.
+- Runtime CSS includes Bootstrap and Tabler through `angular.json`; no Tabler or Bootstrap JavaScript is required.
 
 ## npm scripts (`package.json`)
 

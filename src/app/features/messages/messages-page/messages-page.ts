@@ -20,7 +20,9 @@ export class MessagesPage {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   protected readonly roleTab = signal<'posted' | 'accepted'>('posted');
-  protected readonly selectedId = signal<string | null>(this.route.snapshot.paramMap.get('conversationId'));
+  protected readonly selectedId = signal<string | null>(
+    this.route.snapshot.paramMap.get('conversationId'),
+  );
   protected draft = '';
   protected readonly selected = computed<Conversation | undefined>(() => {
     const conversations = this.store.conversations();
@@ -37,7 +39,10 @@ export class MessagesPage {
   }
 
   protected postTitle(conversation: Conversation | undefined): string {
-    return this.store.posts().find((post) => post.id === conversation?.postId)?.title ?? 'Cuộc trò chuyện';
+    return (
+      this.store.posts().find((post) => post.id === conversation?.postId)?.title ??
+      'Cuộc trò chuyện'
+    );
   }
 
   protected selectConversation(id: string): void {
@@ -48,7 +53,12 @@ export class MessagesPage {
   protected send(kind: MessageKind = 'text'): void {
     const conversation = this.selected();
     if (!conversation || (!this.draft.trim() && kind === 'text')) return;
-    const content = kind === 'text' ? this.draft.trim() : kind === 'image' ? 'Ảnh minh hoạ công việc' : 'Mã QR thanh toán mẫu';
+    const content =
+      kind === 'text'
+        ? this.draft.trim()
+        : kind === 'image'
+          ? 'Ảnh minh hoạ công việc'
+          : 'Mã QR thanh toán mẫu';
     this.store.sendMessage(conversation.id, kind, content);
     this.draft = '';
   }

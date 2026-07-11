@@ -3,13 +3,37 @@ import { Observable } from 'rxjs';
 import type {
   Application,
   ApplicationSelection,
+  AdminAccountActivity,
+  AuditEvent,
+  AuditFilter,
+  AdminAccountStatusInput,
+  AdminActivityFilter,
+  AdminDashboardSummary,
+  AdminUserDetail,
+  AdminUserFilter,
   AuthChallenge,
+  BusinessConfig,
+  BusinessConfigInput,
+  BusinessConfigValidationErrors,
+  Complaint,
+  ComplaintAppealInput,
+  ComplaintAssignInput,
+  ComplaintAssessmentInput,
+  ComplaintEvidenceRequestInput,
+  ComplaintFilter,
+  ComplaintNotifyInput,
+  ComplaintPartyResponseInput,
+  ComplaintResolutionInput,
+  ComplaintVerificationInput,
   Conversation,
   CreateApplicationInput,
   CreatePostInput,
   CreateReviewInput,
   Credentials,
   Message,
+  ModerationActionInput,
+  ModerationFilter,
+  ModerationReport,
   Notification,
   Order,
   OrderTransitionInput,
@@ -23,6 +47,11 @@ import type {
   UpdatePostInput,
   UpdateUserInput,
   User,
+  Region,
+  ExportJob,
+  InboxAssignmentInput,
+  InboxFilter,
+  InboxItem,
 } from '../models';
 
 export abstract class AuthRepository {
@@ -80,3 +109,58 @@ export abstract class NotificationRepository {
   abstract markAllRead(userId: string): Observable<Notification[]>;
 }
 
+export abstract class AdminUserRepository {
+  abstract list(actorId: string, filter?: AdminUserFilter): Observable<User[]>;
+  abstract getById(actorId: string, id: string): Observable<AdminUserDetail | undefined>;
+  abstract setStatus(input: AdminAccountStatusInput): Observable<User>;
+  abstract listActivity(
+    actorId: string,
+    filter?: AdminActivityFilter,
+  ): Observable<AdminAccountActivity[]>;
+  abstract getDashboardSummary(
+    actorId: string,
+    rangeDays?: 7 | 30 | 90,
+  ): Observable<AdminDashboardSummary>;
+}
+
+export abstract class ModerationRepository {
+  abstract list(actorId: string, filter?: ModerationFilter): Observable<ModerationReport[]>;
+  abstract getById(actorId: string, id: string): Observable<ModerationReport | undefined>;
+  abstract act(input: ModerationActionInput): Observable<ModerationReport>;
+}
+
+export abstract class ComplaintRepository {
+  abstract list(actorId: string, filter?: ComplaintFilter): Observable<Complaint[]>;
+  abstract getById(actorId: string, id: string): Observable<Complaint | undefined>;
+  abstract assign(input: ComplaintAssignInput): Observable<Complaint>;
+  abstract recordVerification(input: ComplaintVerificationInput): Observable<Complaint>;
+  abstract requestEvidence(input: ComplaintEvidenceRequestInput): Observable<Complaint>;
+  abstract recordAssessment(input: ComplaintAssessmentInput): Observable<Complaint>;
+  abstract decideResolution(input: ComplaintResolutionInput): Observable<Complaint>;
+  abstract notifyParties(input: ComplaintNotifyInput): Observable<Complaint>;
+  abstract recordPartyResponse(input: ComplaintPartyResponseInput): Observable<Complaint>;
+  abstract appeal(input: ComplaintAppealInput): Observable<Complaint>;
+  abstract close(input: ComplaintResolutionInput): Observable<Complaint>;
+}
+
+export abstract class ConfigRepository {
+  abstract listRegions(actorId: string): Observable<Region[]>;
+  abstract getBusinessConfig(actorId: string): Observable<BusinessConfig>;
+  abstract saveBusinessConfig(
+    adminId: string,
+    input: BusinessConfigInput,
+  ): Observable<BusinessConfig>;
+  abstract restoreDefaults(adminId: string): Observable<BusinessConfig>;
+  abstract validateBusinessConfig(input: BusinessConfigInput): BusinessConfigValidationErrors;
+}
+
+export abstract class AuditRepository {
+  abstract list(actorId: string, filter?: AuditFilter): Observable<AuditEvent[]>;
+  abstract requestExport(actorId: string): Observable<ExportJob>;
+  abstract listExports(actorId: string): Observable<ExportJob[]>;
+}
+
+export abstract class InboxRepository {
+  abstract list(actorId: string, filter?: InboxFilter): Observable<InboxItem[]>;
+  abstract assign(input: InboxAssignmentInput): Observable<InboxItem[]>;
+}

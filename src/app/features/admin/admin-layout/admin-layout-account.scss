@@ -1,0 +1,86 @@
+.admin-topbar__actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--ant-border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.admin-identity span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--ant-gradient);
+  font-weight: 800;
+}
+
+.admin-identity:focus-visible {
+  outline: 2px solid var(--ant-orange);
+  outline-offset: 2px;
+}
+
+.admin-identity__chevron {
+  width: auto !important;
+  height: auto !important;
+  color: var(--ant-muted) !important;
+  background: transparent !important;
+}
+
+.admin-account-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  display: grid;
+  width: 190px;
+  border: 1px solid var(--ant-border);
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: var(--ant-shadow-sm);
+}
+
+.admin-account-menu a,
+.admin-account-menu button {
+  border: 0;
+  border-bottom: 1px solid var(--ant-border);
+  padding: 11px 13px;
+  color: var(--ant-ink);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+}
+
+.admin-account-menu a:hover,
+.admin-account-menu button:hover,
+.admin-account-menu a:focus-visible,
+.admin-account-menu button:focus-visible {
+  background: var(--ant-surface-soft);
+  outline: 2px solid var(--ant-orange);
+  outline-offset: -2px;
+}
+
+@media (max-width: 900px) {
+  .admin-identity {
+    gap: 0;
+    padding: 7px;
+  }
+
+  .admin-identity strong,
+  .admin-identity__chevron {
+    display: none !important;
+  }
+}

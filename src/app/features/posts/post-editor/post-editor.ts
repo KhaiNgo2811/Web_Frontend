@@ -19,9 +19,12 @@ export class PostEditor {
   private readonly formBuilder = inject(FormBuilder);
   protected readonly dialog = signal<'extend' | 'delete' | null>(null);
   protected readonly categories: { value: ServiceCategory; label: string }[] = [
-    { value: 'food', label: 'Ăn uống' }, { value: 'laundry', label: 'Giặt sấy' },
-    { value: 'goods', label: 'Mua hộ' }, { value: 'repair', label: 'Sửa chữa' },
-    { value: 'support', label: 'Hỗ trợ' }, { value: 'other', label: 'Khác' },
+    { value: 'food', label: 'Ăn uống' },
+    { value: 'laundry', label: 'Giặt sấy' },
+    { value: 'goods', label: 'Mua hộ' },
+    { value: 'repair', label: 'Sửa chữa' },
+    { value: 'support', label: 'Hỗ trợ' },
+    { value: 'other', label: 'Khác' },
   ];
   protected readonly postId = this.route.snapshot.paramMap.get('id');
   protected readonly type = this.resolveType();
@@ -46,9 +49,14 @@ export class PostEditor {
     if (this.form.invalid) return this.form.markAllAsTouched();
     const raw = this.form.getRawValue();
     const input: CreatePostInput = {
-      type: this.type, title: raw.title, description: raw.description,
-      category: raw.category, price: Number(raw.price), expectedTime: raw.expectedTime || undefined,
-      urgency: raw.urgency, images: raw.imageUrl ? [raw.imageUrl] : [],
+      type: this.type,
+      title: raw.title,
+      description: raw.description,
+      category: raw.category,
+      price: Number(raw.price),
+      expectedTime: raw.expectedTime || undefined,
+      urgency: raw.urgency,
+      images: raw.imageUrl ? [raw.imageUrl] : [],
     };
     if (this.postId) this.store.updatePost(this.postId, input);
     else this.store.createPost(input);

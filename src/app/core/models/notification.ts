@@ -21,4 +21,3 @@ export interface Notification {
   read: boolean;
   createdAt: IsoDateString;
 }
-

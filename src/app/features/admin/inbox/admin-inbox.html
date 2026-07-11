@@ -1,0 +1,235 @@
+<section class="admin-page" aria-labelledby="inbox-heading">
+  <div class="dashboard-heading">
+    <div>
+      <p class="ant-kicker">Hàng đợi vận hành</p>
+      <h2 id="inbox-heading">Hộp công việc</h2>
+      <p class="admin-note">{{ filteredItems().length }} kết quả</p>
+    </div>
+    <button
+      class="ant-btn ant-btn--secondary"
+      type="button"
+      title="Tải lại hàng đợi"
+      aria-label="Tải lại hàng đợi công việc"
+      [disabled]="inbox.loading()"
+      (click)="refresh()"
+    >
+      Làm mới
+    </button>
+  </div>
+
+  <div class="admin-segmented" role="group" aria-label="Chế độ xem đã lưu">
+    <button
+      type="button"
+      [attr.aria-pressed]="inbox.filter().savedView === 'all_open'"
+      [class.active]="inbox.filter().savedView === 'all_open'"
+      (click)="setView('all_open')"
+    >
+      Đang mở
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="inbox.filter().savedView === 'unassigned'"
+      [class.active]="inbox.filter().savedView === 'unassigned'"
+      (click)="setView('unassigned')"
+    >
+      Chưa phân công
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="inbox.filter().savedView === 'breach_risk'"
+      [class.active]="inbox.filter().savedView === 'breach_risk'"
+      (click)="setView('breach_risk')"
+    >
+      Nguy cơ vi phạm SLA
+    </button>
+  </div>
+
+  <div class="admin-toolbar" aria-label="Bộ lọc hộp công việc">
+    <label>
+      <span>Tìm kiếm</span>
+      <input
+        class="ant-field"
+        type="search"
+        placeholder="Tiêu đề, trạng thái, người xử lý"
+        [value]="search()"
+        (input)="updateSearch($event)"
+      />
+    </label>
+    <label>
+      <span>Phân công</span>
+      <select
+        class="ant-field"
+        [value]="inbox.filter().assignment || 'all'"
+        (change)="updateAssignment($event)"
+      >
+        <option value="all">Tất cả</option>
+        <option value="mine">Của tôi</option>
+        <option value="unassigned">Chưa phân công</option>
+      </select>
+    </label>
+    <label>
+      <span>Thời hạn SLA</span>
+      <select class="ant-field" [value]="inbox.filter().sla || 'all'" (change)="updateSla($event)">
+        <option value="all">Tất cả</option>
+        <option value="due_soon">Sắp đến hạn</option>
+        <option value="overdue">Quá hạn</option>
+      </select>
+    </label>
+    @if (activeFilterCount()) {
+      <span class="filter-count" role="status">{{ activeFilterCount() }} bộ lọc đang dùng</span>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="clearFilters()">
+        Xóa bộ lọc
+      </button>
+    }
+  </div>
+
+  @if (inbox.selected().length) {
+    <section class="admin-panel inbox-assignment" aria-label="Thao tác hàng loạt">
+      <strong>{{ inbox.selected().length }} mục đã chọn</strong>
+      <label>
+        <span>Nhân sự nhận việc</span>
+        <select class="ant-field" [value]="assigneeId()" (change)="assigneeId.set(value($event))">
+          <option value="">Bỏ phân công</option>
+          @for (staff of assigneeOptions(); track staff.id) {
+            <option [value]="staff.id">
+              {{ staff.displayName }} · {{ staffRoleLabel(staff.role) }}
+            </option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Ghi chú bàn giao</span>
+        <input
+          class="ant-field"
+          [value]="handoffNote()"
+          (input)="handoffNote.set(value($event))"
+          placeholder="Thông tin cần lưu ý"
+        />
+      </label>
+      <button class="ant-btn" type="button" [disabled]="inbox.loading()" (click)="assign()">
+        Phân công
+      </button>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="deselectAll()">
+        Bỏ chọn tất cả
+      </button>
+    </section>
+  }
+
+  @if (inbox.operation().status === 'success') {
+    <p class="config-success" role="status">{{ inbox.operation().message }}</p>
+  } @else if (inbox.operation().status === 'error') {
+    <p class="ant-error" role="alert">{{ inbox.operation().message }}</p>
+  }
+
+  @if (inbox.error()) {
+    <div class="state-message state-message--error" role="alert">
+      <strong>Không thể hoàn tất thao tác.</strong>
+      <span>{{ inbox.error() }}</span>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="refresh()">Thử lại</button>
+    </div>
+  } @else if (inbox.loading() && !inbox.items().length) {
+    <div class="state-message" role="status" aria-live="polite">Đang tải hàng đợi công việc...</div>
+  } @else {
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th scope="col" class="selection-cell">
+              <input
+                type="checkbox"
+                [checked]="allOnPageSelected()"
+                [indeterminate]="someOnPageSelected()"
+                aria-label="Chọn tất cả công việc trên trang"
+                (change)="togglePageSelection()"
+              />
+            </th>
+            <th scope="col">Loại</th>
+            <th scope="col" [attr.aria-sort]="ariaSort('createdAt')">
+              <button class="sort-button" type="button" (click)="setSort('createdAt')">
+                Công việc
+              </button>
+            </th>
+            <th scope="col" [attr.aria-sort]="ariaSort('priority')">
+              <button class="sort-button" type="button" (click)="setSort('priority')">
+                Ưu tiên
+              </button>
+            </th>
+            <th scope="col">Người xử lý</th>
+            <th scope="col" [attr.aria-sort]="ariaSort('dueAt')">
+              <button class="sort-button" type="button" (click)="setSort('dueAt')">SLA</button>
+            </th>
+            <th scope="col"><span class="visually-hidden">Thao tác</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of pagedItems(); track item.id) {
+            <tr [class.selected]="inbox.selectedIds().includes(item.id)">
+              <td class="selection-cell">
+                <input
+                  type="checkbox"
+                  [checked]="inbox.selectedIds().includes(item.id)"
+                  [attr.aria-label]="'Chọn ' + item.title"
+                  (change)="inbox.toggle(item)"
+                />
+              </td>
+              <td>{{ item.source === 'moderation' ? 'Kiểm duyệt' : 'Khiếu nại' }}</td>
+              <td>
+                <strong>{{ item.title }}</strong
+                ><br />
+                <small>{{ statusLabel(item.status) }}</small>
+              </td>
+              <td>
+                <span class="admin-pill" [class.admin-pill--warning]="item.priority === 'high'">
+                  {{ priorityLabel(item.priority) }}
+                </span>
+              </td>
+              <td>{{ item.assignedAdminId || 'Chưa phân công' }}</td>
+              <td>
+                {{ item.dueAt ? (item.dueAt | date: 'dd/MM/yyyy HH:mm') : 'Không có thời hạn' }}
+              </td>
+              <td>
+                <a
+                  class="ant-btn ant-btn--secondary detail-link"
+                  [routerLink]="route(item)"
+                  [queryParams]="query(item)"
+                  [attr.aria-label]="'Mở chi tiết ' + item.title"
+                >
+                  Chi tiết
+                </a>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                <strong>Không có công việc phù hợp</strong>
+                <span>Hãy thay đổi chế độ xem hoặc xóa bộ lọc.</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (filteredItems().length) {
+      <nav class="table-pagination" aria-label="Phân trang hộp công việc">
+        <span>Trang {{ page() }} / {{ pageCount() }}</span>
+        <button
+          class="ant-btn ant-btn--secondary"
+          type="button"
+          [disabled]="page() === 1"
+          (click)="goToPage(page() - 1)"
+        >
+          Trang trước
+        </button>
+        <button
+          class="ant-btn ant-btn--secondary"
+          type="button"
+          [disabled]="page() === pageCount()"
+          (click)="goToPage(page() + 1)"
+        >
+          Trang sau
+        </button>
+      </nav>
+    }
+  }
+</section>

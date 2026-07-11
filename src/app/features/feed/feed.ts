@@ -55,9 +55,7 @@ export class Feed {
   private readonly posts = computed(() => this.sourcePosts() ?? this.marketplace.posts());
   private readonly users = computed(() => this.sourceUsers() ?? this.marketplace.users());
 
-  private readonly usersById = computed(
-    () => new Map(this.users().map((user) => [user.id, user])),
-  );
+  private readonly usersById = computed(() => new Map(this.users().map((user) => [user.id, user])));
 
   protected readonly filteredPosts = computed(() => {
     const search = this.search().trim().toLocaleLowerCase('vi');

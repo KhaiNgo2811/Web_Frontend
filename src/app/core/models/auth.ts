@@ -47,4 +47,3 @@ export interface StoredAuthChallenge extends AuthChallenge {
   userId?: string;
   registration?: RegistrationDraft;
 }
-

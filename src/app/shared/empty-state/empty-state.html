@@ -1,6 +1,8 @@
 <section class="empty-state">
   <span class="empty-state__icon" aria-hidden="true">{{ icon() }}</span>
   <h3>{{ title() }}</h3>
-  @if (description()) { <p>{{ description() }}</p> }
+  @if (description()) {
+    <p>{{ description() }}</p>
+  }
   <ng-content />
 </section>

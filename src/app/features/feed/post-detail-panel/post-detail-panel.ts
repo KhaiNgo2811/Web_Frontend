@@ -31,7 +31,12 @@ export class PostDetailPanel {
     this.post().type === 'request' ? 'Cần giúp' : 'Cung cấp dịch vụ',
   );
   protected readonly statusLabel = computed(() => {
-    const labels = { open: 'Đang mở', connected: 'Đã kết nối', closed: 'Đã đóng', expired: 'Hết hạn' };
+    const labels = {
+      open: 'Đang mở',
+      connected: 'Đã kết nối',
+      closed: 'Đã đóng',
+      expired: 'Hết hạn',
+    };
     return labels[this.post().status];
   });
   protected readonly actionLabel = computed(() =>

@@ -1,0 +1,115 @@
+.export-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.export-panel__main,
+.export-actions,
+.export-scope,
+.export-jobs article {
+  display: grid;
+  gap: 8px;
+}
+
+.export-panel__main {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.export-panel h3,
+.export-jobs h4 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.export-facts {
+  display: flex;
+  max-width: 360px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.export-scope {
+  border: 1px solid var(--ant-border);
+  border-radius: 4px;
+  padding: 10px;
+  background: var(--ant-surface-soft);
+  font-size: 12px;
+}
+
+.export-scope div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.export-scope span {
+  border: 1px solid var(--ant-border);
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: #fff;
+}
+
+.export-actions {
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.export-status {
+  margin: 0;
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+.export-status--error {
+  color: var(--ant-red);
+}
+
+.export-jobs {
+  display: grid;
+  gap: 8px;
+}
+
+.export-jobs article {
+  grid-template-columns: minmax(180px, 0.7fr) minmax(0, 1fr);
+  border: 1px solid var(--ant-border);
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 12px;
+}
+
+.export-jobs article.is-latest {
+  border-color: var(--ant-blue);
+  background: #f4f8ff;
+}
+
+.export-jobs article div {
+  display: grid;
+  gap: 2px;
+}
+
+.export-jobs span,
+.export-jobs small {
+  color: var(--ant-muted);
+}
+
+.audit-detail-row td {
+  background: #fffaf5;
+}
+
+.audit-detail-row dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.audit-detail-row dl div {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+}
+
+.audit-detail-row pre {
+  margin: 0;
+  white-space: pre-wrap;
+}

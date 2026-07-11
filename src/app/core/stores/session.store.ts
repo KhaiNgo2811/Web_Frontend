@@ -119,4 +119,3 @@ export class SessionStore {
     return succeeded;
   }
 }
-

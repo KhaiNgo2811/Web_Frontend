@@ -1,6 +1,7 @@
 import type { IsoDateString } from './common';
+import type { AdminRole } from './admin-authorization';
 
-export type UserRole = 'user' | 'admin';
+export type UserRole = 'user' | AdminRole;
 export type UserStatus = 'active' | 'locked';
 
 export interface UserLocation {
@@ -37,4 +38,3 @@ export interface User {
 export type UpdateUserInput = Partial<
   Pick<User, 'displayName' | 'avatarUrl' | 'location' | 'social'>
 >;
-

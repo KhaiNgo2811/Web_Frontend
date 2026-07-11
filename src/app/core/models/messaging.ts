@@ -24,6 +24,7 @@ export interface Message {
   senderId: string;
   kind: MessageKind;
   content: string;
+  hidden: boolean;
   attachment?: MessageAttachment;
   createdAt: IsoDateString;
 }
@@ -35,4 +36,3 @@ export interface SendMessageInput {
   content: string;
   attachment?: MessageAttachment;
 }
-

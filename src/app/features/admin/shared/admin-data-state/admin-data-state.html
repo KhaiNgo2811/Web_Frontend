@@ -1,0 +1,28 @@
+<div
+  class="admin-data-state"
+  [attr.role]="state === 'error' ? 'alert' : 'status'"
+  aria-live="polite"
+>
+  @if (state === 'loading') {
+    <span class="admin-data-state__skeleton"></span><span class="admin-data-state__skeleton"></span
+    ><span class="admin-data-state__skeleton"></span>
+    <span class="visually-hidden">Đang tải dữ liệu</span>
+  } @else {
+    <strong>{{
+      state === 'empty'
+        ? 'Chưa có dữ liệu'
+        : state === 'no-results'
+          ? 'Không tìm thấy kết quả'
+          : 'Không thể tải dữ liệu'
+    }}</strong>
+    <p>
+      {{
+        message ||
+          (state === 'no-results' ? 'Hãy điều chỉnh từ khóa hoặc bộ lọc.' : 'Vui lòng thử lại sau.')
+      }}
+    </p>
+    @if (state === 'error') {
+      <button class="ant-btn ant-btn--ghost" type="button" (click)="retry.emit()">Thử lại</button>
+    }
+  }
+</div>

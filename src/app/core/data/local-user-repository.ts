@@ -31,4 +31,3 @@ export class LocalUserRepository extends UserRepository {
     );
   }
 }
-

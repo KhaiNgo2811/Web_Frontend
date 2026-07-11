@@ -1,0 +1,233 @@
+<section class="admin-page">
+  @if (form(); as config) {
+    <div class="config-grid">
+      <section class="admin-panel">
+        <h2>Thông số vận hành</h2>
+        <div class="field-grid">
+          <label>
+            <span>Phí nền tảng (%)</span>
+            <input
+              class="ant-field"
+              type="number"
+              min="0"
+              max="30"
+              step="0.1"
+              [value]="config.platformFeePct"
+              [attr.aria-invalid]="!!fieldError('platformFeePct')"
+              aria-describedby="platform-fee-error"
+              (input)="updateNumber('platformFeePct', numberValue($event))"
+            />
+            @if (fieldError('platformFeePct'); as error) {
+              <small id="platform-fee-error" class="ant-error">{{ error }}</small>
+            }
+          </label>
+          <label>
+            <span>Phí đảm bảo (%)</span>
+            <input
+              class="ant-field"
+              type="number"
+              min="0"
+              max="10"
+              step="0.1"
+              [value]="config.escrowFeePct"
+              [attr.aria-invalid]="!!fieldError('escrowFeePct')"
+              (input)="updateNumber('escrowFeePct', numberValue($event))"
+            />
+            @if (fieldError('escrowFeePct'); as error) {
+              <small class="ant-error">{{ error }}</small>
+            }
+          </label>
+          <label>
+            <span>Thời hạn bài đăng (giờ)</span>
+            <input
+              class="ant-field"
+              type="number"
+              min="1"
+              step="1"
+              [value]="config.postDurationHours"
+              (input)="updateNumber('postDurationHours', numberValue($event))"
+            />
+            @if (fieldError('postDurationHours'); as error) {
+              <small class="ant-error">{{ error }}</small>
+            }
+          </label>
+          <label>
+            <span>Thời hạn ưu tiên (giờ)</span>
+            <input
+              class="ant-field"
+              type="number"
+              min="1"
+              step="1"
+              [value]="config.priorityDurationHours"
+              (input)="updateNumber('priorityDurationHours', numberValue($event))"
+            />
+            @if (fieldError('priorityDurationHours'); as error) {
+              <small class="ant-error">{{ error }}</small>
+            }
+          </label>
+          <label>
+            <span>Tự hoàn tất (giờ)</span>
+            <input
+              class="ant-field"
+              type="number"
+              min="1"
+              step="1"
+              [value]="config.autoCompleteHours"
+              (input)="updateNumber('autoCompleteHours', numberValue($event))"
+            />
+            @if (fieldError('autoCompleteHours'); as error) {
+              <small class="ant-error">{{ error }}</small>
+            }
+          </label>
+          <label>
+            <span>Rút tiền tối thiểu</span>
+            <input
+              class="ant-field"
+              type="number"
+              min="0"
+              step="1000"
+              [value]="config.minWithdrawalAmount"
+              (input)="updateNumber('minWithdrawalAmount', numberValue($event))"
+            />
+            @if (fieldError('minWithdrawalAmount'); as error) {
+              <small class="ant-error">{{ error }}</small>
+            }
+          </label>
+        </div>
+      </section>
+
+      <section class="admin-panel">
+        <h2>Gói token</h2>
+        <div class="token-head" aria-hidden="true">
+          <span>Tên gói</span><span>Số token</span><span>Giá</span><span>Thưởng (%)</span
+          ><span>Trạng thái</span><span>Thao tác</span>
+        </div>
+        <div class="token-list">
+          @for (pack of config.tokenPackages; track pack.id) {
+            <article class="token-row">
+              <input
+                class="ant-field"
+                [attr.aria-label]="'Tên ' + pack.name"
+                [value]="pack.name"
+                (input)="updatePackage(pack.id, { name: textValue($event) })"
+              />
+              <input
+                class="ant-field"
+                type="number"
+                min="1"
+                step="1"
+                [attr.aria-label]="'Số token của ' + pack.name"
+                [value]="pack.tokens"
+                (input)="updatePackage(pack.id, { tokens: numberValue($event) })"
+              />
+              <input
+                class="ant-field"
+                type="number"
+                min="0"
+                step="1000"
+                [attr.aria-label]="'Giá của ' + pack.name"
+                [value]="pack.price"
+                (input)="updatePackage(pack.id, { price: numberValue($event) })"
+              />
+              <input
+                class="ant-field"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                [attr.aria-label]="'Phần trăm thưởng của ' + pack.name"
+                [value]="pack.bonusPct"
+                (input)="updatePackage(pack.id, { bonusPct: numberValue($event) })"
+              />
+              <label class="token-toggle">
+                <input
+                  type="checkbox"
+                  [checked]="pack.active"
+                  (change)="updatePackage(pack.id, { active: checkedValue($event) })"
+                />
+                Bật
+              </label>
+              <button
+                class="ant-icon-btn"
+                type="button"
+                [attr.aria-label]="'Xóa ' + pack.name"
+                title="Xóa gói"
+                (click)="removePackage(pack.id)"
+              >
+                ×
+              </button>
+            </article>
+          }
+        </div>
+        @if (fieldError('tokenPackages'); as error) {
+          <p class="ant-error">{{ error }}</p>
+        }
+        <button class="ant-btn ant-btn--secondary" type="button" (click)="addPackage()">
+          Thêm gói
+        </button>
+      </section>
+    </div>
+
+    <div class="admin-live" aria-live="polite" aria-atomic="true">
+      @if (configStore.saveState() === 'success') {
+        <p class="config-success">Đã lưu cấu hình.</p>
+      }
+      @if (configStore.restoreState() === 'success') {
+        <p class="config-success">Đã khôi phục cấu hình mặc định.</p>
+      }
+      @if (configStore.error()) {
+        <p class="ant-error">{{ configStore.error() }}</p>
+      }
+    </div>
+    @if (dirty()) {
+      <p class="config-dirty">Có thay đổi chưa lưu.</p>
+    }
+    <div class="admin-actions">
+      <button
+        class="ant-btn ant-btn--primary"
+        type="button"
+        [disabled]="!dirty() || configStore.loading()"
+        (click)="save()"
+      >
+        {{ configStore.saveState() === 'pending' ? 'Đang lưu…' : 'Lưu cấu hình' }}
+      </button>
+      <button
+        class="ant-btn ant-btn--secondary"
+        type="button"
+        [disabled]="!dirty() || configStore.loading()"
+        (click)="requestConfirm('discard')"
+      >
+        Hủy thay đổi
+      </button>
+      <button
+        class="ant-btn ant-btn--danger"
+        type="button"
+        [disabled]="configStore.loading()"
+        (click)="requestConfirm('restore')"
+      >
+        Khôi phục mặc định
+      </button>
+    </div>
+  } @else if (configStore.error()) {
+    <section class="admin-empty-state" role="alert">
+      <h2>Không thể tải cấu hình</h2>
+      <p>{{ configStore.error() }}</p>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="configStore.load()">
+        Thử lại
+      </button>
+    </section>
+  } @else {
+    <div class="admin-table-skeleton" aria-label="Đang tải cấu hình" aria-busy="true">
+      @for (row of [1, 2, 3, 4]; track row) {
+        <span></span>
+      }
+    </div>
+  }
+</section>
+
+<app-admin-confirm-dialog
+  [open]="!!confirmAction()"
+  [request]="confirmRequest()"
+  (confirmed)="confirm()"
+  (cancelled)="confirmAction.set(null)"
+/>

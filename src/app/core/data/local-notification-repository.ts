@@ -47,4 +47,3 @@ export class LocalNotificationRepository extends NotificationRepository {
     );
   }
 }
-

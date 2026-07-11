@@ -39,7 +39,9 @@ h1 {
   padding: 38px;
   background: #fff;
   box-shadow: var(--ant-shadow-sm);
-  transition: transform var(--ant-transition), box-shadow var(--ant-transition);
+  transition:
+    transform var(--ant-transition),
+    box-shadow var(--ant-transition);
 }
 
 .choice::before {

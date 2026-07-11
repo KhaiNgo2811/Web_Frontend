@@ -78,4 +78,3 @@ export interface ApplicationSelection {
   application: Application;
   order: Order;
 }
-

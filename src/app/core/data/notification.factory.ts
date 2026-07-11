@@ -11,4 +11,3 @@ export function createNotification(draft: NotificationDraft): Notification {
     createdAt: nowIso(),
   };
 }
-

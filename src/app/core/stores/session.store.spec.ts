@@ -26,6 +26,11 @@ describe('SessionStore', () => {
     expect(localStorage.getItem('antgo.session')).toBeNull();
   });
 
+  it('logs in with the seeded admin account', () => {
+    expect(store.login('admin@antgo.vn', 'AntGoAdmin123!', true)).toBe(true);
+    expect(store.currentUser()?.role).toBe('super_admin');
+  });
+
   it('registers through the deterministic demo OTP', () => {
     store.register({
       displayName: 'Người dùng mới',
@@ -39,4 +44,3 @@ describe('SessionStore', () => {
     expect(store.currentUser()?.phone).toBe('0911111111');
   });
 });
-

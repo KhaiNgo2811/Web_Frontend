@@ -1,5 +1,8 @@
 <article class="post-card" [class.post-card--priority]="post().isPriority">
-  <div class="post-card__visual" [class]="'post-card__visual post-card__visual--' + post().category">
+  <div
+    class="post-card__visual"
+    [class]="'post-card__visual post-card__visual--' + post().category"
+  >
     <span class="post-card__pattern" aria-hidden="true"></span>
     <span class="post-card__category-icon" aria-hidden="true">{{ category().icon }}</span>
     <span class="post-card__type" [class.post-card__type--service]="post().type === 'service'">
@@ -45,7 +48,9 @@
       <span>
         <strong>{{ author()?.displayName ?? 'Thành viên AntGo' }}</strong>
         <small>
-          @if (author()?.isVerified) { <span class="verified">✓</span> }
+          @if (author()?.isVerified) {
+            <span class="verified">✓</span>
+          }
           {{ author()?.reputationScore ?? 'Mới' }} sao
         </small>
       </span>

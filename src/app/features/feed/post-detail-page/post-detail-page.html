@@ -1,10 +1,27 @@
 <section class="post-page ant-container">
   @if (post(); as selectedPost) {
-    <app-post-detail-panel [post]="selectedPost" [author]="author()" (closed)="router.navigateByUrl('/feed')" (acceptRequested)="accepting.set(true)" />
-    @if (accepting()) { <app-accept-order-dialog [post]="selectedPost" [author]="author()" (cancelled)="accepting.set(false)" (confirmed)="apply($event)" /> }
+    <app-post-detail-panel
+      [post]="selectedPost"
+      [author]="author()"
+      (closed)="router.navigateByUrl('/feed')"
+      (acceptRequested)="accepting.set(true)"
+    />
+    @if (accepting()) {
+      <app-accept-order-dialog
+        [post]="selectedPost"
+        [author]="author()"
+        (cancelled)="accepting.set(false)"
+        (confirmed)="apply($event)"
+      />
+    }
   } @else if (store.loading()) {
     <div class="loading">Đang tải bài đăng...</div>
   } @else {
-    <app-empty-state icon="⌕" title="Không tìm thấy bài đăng" description="Bài đăng có thể đã bị xoá hoặc hết hạn."><a class="ant-btn ant-btn--primary" href="/feed">Về trang chủ</a></app-empty-state>
+    <app-empty-state
+      icon="⌕"
+      title="Không tìm thấy bài đăng"
+      description="Bài đăng có thể đã bị xoá hoặc hết hạn."
+      ><a class="ant-btn ant-btn--primary" href="/feed">Về trang chủ</a></app-empty-state
+    >
   }
 </section>

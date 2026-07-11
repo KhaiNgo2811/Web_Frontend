@@ -23,4 +23,3 @@ describe('MockDb', () => {
     expect(new MockDb().snapshot().users[0]?.id).toBe('user-demo');
   });
 });
-

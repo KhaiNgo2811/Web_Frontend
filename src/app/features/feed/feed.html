@@ -4,7 +4,10 @@
       <div class="hero__content">
         <span class="hero__eyebrow"><i aria-hidden="true"></i> Cộng đồng tử tế quanh bạn</span>
         <h1 id="hero-title">Việc nhỏ sẻ chia,<br /><em>niềm vui lan tỏa.</em></h1>
-        <p>Đăng điều bạn cần hoặc tìm một công việc phù hợp. AntGo giúp hàng xóm kết nối nhanh, an tâm và minh bạch.</p>
+        <p>
+          Đăng điều bạn cần hoặc tìm một công việc phù hợp. AntGo giúp hàng xóm kết nối nhanh, an
+          tâm và minh bạch.
+        </p>
 
         <div class="hero__search" role="search">
           <span aria-hidden="true">⌕</span>
@@ -19,7 +22,9 @@
         </div>
 
         <div class="hero__proof" aria-label="Thống kê cộng đồng">
-          <div class="hero__faces" aria-hidden="true"><span>AN</span><span>MH</span><span>LN</span><span>+</span></div>
+          <div class="hero__faces" aria-hidden="true">
+            <span>AN</span><span>MH</span><span>LN</span><span>+</span>
+          </div>
           <p><strong>2.400+ thành viên</strong><br />đang sẵn sàng giúp đỡ</p>
           <i aria-hidden="true"></i>
           <p><strong>4,9 / 5</strong><br />điểm tin cậy cộng đồng</p>
@@ -28,9 +33,17 @@
 
       <div class="hero__visual" aria-hidden="true">
         <div class="hero__halo"></div>
-        <div class="hero__orb"><span>ant</span><strong>Go</strong><small>cùng nhau, đi xa hơn</small></div>
-        <div class="hero__float hero__float--top"><span>✓</span><p><strong>Việc đã hoàn thành</strong>nhanh hơn mong đợi!</p></div>
-        <div class="hero__float hero__float--bottom"><span>★</span><p><strong>Hàng xóm tin cậy</strong>4,9 điểm đánh giá</p></div>
+        <div class="hero__orb">
+          <span>ant</span><strong>Go</strong><small>cùng nhau, đi xa hơn</small>
+        </div>
+        <div class="hero__float hero__float--top">
+          <span>✓</span>
+          <p><strong>Việc đã hoàn thành</strong>nhanh hơn mong đợi!</p>
+        </div>
+        <div class="hero__float hero__float--bottom">
+          <span>★</span>
+          <p><strong>Hàng xóm tin cậy</strong>4,9 điểm đánh giá</p>
+        </div>
         <div class="hero__trail"><i></i><i></i><i></i><i></i><i></i></div>
       </div>
     </div>
@@ -44,9 +57,23 @@
         <p>Chọn một nhu cầu phù hợp hoặc tìm dịch vụ ngay trong khu vực của bạn.</p>
       </div>
       <div class="marketplace__type" aria-label="Loại bài đăng">
-        <button type="button" [class.active]="selectedType() === 'all'" (click)="setType('all')">Tất cả</button>
-        <button type="button" [class.active]="selectedType() === 'request'" (click)="setType('request')">Cần giúp</button>
-        <button type="button" [class.active]="selectedType() === 'service'" (click)="setType('service')">Cung cấp</button>
+        <button type="button" [class.active]="selectedType() === 'all'" (click)="setType('all')">
+          Tất cả
+        </button>
+        <button
+          type="button"
+          [class.active]="selectedType() === 'request'"
+          (click)="setType('request')"
+        >
+          Cần giúp
+        </button>
+        <button
+          type="button"
+          [class.active]="selectedType() === 'service'"
+          (click)="setType('service')"
+        >
+          Cung cấp
+        </button>
       </div>
     </div>
 
@@ -58,7 +85,8 @@
             [class.active]="selectedCategory() === category.value"
             (click)="setCategory(category.value)"
           >
-            <span aria-hidden="true">{{ category.icon }}</span>{{ category.label }}
+            <span aria-hidden="true">{{ category.icon }}</span
+            >{{ category.label }}
           </button>
         }
       </div>
@@ -74,7 +102,9 @@
     </div>
 
     <div class="marketplace__result-line">
-      <p><strong>{{ filteredPosts().length }}</strong> bài đăng phù hợp</p>
+      <p>
+        <strong>{{ filteredPosts().length }}</strong> bài đăng phù hợp
+      </p>
       <span>Trong bán kính khu vực đã chọn</span>
     </div>
 
@@ -96,14 +126,18 @@
           />
         }
       </div>
-      <button type="button" class="marketplace__more ant-btn ant-btn--secondary">Xem thêm bài đăng <span aria-hidden="true">↓</span></button>
+      <button type="button" class="marketplace__more ant-btn ant-btn--secondary">
+        Xem thêm bài đăng <span aria-hidden="true">↓</span>
+      </button>
     } @else {
       <app-empty-state
         icon="⌕"
         title="Chưa tìm thấy bài đăng phù hợp"
         description="Thử thay đổi từ khóa hoặc mở rộng danh mục để xem thêm kết quả."
       >
-        <button type="button" class="ant-btn ant-btn--ghost" (click)="resetFilters()">Xóa bộ lọc</button>
+        <button type="button" class="ant-btn ant-btn--ghost" (click)="resetFilters()">
+          Xóa bộ lọc
+        </button>
       </app-empty-state>
     }
   </section>

@@ -19,6 +19,7 @@ export interface Post {
   urgency: PostUrgency;
   likedBy: string[];
   isPriority: boolean;
+  hidden: boolean;
   priorityUntil?: IsoDateString;
   regionId: string;
   expiresAt: IsoDateString;
@@ -48,4 +49,3 @@ export interface PostFilter {
   status?: PostStatus;
   sort?: PostSort;
 }
-

@@ -10,4 +10,3 @@ export function maskDestination(value: string): string {
   }
   return `${trimmed.slice(0, 3)}****${trimmed.slice(-3)}`;
 }
-

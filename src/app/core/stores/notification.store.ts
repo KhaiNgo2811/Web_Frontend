@@ -56,4 +56,3 @@ export class NotificationStore {
     this.loadingState.set(false);
   }
 }
-

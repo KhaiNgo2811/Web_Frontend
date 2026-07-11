@@ -15,7 +15,9 @@
     <span>{{ price() }}đ</span>
   </section>
 
-  <label class="ant-label" for="application-note">Lời nhắn giới thiệu <span>(không bắt buộc)</span></label>
+  <label class="ant-label" for="application-note"
+    >Lời nhắn giới thiệu <span>(không bắt buộc)</span></label
+  >
   <textarea
     id="application-note"
     class="ant-field"
@@ -28,10 +30,17 @@
 
   <div class="accept-dialog__assurance">
     <span aria-hidden="true">✓</span>
-    <p><strong>Chưa phát sinh thanh toán.</strong> Hai bên có thể trao đổi trước khi xác nhận đơn.</p>
+    <p>
+      <strong>Chưa phát sinh thanh toán.</strong> Hai bên có thể trao đổi trước khi xác nhận đơn.
+    </p>
   </div>
 
-  <button dialog-actions type="button" class="ant-btn ant-btn--secondary" (click)="cancelled.emit()">
+  <button
+    dialog-actions
+    type="button"
+    class="ant-btn ant-btn--secondary"
+    (click)="cancelled.emit()"
+  >
     Để sau
   </button>
   <button dialog-actions type="button" class="ant-btn ant-btn--primary" (click)="submit()">

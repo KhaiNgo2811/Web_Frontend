@@ -104,4 +104,3 @@ export const DEMO_REVIEWS: Review[] = [
     createdAt: '2026-07-08T14:20:00.000Z',
   },
 ];
-

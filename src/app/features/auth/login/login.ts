@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
+import { isAdminRole } from '../../../core/models';
 import { SessionStore } from '../../../core/stores/session.store';
 import { AuthCard } from '../shared/auth-card/auth-card';
 
@@ -50,6 +51,7 @@ export class LoginPage {
 
   private returnUrl(): string {
     const value = this.route.snapshot.queryParamMap.get('returnUrl');
-    return value?.startsWith('/') && !value.startsWith('//') ? value : '/feed';
+    if (value?.startsWith('/') && !value.startsWith('//')) return value;
+    return isAdminRole(this.sessionStore.currentUser()?.role ?? '') ? '/admin' : '/feed';
   }
 }

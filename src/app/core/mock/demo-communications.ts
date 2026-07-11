@@ -27,6 +27,7 @@ export const DEMO_MESSAGES: Message[] = [
     senderId: 'user-demo',
     kind: 'text',
     content: 'Chào Minh, mình đã để chìa khóa ở quầy lễ tân nhé.',
+    hidden: false,
     createdAt: '2026-07-09T07:10:00.000Z',
   },
   {
@@ -36,6 +37,7 @@ export const DEMO_MESSAGES: Message[] = [
     senderId: 'user-minh',
     kind: 'text',
     content: 'Mình nhận được rồi. Sáng mai mình sẽ ghé tưới cây lần đầu.',
+    hidden: true,
     createdAt: '2026-07-09T07:15:00.000Z',
   },
   {
@@ -45,6 +47,7 @@ export const DEMO_MESSAGES: Message[] = [
     senderId: 'user-minh',
     kind: 'image',
     content: 'Ảnh cây sau khi tưới',
+    hidden: false,
     attachment: { url: '/assets/antgo/demo-plants.svg', name: 'cay-ban-cong.svg' },
     createdAt: '2026-07-10T01:10:00.000Z',
   },
@@ -55,6 +58,7 @@ export const DEMO_MESSAGES: Message[] = [
     senderId: 'user-lan',
     kind: 'text',
     content: 'Cảm ơn bạn, buổi học hôm nay rất hữu ích.',
+    hidden: false,
     createdAt: '2026-07-08T14:15:00.000Z',
   },
 ];

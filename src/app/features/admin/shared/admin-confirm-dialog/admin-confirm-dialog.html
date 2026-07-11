@@ -1,0 +1,32 @@
+@if (open) {
+  <button
+    class="admin-confirm__backdrop"
+    type="button"
+    aria-label="Hủy và đóng hộp thoại"
+    (click)="cancel()"
+  ></button>
+  <section
+    #panel
+    class="admin-confirm"
+    role="alertdialog"
+    aria-modal="true"
+    aria-labelledby="admin-confirm-title"
+    aria-describedby="admin-confirm-message"
+  >
+    <h2 id="admin-confirm-title">{{ request.title }}</h2>
+    <p id="admin-confirm-message">{{ request.message }}</p>
+    <div class="admin-confirm__actions">
+      <button #cancelButton class="ant-btn ant-btn--ghost" type="button" (click)="cancel()">
+        {{ request.cancelLabel || 'Hủy' }}
+      </button>
+      <button
+        class="ant-btn"
+        [class.ant-btn--danger]="request.tone === 'danger'"
+        type="button"
+        (click)="confirm()"
+      >
+        {{ request.confirmLabel || 'Xác nhận' }}
+      </button>
+    </div>
+  </section>
+}

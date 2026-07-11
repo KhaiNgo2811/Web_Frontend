@@ -1,0 +1,37 @@
+@if (open) {
+  <button
+    class="admin-drawer__backdrop"
+    type="button"
+    aria-label="Đóng bảng chi tiết"
+    (click)="requestClose()"
+  ></button>
+  <aside
+    #panel
+    class="admin-drawer"
+    [class.admin-drawer--complaint]="width === 'complaint'"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="titleId"
+    [attr.aria-describedby]="description ? descriptionId : null"
+  >
+    <header class="admin-drawer__header">
+      <div>
+        <h2 [id]="titleId">{{ title }}</h2>
+        @if (description) {
+          <p [id]="descriptionId">{{ description }}</p>
+        }
+      </div>
+      <button
+        #closeButton
+        class="admin-drawer__close"
+        type="button"
+        aria-label="Đóng"
+        (click)="requestClose()"
+      >
+        <span aria-hidden="true">×</span>
+      </button>
+    </header>
+    <div class="admin-drawer__body"><ng-content select="[drawer-body]" /></div>
+    <footer class="admin-drawer__footer"><ng-content select="[drawer-footer]" /></footer>
+  </aside>
+}

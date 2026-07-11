@@ -28,6 +28,7 @@ export class LocalPostRepository extends PostRepository {
           post.description.toLocaleLowerCase('vi').includes(query);
         return (
           matchesQuery &&
+          !post.hidden &&
           (!filter.type || post.type === filter.type) &&
           (!filter.category || post.category === filter.category) &&
           (!filter.urgency || post.urgency === filter.urgency) &&
@@ -41,7 +42,9 @@ export class LocalPostRepository extends PostRepository {
   }
 
   getById(id: string): Observable<Post | undefined> {
-    return asObservable(() => this.db.snapshot().posts.find((post) => post.id === id));
+    return asObservable(() =>
+      this.db.snapshot().posts.find((post) => post.id === id && !post.hidden),
+    );
   }
 
   create(authorId: string, input: CreatePostInput): Observable<Post> {
@@ -67,6 +70,7 @@ export class LocalPostRepository extends PostRepository {
           urgency: input.urgency ?? 'normal',
           likedBy: [],
           isPriority: false,
+          hidden: false,
           regionId: author.location.regionId,
           expiresAt: new Date(Date.now() + POST_DURATION_MS).toISOString(),
           createdAt: now,
@@ -118,7 +122,10 @@ export class LocalPostRepository extends PostRepository {
   toggleLike(userId: string, id: string): Observable<Post> {
     return asObservable(() =>
       this.db.transaction((data) => {
-        requireValue(data.users.find((user) => user.id === userId), 'Không tìm thấy người dùng.');
+        requireValue(
+          data.users.find((user) => user.id === userId),
+          'Không tìm thấy người dùng.',
+        );
         const post = requireValue(
           data.posts.find((candidate) => candidate.id === id),
           'Không tìm thấy bài đăng.',
@@ -155,4 +162,3 @@ export class LocalPostRepository extends PostRepository {
     return Date.parse(right.createdAt) - Date.parse(left.createdAt);
   }
 }
-

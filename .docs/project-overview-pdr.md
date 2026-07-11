@@ -1,31 +1,35 @@
 # Project Overview & PDR
 
-_Last updated: 2026-07-01 · Status: scaffold only (no features yet)_
+_Last updated: 2026-07-11 · Status: marketplace MVP plus local admin workspace implemented_
 
 ## What this is
 
 `Web_Frontend` — a client-side Angular Single Page Application (SPA). Working
-theme: "Web_Frontend from zero to hero". Currently a fresh Angular 22 scaffold
-with toolchain configured; no real product features, no backend integration yet.
+theme: "Web_Frontend from zero to hero". It now includes the AntGo marketplace
+MVP and a local-demo trust/support admin workspace. No backend integration is
+configured yet.
 
 ## Current scope (Milestone 1 — DONE)
 
 - Angular 22.x SPA scaffold (standalone bootstrap, no NgModules).
-- Toolchain: ESLint (angular-eslint flat config) + Prettier, SCSS, Bootstrap 5.
-- One placeholder feature route (`/` → `Home`), lazy-loaded.
+- Toolchain: ESLint (angular-eslint flat config) + Prettier, SCSS, Bootstrap 5, Tabler CSS.
+- Marketplace routes for auth, feed, posts, orders, messages, notifications, account, and home.
+- Guarded admin routes for dashboard, inbox, users, moderation, complaints, configuration, and audit.
 - Vitest-based test runner via Angular's built-in unit-test builder.
 
 ## Out of scope right now (YAGNI — add on first real need)
 
 - No backend / API integration — TBD, revisit when backend contract exists.
-- No auth, no state library (Angular Signals only, no NgRx).
+- No external state library (Angular Signals only, no NgRx).
 - No SSR / server-side rendering (no `server.ts`).
-- No `core/` or `shared/` folders yet — added when first cross-cutting concern appears.
+- Server-side auth, durable audit/export storage, payments, finance, payouts, and regional-map operations.
 
 ## Functional requirements
 
-- App boots to `/` and renders the `Home` feature via a lazy `loadComponent`.
-- Shell (`App`) = a routing host (`<router-outlet/>`), nothing else.
+- App boots to `/` and routes into the marketplace or guarded admin workspace.
+- Local repositories provide deterministic demo data through `MockDb`.
+- Admin moderation and complaint records support route-driven drawers and policy-backed local repository commands.
+- Admin workspace is desktop-first, with a narrow collapsed-sidebar fallback so content remains reachable in small browser windows.
 
 ## Non-functional requirements
 
@@ -45,7 +49,7 @@ with toolchain configured; no real product features, no backend integration yet.
 
 ## Dependencies / constraints
 
-- Angular 22.x, TypeScript ~6.0, Bootstrap 5.3.x. See `system-architecture.md`.
+- Angular 22.x, TypeScript ~6.0, Bootstrap 5.3.x, Tabler CSS. See `system-architecture.md`.
 
 ## Version history
 

@@ -29,4 +29,3 @@ export function requireValue<T>(value: T | undefined, message: string): T {
 
   return value;
 }
-

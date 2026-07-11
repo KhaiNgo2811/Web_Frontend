@@ -62,13 +62,20 @@ export class LocalOrderRepository extends OrderRepository {
           data.orders.find((candidate) => candidate.id === input.orderId),
           'Không tìm thấy đơn hàng.',
         );
-        if (order.status !== 'completed' || ![order.customerId, order.providerId].includes(input.actorId)) {
+        if (
+          order.status !== 'completed' ||
+          ![order.customerId, order.providerId].includes(input.actorId)
+        ) {
           throw new RepositoryError('Đơn hàng chưa thể đánh giá.');
         }
         if (input.stars < 1 || input.stars > 5) {
           throw new RepositoryError('Số sao phải từ 1 đến 5.');
         }
-        if (data.reviews.some((review) => review.orderId === order.id && review.raterId === input.actorId)) {
+        if (
+          data.reviews.some(
+            (review) => review.orderId === order.id && review.raterId === input.actorId,
+          )
+        ) {
           throw new RepositoryError('Bạn đã đánh giá đơn hàng này.');
         }
 
@@ -103,9 +110,10 @@ export class LocalOrderRepository extends OrderRepository {
     return asObservable(() => {
       const reviews = this.db.snapshot().reviews;
       return userId
-        ? reviews.filter((review) => review.raterId === userId || review.rateeId === userId)
-        : reviews;
+        ? reviews.filter(
+            (review) => !review.hidden && (review.raterId === userId || review.rateeId === userId),
+          )
+        : reviews.filter((review) => !review.hidden);
     });
   }
 }
-

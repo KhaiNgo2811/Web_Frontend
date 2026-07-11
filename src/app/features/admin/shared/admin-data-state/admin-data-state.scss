@@ -1,0 +1,35 @@
+.admin-data-state {
+  display: grid;
+  min-height: 180px;
+  place-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+}
+.admin-data-state p {
+  margin: 0;
+  color: var(--ant-muted);
+}
+.admin-data-state__skeleton {
+  width: min(560px, 70vw);
+  height: 18px;
+  background: linear-gradient(90deg, #eee6df 25%, #faf7f4 50%, #eee6df 75%);
+  background-size: 200% 100%;
+  animation: admin-skeleton 1.4s infinite;
+}
+.admin-data-state__skeleton:nth-child(2) {
+  width: min(460px, 60vw);
+}
+.admin-data-state__skeleton:nth-child(3) {
+  width: min(520px, 65vw);
+}
+@keyframes admin-skeleton {
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-data-state__skeleton {
+    animation: none;
+  }
+}

@@ -69,8 +69,8 @@ export class LocalAuthRepository extends AuthRepository {
 
   beginRegistration(draft: RegistrationDraft): Observable<AuthChallenge> {
     return asObservable(() => {
-      const identifiers = [draft.phone, draft.email].filter(
-        (value): value is string => Boolean(value),
+      const identifiers = [draft.phone, draft.email].filter((value): value is string =>
+        Boolean(value),
       );
       const normalized = identifiers.map(normalizeIdentifier);
       const existing = this.db
@@ -130,8 +130,8 @@ export class LocalAuthRepository extends AuthRepository {
         data.authAccounts.push({
           id: createEntityId('auth'),
           userId: user.id,
-          identifiers: [draft.phone, draft.email].filter(
-            (value): value is string => Boolean(value),
+          identifiers: [draft.phone, draft.email].filter((value): value is string =>
+            Boolean(value),
           ),
           password: draft.password,
           provider: 'password',
