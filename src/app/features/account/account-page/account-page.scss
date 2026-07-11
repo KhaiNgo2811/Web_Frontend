@@ -1,137 +1,257 @@
-.account {
-  min-height: 850px;
-  padding-block: 55px 80px;
+.account-page {
+  padding: 32px 0 64px;
+  max-width: var(--ant-content);
+  margin: 0 auto;
 }
 
-header {
-  margin-bottom: 25px;
+// Header Banner
+.account-header {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #f97316 70%, #ea580c 100%);
+  border-radius: var(--ant-radius-xl);
+  padding: 32px 40px;
+  margin-bottom: 24px;
+  color: #fff;
 }
 
-h1 {
-  margin: 3px 0 0;
-  font-size: 40px;
+.header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
 }
 
-header p,
-.account-form p {
-  margin: 0;
-  color: var(--ant-muted);
-  font-size: 12px;
-}
-
-.account-grid {
-  display: grid;
-  grid-template-columns: 330px 1fr;
-  gap: 22px;
-}
-
-.profile-card {
-  padding: 30px 24px;
-  text-align: center;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
 .avatar {
-  display: grid;
-  width: 82px;
-  height: 82px;
-  place-items: center;
-  margin: 0 auto 15px;
-  border: 5px solid var(--ant-orange-soft);
-  border-radius: 50%;
-  color: #fff;
-  background: var(--ant-gradient);
-  font-size: 21px;
-  font-weight: 800;
-}
-
-.profile-card h2,
-.profile-card p {
-  margin: 0;
-}
-
-.profile-card h2 {
-  font-size: 23px;
-}
-
-.profile-card p {
-  margin-bottom: 10px;
-  color: var(--ant-muted);
-  font-size: 12px;
-}
-
-.reputation {
-  display: grid;
-  justify-items: center;
-  margin-top: 25px;
-  border-block: 1px solid var(--ant-border);
-  padding: 22px 0;
-}
-
-.reputation strong {
-  margin-top: 5px;
-  font-family: 'Baloo 2', sans-serif;
-  font-size: 30px;
-}
-
-.reputation span {
-  color: var(--ant-muted);
-  font-size: 10px;
-}
-
-.profile-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 20px;
-}
-
-.profile-stats span {
-  color: var(--ant-muted);
-  font-size: 9px;
-}
-
-.profile-stats strong {
-  display: block;
-  color: var(--ant-ink);
-  font-size: 16px;
-}
-
-.account-form {
-  padding: 28px 32px;
-}
-
-.form-heading,
-.security {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  flex-shrink: 0;
 }
 
-.form-heading {
-  border-bottom: 1px solid var(--ant-border);
-  padding-bottom: 20px;
+.header-info {
+  .user-name {
+    margin: 0 0 4px;
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    font-family: 'Baloo 2', sans-serif;
+  }
+
+  .user-location {
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .user-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+
+    .rating-score {
+      font-weight: 700;
+    }
+
+    .star {
+      color: #fbbf24;
+    }
+
+    .rating-count {
+      color: rgba(255, 255, 255, 0.85);
+    }
+  }
 }
 
-.form-heading h2 {
-  margin: 0;
-  font-size: 24px;
+.btn-edit {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: var(--ant-radius-md);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 }
 
-.form-grid {
+.header-stats {
+  display: flex;
+  gap: 64px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 800;
+    font-family: 'Baloo 2', sans-serif;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+// Cards Grid
+.cards-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
-  padding-block: 26px;
 }
 
-.full {
-  grid-column: 1 / -1;
+.card {
+  background: var(--ant-surface);
+  border-radius: var(--ant-radius-lg);
+  padding: 24px;
+  border: 1px solid var(--ant-border);
 }
 
-.security {
-  border-top: 1px solid var(--ant-border);
-  padding-top: 22px;
+.card-title {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 800;
+  font-family: 'Baloo 2', sans-serif;
+  color: var(--ant-ink);
 }
 
-.security strong {
-  font-size: 13px;
+.card-divider {
+  height: 1px;
+  background: var(--ant-border);
+  margin-bottom: 8px;
+}
+
+// Menu List
+.menu-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--ant-border);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.menu-item--danger {
+  .menu-label--danger {
+    color: var(--ant-red);
+    font-weight: 600;
+  }
+
+  .menu-icon--danger {
+    color: var(--ant-red);
+    background: var(--ant-red-soft);
+  }
+}
+
+.menu-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--ant-orange-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ant-orange);
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.menu-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menu-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ant-ink);
+}
+
+.menu-desc {
+  font-size: 12px;
+  color: var(--ant-muted);
+}
+
+.menu-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ant-ink);
+  margin-left: auto;
+}
+
+.text-green {
+  color: var(--ant-green);
+}
+
+.text-orange {
+  color: var(--ant-orange);
+}
+
+.menu-arrow {
+  font-size: 20px;
+  color: var(--ant-subtle);
+  margin-left: auto;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-top {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header-stats {
+    gap: 32px;
+  }
+
+  .account-header {
+    padding: 24px;
+  }
 }

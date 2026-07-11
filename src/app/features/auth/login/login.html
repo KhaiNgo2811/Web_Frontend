@@ -1,41 +1,98 @@
 <app-auth-card
-  title="Chào mừng trở lại!"
-  subtitle="Đăng nhập để tiếp tục kết nối và san sẻ cùng cộng đồng AntGo."
+  title="Đăng nhập"
+  subtitle="Chào mừng trở lại! Đăng nhập để tiếp tục."
 >
   <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <!-- Google Button First -->
+    <button
+      class="ant-btn ant-btn--secondary google-button"
+      type="button"
+      [disabled]="googleLoading()"
+      (click)="loginWithGoogle()"
+    >
+      @if (googleLoading()) {
+        <span class="spinner"></span>
+      } @else {
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="#4285f4"
+            d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.3c1.9-1.8 2.9-4.4 2.9-7.4Z"
+          />
+          <path
+            fill="#34a853"
+            d="M12 22c2.7 0 5-.9 6.7-2.4l-3.3-2.5c-.9.6-2.1 1-3.4 1a5.9 5.9 0 0 1-5.5-4.1H3.1v2.6A10 10 0 0 0 12 22Z"
+          />
+          <path fill="#fbbc05" d="M6.5 14a6 6 0 0 1 0-3.9V7.5H3.1a10 10 0 0 0 0 9.1L6.5 14Z" />
+          <path
+            fill="#ea4335"
+            d="M12 6a5.4 5.4 0 0 1 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 12 2a10 10 0 0 0-8.9 5.5l3.4 2.6A5.9 5.9 0 0 1 12 6Z"
+          />
+        </svg>
+      }
+      {{ googleLoading() ? 'Đang kết nối Google...' : 'Tiếp tục với Google' }}
+    </button>
+
+    <div class="auth-divider"><span>hoặc</span></div>
+
+    <!-- Phone/Email Field -->
     <div class="auth-group">
-      <label class="ant-label" for="login-identifier">Số điện thoại hoặc email</label>
-      <input
-        class="ant-field"
-        id="login-identifier"
-        type="text"
-        formControlName="identifier"
-        autocomplete="username"
-        placeholder="Nhập số điện thoại hoặc email"
-      />
+      <label class="ant-label" for="login-identifier">Số điện thoại hoặc Email</label>
+      <div class="auth-field-wrap auth-field-wrap--icon">
+        <span class="auth-field-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+        </span>
+        <input
+          class="ant-field"
+          id="login-identifier"
+          type="text"
+          formControlName="identifier"
+          autocomplete="username"
+          placeholder="0912 345 678"
+        />
+      </div>
       @if (form.controls.identifier.touched && form.controls.identifier.invalid) {
         <p class="ant-error">Vui lòng nhập số điện thoại hoặc email.</p>
       }
     </div>
 
+    <!-- Password Field -->
     <div class="auth-group">
-      <label class="ant-label" for="login-password">Mật khẩu</label>
-      <div class="auth-field-wrap">
+      <div class="auth-label-row">
+        <label class="ant-label" for="login-password">Mật khẩu</label>
+        <a class="auth-link" routerLink="/auth/forgot-password">Quên mật khẩu?</a>
+      </div>
+      <div class="auth-field-wrap auth-field-wrap--icon">
+        <span class="auth-field-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+        </span>
         <input
           class="ant-field"
           id="login-password"
           [type]="showPassword() ? 'text' : 'password'"
           formControlName="password"
           autocomplete="current-password"
-          placeholder="Nhập mật khẩu"
+          placeholder="••••••••"
         />
         <button
-          class="auth-field-action"
+          class="auth-field-action auth-field-action--eye"
           type="button"
           [attr.aria-label]="showPassword() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
           (click)="showPassword.update((visible) => !visible)"
         >
-          {{ showPassword() ? 'Ẩn' : 'Hiện' }}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            @if (showPassword()) {
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            } @else {
+              <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+              <line x1="1" y1="1" x2="23" y2="23"/>
+            }
+          </svg>
         </button>
       </div>
       @if (form.controls.password.touched && form.controls.password.invalid) {
@@ -43,11 +100,12 @@
       }
     </div>
 
+    <!-- Remember Me -->
     <div class="auth-row">
-      <label class="auth-check"
-        ><input type="checkbox" formControlName="remember" /> Ghi nhớ đăng nhập</label
-      >
-      <a class="auth-link" routerLink="/auth/forgot-password">Quên mật khẩu?</a>
+      <label class="auth-check">
+        <input type="checkbox" formControlName="remember" />
+        Ghi nhớ đăng nhập
+      </label>
     </div>
 
     @if (errorMessage()) {
@@ -55,30 +113,8 @@
     }
 
     <button class="ant-btn ant-btn--primary" type="submit">Đăng nhập</button>
-    <div class="auth-divider"><span>Hoặc tiếp tục với</span></div>
-    <button
-      class="ant-btn ant-btn--secondary google-button"
-      type="button"
-      (click)="loginWithGoogle()"
-    >
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          fill="#4285f4"
-          d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.3c1.9-1.8 2.9-4.4 2.9-7.4Z"
-        />
-        <path
-          fill="#34a853"
-          d="M12 22c2.7 0 5-.9 6.7-2.4l-3.3-2.5c-.9.6-2.1 1-3.4 1a5.9 5.9 0 0 1-5.5-4.1H3.1v2.6A10 10 0 0 0 12 22Z"
-        />
-        <path fill="#fbbc05" d="M6.5 14a6 6 0 0 1 0-3.9V7.5H3.1a10 10 0 0 0 0 9.1L6.5 14Z" />
-        <path
-          fill="#ea4335"
-          d="M12 6a5.4 5.4 0 0 1 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 12 2a10 10 0 0 0-8.9 5.5l3.4 2.6A5.9 5.9 0 0 1 12 6Z"
-        />
-      </svg>
-      Đăng nhập với Google
-    </button>
   </form>
 
-  <p class="auth-footer">Chưa có tài khoản? <a routerLink="/auth/register">Đăng ký ngay</a></p>
+  <p class="auth-footer">Chưa có tài khoản? <a routerLink="/auth/register">Đăng ký ngay →</a></p>
+  <p class="auth-copyright">© 2026 AntGo</p>
 </app-auth-card>
