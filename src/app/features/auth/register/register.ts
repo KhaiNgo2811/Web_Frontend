@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -9,8 +9,8 @@ import {
 import { Router, RouterLink } from '@angular/router';
 
 import { SessionStore } from '../../../core/stores/session.store';
-import { AuthCard } from '../shared/auth-card/auth-card';
-import { AuthSuccess } from '../shared/auth-success/auth-success';
+import { Stepper } from '../shared/stepper/stepper';
+import { BrandLogo } from '../../../shared/brand-logo/brand-logo';
 
 type RegisterStep = 'details' | 'verify' | 'success';
 
@@ -22,12 +22,12 @@ function matchingPasswords(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-register-page',
-  imports: [AuthCard, AuthSuccess, ReactiveFormsModule, RouterLink],
+  imports: [Stepper, BrandLogo, ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
   styleUrl: './register.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RegisterPage {
+export class RegisterPage implements OnInit, OnDestroy {
   private readonly formBuilder = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly sessionStore = inject(SessionStore);
@@ -36,14 +36,37 @@ export class RegisterPage {
   readonly showPassword = signal(false);
   readonly otpError = signal('');
   readonly resendMessage = signal('');
+  readonly resendCountdown = signal(0);
+  readonly registeredPhone = signal('');
+  readonly registeredName = signal('');
   readonly otpSlots = [0, 1, 2, 3, 4, 5];
+
+  readonly stepperSteps = [
+    { label: 'Thông tin' },
+    { label: 'Xác minh' },
+    { label: 'Hoàn tất' },
+  ];
+
+  readonly areas = [
+    { value: 'north', label: 'Khu vực phía Bắc' },
+    { value: 'central', label: 'Khu vực miền Trung' },
+    { value: 'south', label: 'Khu vực phía Nam' },
+  ];
+
+  get currentStep(): number {
+    if (this.step === 'verify') return 2;
+    if (this.step === 'success') return 3;
+    return 1;
+  }
+
   readonly detailsForm = this.formBuilder.nonNullable.group(
     {
       displayName: ['', [Validators.required, Validators.minLength(2)]],
       phone: ['', [Validators.required, Validators.pattern(/^(0|\+84)\d{9,10}$/)]],
       email: ['', Validators.email],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
       passwordConfirmation: ['', Validators.required],
+      area: [''],
       acceptTerms: [false, Validators.requiredTrue],
     },
     { validators: matchingPasswords },
@@ -52,6 +75,18 @@ export class RegisterPage {
     Validators.required,
     Validators.pattern(/^\d{6}$/),
   ]);
+
+  private countdownInterval: ReturnType<typeof setInterval> | null = null;
+
+  ngOnInit(): void {
+    // Phone and name are set during submitDetails()
+  }
+
+  ngOnDestroy(): void {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+  }
 
   submitDetails(): void {
     if (this.detailsForm.invalid) {
@@ -66,6 +101,9 @@ export class RegisterPage {
       email: email.trim(),
       password,
     });
+    this.registeredPhone.set(phone.trim());
+    this.registeredName.set(displayName.trim());
+    this.startResendCountdown();
     void this.router.navigateByUrl('/auth/register/verify');
   }
 
@@ -82,7 +120,7 @@ export class RegisterPage {
     if (this.otpControl.invalid) return;
 
     if (!this.sessionStore.verifyOtp(this.otpControl.value)) {
-      this.otpError.set('Mã xác thực chưa đúng. Dùng 000000 cho bản demo.');
+      this.otpError.set('Mã xác thực chưa đúng. Dùng 123456 cho bản demo.');
       return;
     }
     void this.router.navigateByUrl('/auth/register/success');
@@ -90,10 +128,37 @@ export class RegisterPage {
 
   resendOtp(): void {
     this.resendMessage.set('Mã xác thực mới đã được gửi.');
+    this.startResendCountdown();
+  }
+
+  goBack(): void {
+    void this.router.navigateByUrl('/auth/register');
+  }
+
+  goHome(): void {
+    void this.router.navigateByUrl('/feed');
   }
 
   otpDigit(index: number): string {
     return this.otpControl.value.at(index) ?? '';
+  }
+
+  private startResendCountdown(): void {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+    }
+    this.resendCountdown.set(48);
+    this.countdownInterval = setInterval(() => {
+      const current = this.resendCountdown();
+      if (current <= 1) {
+        this.resendCountdown.set(0);
+        if (this.countdownInterval) {
+          clearInterval(this.countdownInterval);
+        }
+      } else {
+        this.resendCountdown.set(current - 1);
+      }
+    }, 1000);
   }
 
   private resolveStep(url: string): RegisterStep {

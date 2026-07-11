@@ -1,22 +1,22 @@
 :host {
   display: block;
-  width: min(100%, 476px);
+  width: min(100%, 400px);
 }
 
 .auth-card {
-  padding: 38px 42px 34px;
+  padding: 32px 28px 28px;
   border-radius: var(--ant-radius-xl);
   box-shadow: var(--ant-shadow-md);
 }
 
 .auth-card__header {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
   text-align: center;
 }
 
 app-brand-logo {
   justify-content: center;
-  margin-bottom: 22px;
+  margin-bottom: 16px;
 }
 
 .auth-card__eyebrow {
@@ -31,14 +31,14 @@ app-brand-logo {
 h1 {
   margin: 0;
   color: var(--ant-ink);
-  font-size: 31px;
-  letter-spacing: -0.6px;
-  line-height: 1.16;
+  font-size: 24px;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
 }
 
 .auth-card__subtitle {
-  margin: 9px auto 0;
+  margin: 8px auto 0;
   color: var(--ant-muted);
   font-size: 13px;
-  line-height: 1.65;
+  line-height: 1.5;
 }

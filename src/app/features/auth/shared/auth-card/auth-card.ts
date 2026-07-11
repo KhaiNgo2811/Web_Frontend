@@ -10,7 +10,7 @@ import { BrandLogo } from '../../../../shared/brand-logo/brand-logo';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AuthCard {
-  readonly eyebrow = input('Kết nối cộng đồng, san sẻ mỗi ngày');
+  readonly eyebrow = input<string>();
   readonly title = input.required<string>();
   readonly subtitle = input<string>();
 }
