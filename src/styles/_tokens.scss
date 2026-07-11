@@ -1,0 +1,38 @@
+:root {
+  --ant-bg: #f4efe8;
+  --ant-surface: #ffffff;
+  --ant-surface-soft: #fffaf5;
+  --ant-ink: #1c1008;
+  --ant-ink-soft: #5a3e2b;
+  --ant-muted: #7a5c4a;
+  --ant-subtle: #b79a80;
+  --ant-border: #ede6da;
+  --ant-border-strong: #d9ccbe;
+  --ant-orange: #f97316;
+  --ant-orange-deep: #ea580c;
+  --ant-orange-soft: #fff1e8;
+  --ant-green: #16835f;
+  --ant-green-soft: #e9f8f1;
+  --ant-red: #d94841;
+  --ant-red-soft: #fff0ef;
+  --ant-blue: #3274c5;
+  --ant-blue-soft: #edf5ff;
+  --ant-yellow: #b66a00;
+  --ant-yellow-soft: #fff6d9;
+  --ant-gradient: linear-gradient(140deg, #ff8a3d 0%, #ea580c 100%);
+  --ant-shadow-sm: 0 4px 14px rgb(28 16 8 / 7%);
+  --ant-shadow-md: 0 12px 32px rgb(28 16 8 / 10%);
+  --ant-shadow-orange: 0 8px 18px rgb(234 88 12 / 28%);
+  --ant-radius-sm: 8px;
+  --ant-radius-md: 12px;
+  --ant-radius-lg: 18px;
+  --ant-radius-xl: 24px;
+  --ant-content: 1192px;
+  --ant-nav-content: 1240px;
+  --ant-transition: 160ms ease;
+  --bs-body-font-family: 'Be Vietnam Pro', sans-serif;
+  --bs-body-color: var(--ant-ink);
+  --bs-body-bg: var(--ant-bg);
+  --bs-primary: var(--ant-orange);
+  --bs-primary-rgb: 249, 115, 22;
+}

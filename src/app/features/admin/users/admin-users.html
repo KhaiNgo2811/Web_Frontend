@@ -1,0 +1,249 @@
+<section class="admin-page" aria-labelledby="users-heading">
+  <div class="dashboard-heading">
+    <div>
+      <p class="ant-kicker">Quản lý truy cập</p>
+      <h2 id="users-heading">Tài khoản người dùng</h2>
+      <p class="admin-note">{{ usersStore.users().length }} kết quả</p>
+    </div>
+    <button
+      class="ant-btn ant-btn--secondary"
+      type="button"
+      title="Tải lại danh sách"
+      aria-label="Tải lại danh sách người dùng"
+      [disabled]="usersStore.loading()"
+      (click)="refresh()"
+    >
+      Làm mới
+    </button>
+  </div>
+
+  <div class="admin-toolbar" aria-label="Bộ lọc người dùng">
+    <label>
+      <span>Tìm kiếm</span>
+      <input
+        class="ant-field"
+        type="search"
+        placeholder="Tên, email, số điện thoại"
+        [value]="usersStore.filter().search || ''"
+        (input)="updateSearch($event)"
+      />
+    </label>
+    <label>
+      <span>Trạng thái</span>
+      <select
+        class="ant-field"
+        [value]="usersStore.filter().status || 'all'"
+        (change)="updateStatus($event)"
+      >
+        <option value="all">Tất cả trạng thái</option>
+        <option value="active">Đang hoạt động</option>
+        <option value="locked">Đã khóa</option>
+      </select>
+    </label>
+    <label>
+      <span>Vai trò</span>
+      <select
+        class="ant-field"
+        [value]="usersStore.filter().role || 'all'"
+        (change)="updateRole($event)"
+      >
+        <option value="all">Tất cả vai trò</option>
+        <option value="user">Người dùng</option>
+        <option value="support_agent">Nhân viên hỗ trợ</option>
+        <option value="moderator">Kiểm duyệt viên</option>
+        <option value="complaint_reviewer">Nhân viên duyệt khiếu nại</option>
+        <option value="super_admin">Siêu quản trị viên</option>
+      </select>
+    </label>
+    <label>
+      <span>Sắp xếp</span>
+      <select
+        class="ant-field"
+        [value]="usersStore.filter().sort || 'newest'"
+        (change)="updateSort($event)"
+      >
+        <option value="newest">Mới nhất</option>
+        <option value="name">Tên</option>
+        <option value="tokens">Số dư token</option>
+        <option value="completed">Giao dịch hoàn thành</option>
+      </select>
+    </label>
+    @if (activeFilterCount()) {
+      <span class="filter-count" role="status">{{ activeFilterCount() }} bộ lọc đang dùng</span>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="clearFilters()">
+        Xóa bộ lọc
+      </button>
+    }
+  </div>
+
+  @if (usersStore.error() && !usersStore.selectedUser()) {
+    <div class="state-message state-message--error" role="alert">
+      <strong>Không thể tải danh sách người dùng.</strong>
+      <span>{{ usersStore.error() }}</span>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="refresh()">Thử lại</button>
+    </div>
+  } @else if (usersStore.loading() && !usersStore.users().length) {
+    <div class="state-message" role="status" aria-live="polite">
+      Đang tải danh sách người dùng...
+    </div>
+  } @else {
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th scope="col" [attr.aria-sort]="sortState('name')">
+              <button class="sort-button" type="button" (click)="setSort('name')">Tài khoản</button>
+            </th>
+            <th scope="col">Khu vực</th>
+            <th scope="col">Vai trò</th>
+            <th scope="col">Uy tín</th>
+            <th scope="col" [attr.aria-sort]="sortState('tokens')">
+              <button class="sort-button" type="button" (click)="setSort('tokens')">Token</button>
+            </th>
+            <th scope="col">Trạng thái</th>
+            <th scope="col"><span class="visually-hidden">Thao tác</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of pagedUsers(); track user.id) {
+            <tr>
+              <td>
+                <strong>{{ user.displayName }}</strong
+                ><br />
+                <span>{{ user.email || user.phone }}</span>
+              </td>
+              <td>{{ user.location.building }}</td>
+              <td>{{ roleLabel(user.role) }}</td>
+              <td>{{ user.reputationScore ?? 'Mới' }}</td>
+              <td>{{ user.tokenBalance }}</td>
+              <td>
+                <span class="admin-pill" [class.admin-pill--danger]="user.status === 'locked'">
+                  {{ statusLabel(user.status) }}
+                </span>
+              </td>
+              <td>
+                <button
+                  class="ant-btn ant-btn--secondary detail-button"
+                  type="button"
+                  [attr.aria-label]="'Xem chi tiết tài khoản ' + user.displayName"
+                  (click)="openUser(user)"
+                >
+                  Chi tiết
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                <strong>Không tìm thấy người dùng</strong>
+                <span>Hãy thay đổi hoặc xóa bộ lọc để xem thêm kết quả.</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (usersStore.users().length) {
+      <nav class="table-pagination" aria-label="Phân trang danh sách người dùng">
+        <span>Trang {{ page() }} / {{ pageCount() }}</span>
+        <button
+          class="ant-btn ant-btn--secondary"
+          type="button"
+          [disabled]="page() === 1"
+          (click)="goToPage(page() - 1)"
+        >
+          Trang trước
+        </button>
+        <button
+          class="ant-btn ant-btn--secondary"
+          type="button"
+          [disabled]="page() === pageCount()"
+          (click)="goToPage(page() + 1)"
+        >
+          Trang sau
+        </button>
+      </nav>
+    }
+  }
+</section>
+
+<app-admin-drawer
+  [open]="!!usersStore.selectedUser()"
+  width="moderation"
+  title="Chi tiết tài khoản"
+  [description]="usersStore.selectedUser()?.displayName || ''"
+  (closed)="closeDrawer()"
+>
+  <div drawer-body>
+    @if (usersStore.selectedUser(); as selected) {
+      <p class="admin-note">{{ selected.email || selected.phone }}</p>
+      <dl class="account-facts">
+        <div>
+          <dt>Bài đăng</dt>
+          <dd>{{ selected.postsCount }}</dd>
+        </div>
+        <div>
+          <dt>Đơn hàng</dt>
+          <dd>{{ selected.ordersCount }}</dd>
+        </div>
+        <div>
+          <dt>Đánh giá</dt>
+          <dd>{{ selected.reviewsCount }}</dd>
+        </div>
+        <div>
+          <dt>Token</dt>
+          <dd>{{ selected.tokenBalance }}</dd>
+        </div>
+      </dl>
+
+      @if (canRestrict()) {
+        <label class="reason-field">
+          <span>Lý do thao tác <span aria-hidden="true">*</span></span>
+          <textarea
+            class="ant-field"
+            [class.is-invalid]="reasonError()"
+            [value]="actionReason()"
+            aria-describedby="account-reason-error"
+            (input)="actionReason.set(valueOf($event)); reasonError.set(null)"
+          ></textarea>
+        </label>
+        @if (reasonError()) {
+          <p id="account-reason-error" class="ant-error" role="alert">{{ reasonError() }}</p>
+        }
+        <button
+          class="ant-btn ant-btn--danger"
+          type="button"
+          (click)="toggleStatus(selected)"
+          [disabled]="
+            usersStore.loading() ||
+            (selected.id === usersStore.currentAdminId() && selected.status === 'active')
+          "
+        >
+          {{ selected.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản' }}
+        </button>
+      }
+
+      @if (usersStore.error()) {
+        <p class="ant-error" role="alert">{{ usersStore.error() }}</p>
+      }
+      <h3>Lịch sử an toàn</h3>
+      @for (activity of selected.activity; track activity.id) {
+        <div class="history-entry">
+          <strong>{{ actionLabel(activity.action) }}</strong>
+          <span>{{ activity.reason || 'Không có ghi chú' }}</span>
+          <small>{{ activity.createdAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+      } @empty {
+        <p class="admin-note">Không có thao tác hạn chế trước đó.</p>
+      }
+    }
+  </div>
+</app-admin-drawer>
+
+<app-admin-confirm-dialog
+  [open]="!!pendingStatusUser()"
+  [request]="confirmationRequest()"
+  (confirmed)="confirmStatusChange()"
+  (cancelled)="cancelStatusChange()"
+/>

@@ -1,0 +1,314 @@
+<section class="admin-page">
+  <div class="dashboard-heading">
+    <div>
+      <p class="ant-kicker">Vận hành toàn hệ thống</p>
+      <h2>Bảng điều phối</h2>
+      @if (dashboard.summary(); as summary) {
+        <p class="admin-note">{{ riskSummary(summary) }}</p>
+      }
+    </div>
+    <div class="dashboard-commands">
+      <div class="admin-segmented" role="group" aria-label="Khoảng thời gian">
+        @for (range of ranges; track range) {
+          <button
+            type="button"
+            [class.active]="dashboard.rangeDays() === range"
+            [attr.aria-pressed]="dashboard.rangeDays() === range"
+            (click)="setRange(range)"
+          >
+            {{ range }} ngày
+          </button>
+        }
+      </div>
+      <button
+        class="ant-btn ant-btn--secondary"
+        type="button"
+        [disabled]="dashboard.loading()"
+        (click)="refresh()"
+      >
+        Làm mới
+      </button>
+    </div>
+  </div>
+
+  @if (dashboard.summary(); as summary) {
+    <div class="dashboard-kpis">
+      @for (kpi of summary.kpis; track kpi.key) {
+        <a
+          class="card admin-metric dashboard-kpi"
+          [routerLink]="kpiRoute(kpi)"
+          [queryParams]="kpiQuery(kpi)"
+          [attr.aria-label]="kpi.label + ': ' + kpi.value + '. Mở hàng đợi liên quan'"
+        >
+          <span>{{ kpi.label }}</span>
+          <strong>{{ kpi.value }}</strong>
+          <small [class.negative]="kpi.direction === 'down'">
+            {{ roundedChange(kpi) }}% so với kỳ trước
+          </small>
+          <svg viewBox="0 0 100 36" role="img">
+            <title>Xu hướng {{ kpi.label }}</title>
+            <polyline fill="none" [attr.points]="sparkline(kpi)" />
+          </svg>
+          <em>Mở hàng đợi</em>
+        </a>
+      } @empty {
+        <p class="admin-note">Không có chỉ số vận hành.</p>
+      }
+    </div>
+
+    <div class="dashboard-cockpit">
+      <section class="card admin-panel dashboard-chart">
+        <div class="dashboard-panel-heading">
+          <div>
+            <h3>Nhịp hoạt động</h3>
+            <p class="admin-note">Tài khoản, bài đăng và đơn hoàn thành theo kỳ.</p>
+          </div>
+          <div class="admin-segmented" role="group" aria-label="Chỉ số biểu đồ">
+            @for (metric of metrics; track metric.key) {
+              <button
+                type="button"
+                [class.active]="selectedMetric() === metric.key"
+                [attr.aria-pressed]="selectedMetric() === metric.key"
+                (click)="selectedMetric.set(metric.key)"
+              >
+                {{ metric.label }}
+              </button>
+            }
+          </div>
+        </div>
+        @if (summary.activityTrend.length) {
+          <svg
+            viewBox="0 0 100 68"
+            preserveAspectRatio="none"
+            role="img"
+            [attr.aria-label]="selectedMetricSummary()"
+          >
+            <title>Hoạt động {{ summary.rangeDays }} ngày</title>
+            <polyline
+              [class]="selectedMetric()"
+              [attr.points]="activitySeries(summary.activityTrend, selectedMetric())"
+            />
+          </svg>
+          <p class="chart-summary" aria-live="polite">{{ selectedMetricSummary() }}</p>
+        } @else {
+          <p class="admin-note">Chưa có hoạt động trong khoảng thời gian này.</p>
+        }
+      </section>
+
+      <section class="card admin-panel">
+        <div class="dashboard-panel-heading">
+          <h3>Rủi ro SLA</h3>
+          <a routerLink="/admin/inbox" [queryParams]="{ view: 'breach_risk' }">Mở rủi ro</a>
+        </div>
+        <div
+          class="progress stacked-meter"
+          role="img"
+          [attr.aria-label]="
+            'SLA: ' +
+            summary.complaintSla.withinSla +
+            ' trong hạn, ' +
+            summary.complaintSla.dueSoon +
+            ' sắp hạn, ' +
+            summary.complaintSla.overdue +
+            ' quá hạn'
+          "
+        >
+          <span class="progress-bar ok" [style.width.%]="slaPercent(summary, 'withinSla')"></span>
+          <span class="progress-bar warn" [style.width.%]="slaPercent(summary, 'dueSoon')"></span>
+          <span class="progress-bar bad" [style.width.%]="slaPercent(summary, 'overdue')"></span>
+        </div>
+        <div class="risk-grid">
+          <span
+            ><strong>{{ summary.complaintSla.withinSla }}</strong
+            >Trong hạn</span
+          >
+          <span
+            ><strong>{{ summary.complaintSla.dueSoon }}</strong
+            >Sắp hạn</span
+          >
+          <span
+            ><strong>{{ summary.complaintSla.overdue }}</strong
+            >Quá hạn</span
+          >
+        </div>
+      </section>
+
+      <section class="card admin-panel">
+        <h3>Sức khỏe chợ dịch vụ</h3>
+        <div class="mini-stat-grid">
+          @for (item of healthItems(summary); track item.label) {
+            <div>
+              <strong>{{ item.value }}</strong>
+              <span>{{ item.label }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="card admin-panel">
+        <h3>Phân công xử lý</h3>
+        <div class="mini-stat-grid">
+          @for (item of ownershipItems(summary); track item.label) {
+            <div>
+              <strong>{{ item.value }}</strong>
+              <span>{{ item.label }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
+
+    <div class="dashboard-workflows">
+      <section class="card admin-panel">
+        <div class="dashboard-panel-heading">
+          <h3>Luồng khiếu nại</h3>
+          <a routerLink="/admin/complaints">Mở hồ sơ</a>
+        </div>
+        @for (stage of summary.complaintPipeline; track stage.stage) {
+          <a
+            class="pipeline-row"
+            routerLink="/admin/complaints"
+            [queryParams]="{ stage: stage.stage }"
+          >
+            <span>{{ label(stage.stage) }}</span>
+            <strong>{{ stage.total }}</strong>
+            <div
+              class="progress progress-line"
+              role="progressbar"
+              [attr.aria-label]="'Tỉ lệ ' + label(stage.stage)"
+              [attr.aria-valuenow]="stage.percent"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <i class="progress-bar" [style.width.%]="stage.percent"></i>
+            </div>
+            <small>{{ stage.overdue }} quá hạn</small>
+          </a>
+        }
+      </section>
+
+      <section class="card admin-panel">
+        <div class="dashboard-panel-heading">
+          <h3>Ma trận kiểm duyệt</h3>
+          <a routerLink="/admin/moderation" [queryParams]="{ status: 'pending' }">Mở báo cáo</a>
+        </div>
+        @for (status of summary.moderationPipeline; track status.status) {
+          <a
+            class="moderation-matrix"
+            routerLink="/admin/moderation"
+            [queryParams]="{ status: status.status }"
+          >
+            <span>{{ label(status.status) }}</span>
+            <strong>{{ status.total }}</strong>
+            <div>
+              @for (target of status.targets; track target.targetType) {
+                <small>{{ label(target.targetType) }}: {{ target.count }}</small>
+              }
+            </div>
+          </a>
+        }
+      </section>
+
+      <section class="card admin-panel">
+        <h3>Khu vực đang nóng</h3>
+        @for (region of summary.regionalMix; track region.regionId) {
+          <div class="mix-row">
+            <span>{{ region.name }}</span>
+            <strong>{{ region.activeRecords }}</strong>
+            <small>{{ label(region.status) }} · {{ region.city }}</small>
+          </div>
+        } @empty {
+          <p class="admin-note">Chưa có dữ liệu khu vực.</p>
+        }
+      </section>
+
+      <section class="card admin-panel">
+        <h3>Loại khiếu nại</h3>
+        @for (category of summary.categoryMix; track category.category) {
+          <div class="category-row">
+            <span>{{ categoryLabel(category.category) }}</span>
+            <strong>{{ category.total }}</strong>
+            <div
+              class="progress progress-line"
+              role="progressbar"
+              [attr.aria-label]="'Tỉ lệ ' + categoryLabel(category.category)"
+              [attr.aria-valuenow]="category.percent"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <i class="progress-bar" [style.width.%]="category.percent"></i>
+            </div>
+          </div>
+        } @empty {
+          <p class="admin-note">Chưa phân loại khiếu nại mở.</p>
+        }
+      </section>
+    </div>
+
+    <div class="dashboard-lists">
+      <section class="card admin-panel">
+        <h3>Ưu tiên kiểm duyệt</h3>
+        @for (report of summary.priorityReports; track report.id) {
+          <a
+            class="dashboard-row"
+            routerLink="/admin/moderation"
+            [queryParams]="{ report: report.id }"
+          >
+            <span class="admin-pill">{{ label(report.targetType) }}</span>
+            <div>
+              <strong>{{ report.reason }}</strong>
+              <p>
+                {{ report.reporter?.displayName || report.reporterId }} · {{ label(report.status) }}
+              </p>
+            </div>
+          </a>
+        } @empty {
+          <p class="admin-note">Không có báo cáo chờ xử lý.</p>
+        }
+      </section>
+      <section class="card admin-panel">
+        <h3>Ưu tiên khiếu nại</h3>
+        @for (complaint of summary.priorityComplaints; track complaint.id) {
+          <a
+            class="dashboard-row"
+            routerLink="/admin/complaints"
+            [queryParams]="{ complaint: complaint.id }"
+          >
+            <span class="admin-pill admin-pill--warning">{{ label(complaint.stage) }}</span>
+            <div>
+              <strong>{{ complaint.code }} · {{ complaint.subject }}</strong>
+              <p>{{ complaint.complainant?.displayName || complaint.complainantId }}</p>
+            </div>
+          </a>
+        } @empty {
+          <p class="admin-note">Không có khiếu nại đang mở.</p>
+        }
+      </section>
+      <section class="card admin-panel">
+        <h3>Hoạt động gần đây</h3>
+        @for (activity of summary.recentActivity; track activity.id) {
+          <a
+            class="dashboard-row"
+            [routerLink]="activity.route || '/admin'"
+            [queryParams]="activityQuery(activity)"
+          >
+            <div>
+              <strong>{{ activityLabel(activity) }}</strong>
+              <p>
+                {{ activity.actor || 'Hệ thống' }} · {{ activity.target }} ·
+                {{ activity.createdAt }}
+              </p>
+            </div>
+          </a>
+        } @empty {
+          <p class="admin-note">Chưa có hoạt động vận hành.</p>
+        }
+        <a class="ant-btn ant-btn--secondary" routerLink="/admin/inbox">Mở hộp công việc</a>
+      </section>
+    </div>
+  } @else if (dashboard.error()) {
+    <p class="ant-error">{{ dashboard.error() }}</p>
+  } @else {
+    <p class="admin-note">Đang tải dữ liệu vận hành.</p>
+  }
+</section>

@@ -3,7 +3,10 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "schematicCollections": ["angular-eslint"]
+    "schematicCollections": [
+      "angular-eslint"
+    ],
+    "analytics": "fc46dffc-bc07-462c-9fe5-2ee262a3644a"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -30,7 +33,11 @@
                 "input": "public"
               }
             ],
-            "styles": ["node_modules/bootstrap/dist/css/bootstrap.min.css", "src/styles.scss"]
+            "styles": [
+              "node_modules/bootstrap/dist/css/bootstrap-reboot.min.css",
+              "node_modules/@tabler/core/dist/css/tabler.min.css",
+              "src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {

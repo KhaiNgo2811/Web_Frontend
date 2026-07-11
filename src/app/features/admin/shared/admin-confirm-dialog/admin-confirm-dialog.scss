@@ -1,0 +1,40 @@
+.admin-confirm__backdrop {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  background: rgb(28 16 8 / 55%);
+}
+
+.admin-confirm {
+  position: fixed;
+  z-index: 1101;
+  top: 50%;
+  left: 50%;
+  width: min(440px, calc(100vw - 32px));
+  border: 1px solid var(--ant-border-strong, #8d7563);
+  border-radius: 4px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0 18px 48px rgb(28 16 8 / 28%);
+  transform: translate(-50%, -50%);
+}
+
+.admin-confirm h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+}
+
+.admin-confirm p {
+  margin: 0;
+  color: var(--ant-muted);
+  line-height: 1.5;
+}
+
+.admin-confirm__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 22px;
+}

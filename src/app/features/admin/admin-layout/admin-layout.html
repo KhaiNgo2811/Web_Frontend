@@ -1,0 +1,75 @@
+<a class="admin-skip-link" href="#admin-content">Bỏ qua đến nội dung chính</a>
+<div class="admin-shell" [class.admin-shell--collapsed]="sidebarCollapsed()">
+  <aside class="admin-sidebar" aria-label="Điều hướng quản trị">
+    <div class="admin-sidebar__header">
+      <a class="admin-brand" routerLink="/admin" aria-label="Không gian quản trị AntGo">
+        <span class="admin-brand__mark">A</span>
+        <span class="admin-brand__copy">
+          <strong>AntGo</strong>
+          <small>Không gian quản trị</small>
+        </span>
+      </a>
+      <button
+        class="admin-sidebar__toggle"
+        type="button"
+        [attr.aria-expanded]="!sidebarCollapsed()"
+        [attr.aria-label]="
+          sidebarCollapsed() ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'
+        "
+        [title]="sidebarCollapsed() ? 'Mở rộng' : 'Thu gọn'"
+        (click)="toggleSidebar()"
+      >
+        <span aria-hidden="true">{{ sidebarCollapsed() ? '›' : '‹' }}</span>
+      </button>
+    </div>
+
+    <nav class="admin-nav">
+      @for (item of navItems; track item.route) {
+        @if (canAccess(item.permission)) {
+          <a
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            [routerLinkActiveOptions]="{ exact: item.route === '/admin' }"
+            [attr.title]="sidebarCollapsed() ? item.label : null"
+            [attr.aria-label]="sidebarCollapsed() ? item.label : null"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="item.icon" /></svg>
+            <span class="admin-nav__label">{{ item.label }}</span>
+          </a>
+        }
+      }
+    </nav>
+  </aside>
+
+  <main id="admin-content" class="admin-main" tabindex="-1">
+    <header class="admin-topbar">
+      <div>
+        <p class="ant-kicker">Bàn điều hành</p>
+        <h1>{{ pageTitle() }}</h1>
+      </div>
+      <div class="admin-topbar__actions">
+        <button
+          class="admin-identity"
+          type="button"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="accountMenuOpen()"
+          aria-controls="admin-account-menu"
+          (click)="toggleAccountMenu()"
+        >
+          <span>{{ session.currentUser()?.displayName?.slice(0, 1) }}</span>
+          <strong>{{ session.currentUser()?.displayName }}</strong>
+          <span class="admin-identity__chevron" aria-hidden="true">⌄</span>
+        </button>
+        @if (accountMenuOpen()) {
+          <div id="admin-account-menu" class="admin-account-menu" role="menu">
+            <a routerLink="/account" role="menuitem">Xem tài khoản</a>
+            <button type="button" role="menuitem" (click)="logout()">Đăng xuất</button>
+          </div>
+        }
+      </div>
+    </header>
+
+    <router-outlet />
+  </main>
+</div>

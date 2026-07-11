@@ -1,0 +1,19 @@
+<section class="admin-toast-region" aria-label="Thông báo hệ thống">
+  @for (message of messages; track message.id) {
+    <article
+      class="admin-toast"
+      [class]="'admin-toast admin-toast--' + message.tone"
+      [attr.role]="message.tone === 'error' ? 'alert' : 'status'"
+    >
+      <div>
+        <strong>{{ message.title }}</strong>
+        @if (message.message) {
+          <p>{{ message.message }}</p>
+        }
+      </div>
+      <button type="button" aria-label="Đóng thông báo" (click)="dismissed.emit(message.id)">
+        ×
+      </button>
+    </article>
+  }
+</section>

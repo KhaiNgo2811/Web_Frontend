@@ -1,0 +1,237 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.post-card {
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--ant-border);
+  border-radius: var(--ant-radius-lg);
+  background: var(--ant-surface);
+  box-shadow: var(--ant-shadow-sm);
+  transition:
+    transform var(--ant-transition),
+    box-shadow var(--ant-transition),
+    border-color var(--ant-transition);
+}
+
+.post-card:hover {
+  border-color: #f3c6a8;
+  box-shadow: var(--ant-shadow-md);
+  transform: translateY(-4px);
+}
+
+.post-card--priority {
+  border-color: #f5b98e;
+}
+
+.post-card__visual {
+  position: relative;
+  display: grid;
+  height: 148px;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(145deg, #ffe4ce, #fff5e9);
+}
+
+.post-card__visual--laundry {
+  background: linear-gradient(145deg, #dff5ee, #f4fffb);
+}
+.post-card__visual--goods {
+  background: linear-gradient(145deg, #e8eeff, #f8faff);
+}
+.post-card__visual--repair {
+  background: linear-gradient(145deg, #ece7df, #faf8f4);
+}
+.post-card__visual--support {
+  background: linear-gradient(145deg, #ffe3d7, #fff9ed);
+}
+.post-card__visual--other {
+  background: linear-gradient(145deg, #f0e5ff, #fbf8ff);
+}
+
+.post-card__pattern {
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border: 34px solid rgb(255 255 255 / 36%);
+  border-radius: 45% 55% 60% 40%;
+  transform: rotate(22deg);
+}
+
+.post-card__category-icon {
+  position: relative;
+  font-size: 55px;
+  filter: drop-shadow(0 8px 10px rgb(90 62 43 / 16%));
+  transform: rotate(-5deg);
+}
+
+.post-card__type,
+:host ::ng-deep app-status-pill {
+  position: absolute;
+  top: 12px;
+}
+
+.post-card__type {
+  left: 12px;
+  border-radius: 99px;
+  padding: 6px 10px;
+  color: #9d3e08;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  box-shadow: 0 3px 10px rgb(90 62 43 / 10%);
+}
+
+.post-card__type--service {
+  color: #0d7452;
+}
+:host ::ng-deep app-status-pill {
+  right: 62px;
+}
+
+.post-card__like {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  min-width: 43px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: 0;
+  border-radius: 99px;
+  color: var(--ant-ink-soft);
+  background: rgb(255 255 255 / 90%);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.post-card__like span {
+  color: var(--ant-orange-deep);
+  font-size: 19px;
+}
+.post-card__body {
+  padding: 18px;
+}
+
+.post-card__category-line,
+.post-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ant-muted);
+  font-size: 11px;
+}
+
+.post-card__category-line > span:first-child {
+  color: var(--ant-orange-deep);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.post-card__title {
+  display: -webkit-box;
+  width: 100%;
+  min-height: 52px;
+  margin: 9px 0 5px;
+  overflow: hidden;
+  border: 0;
+  padding: 0;
+  color: var(--ant-ink);
+  background: transparent;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.28;
+  text-align: left;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.post-card__title:hover {
+  color: var(--ant-orange-deep);
+}
+.post-card__description {
+  display: -webkit-box;
+  min-height: 42px;
+  margin: 0 0 13px;
+  overflow: hidden;
+  color: var(--ant-muted);
+  font-size: 12px;
+  line-height: 1.7;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.post-card__meta {
+  margin-top: 6px;
+}
+.post-card__meta span:first-child {
+  color: var(--ant-orange);
+  font-size: 17px;
+}
+
+.post-card__author {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  margin-top: 15px;
+  border-top: 1px solid var(--ant-border);
+  padding-top: 14px;
+}
+
+.post-card__avatar {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--ant-gradient);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.post-card__author strong,
+.post-card__author small {
+  display: block;
+}
+.post-card__author strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.post-card__author small {
+  margin-top: 2px;
+  color: var(--ant-muted);
+  font-size: 10px;
+}
+.verified {
+  color: var(--ant-blue);
+}
+.post-card__price {
+  color: var(--ant-orange-deep);
+  font-size: 17px;
+  font-weight: 800;
+}
+.post-card__price small {
+  display: inline;
+  font-size: 11px;
+}
+
+.post-card__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 15px;
+}
+.post-card__actions .ant-btn {
+  min-height: 38px;
+  padding: 8px 9px;
+  font-size: 11px;
+}

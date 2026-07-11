@@ -1,0 +1,139 @@
+@use '../admin-page';
+
+.admin-table span {
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+.account-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.account-facts div {
+  border: 1px solid var(--ant-border);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.account-facts dt {
+  color: var(--ant-muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.account-facts dd {
+  margin: 3px 0 0;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.reason-field {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 12px;
+  color: var(--ant-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dashboard-heading,
+.table-pagination,
+.state-message,
+.empty-cell,
+.history-entry {
+  display: flex;
+}
+
+.dashboard-heading,
+.table-pagination {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard-heading h2,
+.dashboard-heading p {
+  margin: 0;
+}
+
+.filter-count {
+  color: var(--ant-ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sort-button {
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-transform: inherit;
+}
+
+.sort-button:focus-visible,
+.detail-button:focus-visible {
+  outline: 3px solid var(--ant-yellow);
+  outline-offset: 3px;
+}
+
+.detail-button {
+  white-space: nowrap;
+}
+
+.state-message,
+.empty-cell,
+.history-entry {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.state-message {
+  border: 1px solid var(--ant-border);
+  padding: 24px;
+  background: #fff;
+}
+
+.state-message--error {
+  border-left: 4px solid var(--ant-red);
+}
+
+.empty-cell {
+  padding-block: 36px !important;
+  text-align: center !important;
+}
+
+.empty-cell > * {
+  align-self: center;
+}
+
+.table-pagination {
+  justify-content: flex-end;
+}
+
+.table-pagination span {
+  margin-right: auto;
+  color: var(--ant-muted);
+  font-size: 13px;
+}
+
+.history-entry {
+  border-top: 1px solid var(--ant-border);
+  padding-block: 10px;
+}
+
+.history-entry small,
+.history-entry span {
+  color: var(--ant-muted);
+}
+
+.is-invalid {
+  border-color: var(--ant-red);
+}

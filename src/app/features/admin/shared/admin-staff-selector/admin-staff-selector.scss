@@ -1,0 +1,22 @@
+.admin-staff-selector {
+  display: grid;
+  gap: 6px;
+  color: var(--ant-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-staff-selector select {
+  min-height: 40px;
+  border: 1px solid var(--ant-border);
+  border-radius: 2px;
+  padding: 0 10px;
+  color: var(--ant-ink);
+  background: #fff;
+  font: inherit;
+}
+
+.admin-staff-selector select:focus-visible {
+  outline: 2px solid var(--ant-orange);
+  outline-offset: 1px;
+}

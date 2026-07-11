@@ -1,0 +1,82 @@
+@use '../shared/auth-form' as auth;
+
+@include auth.styles;
+
+:host {
+  width: min(100%, 540px);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.ant-label span {
+  color: var(--ant-subtle);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.terms-check {
+  align-items: flex-start;
+}
+
+.terms-check a {
+  color: var(--ant-orange-deep);
+  font-weight: 700;
+}
+
+.terms-error {
+  margin-top: -10px;
+}
+
+.otp-code {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 9px;
+  margin: 5px 0 12px;
+}
+
+.otp-code__input {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  opacity: 0.01;
+  cursor: text;
+}
+
+.otp-code__box {
+  display: grid;
+  height: 54px;
+  place-items: center;
+  border: 1px solid var(--ant-border-strong);
+  border-radius: var(--ant-radius-md);
+  color: var(--ant-ink);
+  background: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.otp-code:focus-within .otp-code__box--active {
+  border-color: var(--ant-orange);
+  box-shadow: 0 0 0 3px rgb(249 115 22 / 14%);
+}
+
+.otp-code--invalid .otp-code__box {
+  border-color: var(--ant-red);
+}
+
+.resend-button {
+  justify-self: center;
+}
+
+.resend-message {
+  margin: 0;
+  color: var(--ant-green);
+  font-size: 12px;
+  text-align: center;
+}

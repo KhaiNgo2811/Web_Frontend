@@ -1,0 +1,89 @@
+.editor {
+  display: grid;
+  min-height: 850px;
+  grid-template-columns: 340px 1fr;
+  gap: 54px;
+  padding-block: 64px 90px;
+}
+
+aside {
+  padding-top: 30px;
+}
+
+h1 {
+  margin: 8px 0 10px;
+  font-size: 40px;
+  line-height: 1.05;
+}
+
+aside > p {
+  color: var(--ant-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.tips {
+  display: grid;
+  gap: 11px;
+  margin-top: 28px;
+  padding: 20px;
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+.tips strong {
+  margin-bottom: 2px;
+  color: var(--ant-ink);
+  font-size: 14px;
+}
+
+.tips span::first-letter {
+  color: var(--ant-green);
+}
+
+.editor-form {
+  display: grid;
+  gap: 22px;
+  padding: 34px 38px;
+}
+
+.type-chip {
+  justify-self: start;
+  border-radius: 999px;
+  padding: 7px 13px;
+  color: var(--ant-orange-deep);
+  background: var(--ant-orange-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--ant-border);
+  padding-top: 24px;
+}
+
+.form-actions .ant-btn--ghost,
+.form-actions .ant-btn--danger {
+  margin-right: auto;
+}
+
+.form-actions .ant-btn--ghost + .ant-btn--danger {
+  margin-right: auto;
+  margin-left: -2px;
+}
+
+app-ui-dialog p {
+  margin: 0;
+  color: var(--ant-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}

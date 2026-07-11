@@ -1,0 +1,13 @@
+<label class="admin-staff-selector">
+  <span>{{ label }}</span>
+  <select [value]="value" [disabled]="disabled" (change)="select($event)">
+    @if (includeUnassigned) {
+      <option value="">Chưa phân công</option>
+    }
+    @for (person of staff; track person.id) {
+      <option [value]="person.id" [disabled]="person.disabled">
+        {{ person.displayName }}{{ person.roleLabel ? ' · ' + person.roleLabel : '' }}
+      </option>
+    }
+  </select>
+</label>

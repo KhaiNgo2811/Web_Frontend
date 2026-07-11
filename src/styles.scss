@@ -1,1 +1,5 @@
-/* You can add global styles to this file, and also import other style files */
+@use './styles/tokens';
+@use './styles/base';
+@use './styles/feed-hero';
+@use './styles/post-detail-panel';
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');

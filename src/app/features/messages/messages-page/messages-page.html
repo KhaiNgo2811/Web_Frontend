@@ -1,0 +1,87 @@
+<section class="messenger ant-container ant-card">
+  <aside>
+    <div class="messenger-title">
+      <div>
+        <span class="ant-kicker">Trò chuyện</span>
+        <h1>Messenger</h1>
+      </div>
+      <app-status-pill status="pending">{{ store.conversations().length }}</app-status-pill>
+    </div>
+    <div class="role-tabs">
+      <button type="button" [class.active]="roleTab() === 'posted'" (click)="roleTab.set('posted')">
+        Tôi đăng</button
+      ><button
+        type="button"
+        [class.active]="roleTab() === 'accepted'"
+        (click)="roleTab.set('accepted')"
+      >
+        Tôi nhận
+      </button>
+    </div>
+    <label class="search"
+      ><span aria-hidden="true">⌕</span><input placeholder="Tìm cuộc trò chuyện..."
+    /></label>
+    <div class="conversation-list">
+      @for (conversation of store.conversations(); track conversation.id) {
+        <button
+          type="button"
+          [class.active]="selected()?.id === conversation.id"
+          (click)="selectConversation(conversation.id)"
+        >
+          <span class="avatar">{{ peerName(conversation).slice(0, 2).toUpperCase() }}</span>
+          <span
+            ><strong>{{ postTitle(conversation) }}</strong
+            ><small>{{ peerName(conversation) }}</small></span
+          >
+          <time>11:45</time>
+        </button>
+      }
+    </div>
+  </aside>
+
+  <article>
+    @if (selected(); as conversation) {
+      <header>
+        <span class="avatar">{{ peerName(conversation).slice(0, 2).toUpperCase() }}</span>
+        <div>
+          <h2>{{ peerName(conversation) }}</h2>
+          <p>{{ postTitle(conversation) }}</p>
+        </div>
+        <app-status-pill status="in_progress">Đang thực hiện</app-status-pill>
+      </header>
+      <div class="order-banner">
+        <span>Đơn hàng đang được thực hiện</span><strong>{{ postTitle(conversation) }}</strong>
+      </div>
+      <div class="messages" aria-live="polite">
+        <div class="day-label">Hôm nay</div>
+        @for (message of conversationMessages(); track message.id) {
+          <div class="message" [class.message--mine]="message.senderId === currentUserId()">
+            @if (message.kind !== 'text') {
+              <span class="attachment">{{ message.kind === 'image' ? '▧ Ảnh' : '▦ QR mẫu' }}</span>
+            }
+            <p>{{ message.content }}</p>
+            <time>11:45</time>
+          </div>
+        }
+      </div>
+      <footer>
+        <div class="attach">
+          <button type="button" aria-label="Gửi ảnh" (click)="send('image')">▧</button
+          ><button type="button" aria-label="Gửi QR mẫu" (click)="send('qr')">▦</button>
+        </div>
+        <input
+          [(ngModel)]="draft"
+          (keydown.enter)="send()"
+          placeholder="Nhắn tin..."
+          aria-label="Nội dung tin nhắn"
+        /><button class="send" type="button" aria-label="Gửi tin nhắn" (click)="send()">➜</button>
+      </footer>
+    } @else {
+      <app-empty-state
+        icon="✉"
+        title="Chọn một cuộc trò chuyện"
+        description="Tin nhắn gắn với đơn hàng giúp hai bên trao đổi minh bạch."
+      />
+    }
+  </article>
+</section>

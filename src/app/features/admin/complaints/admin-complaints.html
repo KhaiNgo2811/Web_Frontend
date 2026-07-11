@@ -1,0 +1,595 @@
+<section class="admin-page" aria-labelledby="complaints-heading">
+  <h2 id="complaints-heading" class="visually-hidden">Hàng đợi khiếu nại</h2>
+  <p class="visually-hidden" aria-live="polite">{{ announcement() }}</p>
+  <div class="admin-toolbar" role="search" aria-label="Bộ lọc khiếu nại">
+    <label
+      ><span>Tìm kiếm</span
+      ><input
+        class="ant-field"
+        type="search"
+        placeholder="Mã, tiêu đề"
+        [value]="complaints.filter().search || ''"
+        (input)="updateSearch($event)"
+    /></label>
+    <label
+      ><span>Bước xử lý</span
+      ><select
+        class="ant-field"
+        [value]="complaints.filter().stage || 'all'"
+        (change)="updateStage($event)"
+      >
+        <option value="all">Tất cả</option>
+        <option value="received">Tiếp nhận</option>
+        <option value="verifying">Xác minh</option>
+        <option value="collecting_evidence">Thu thập chứng cứ</option>
+        <option value="evaluating">Đánh giá</option>
+        <option value="resolving">Xử lý</option>
+        <option value="notified">Đã thông báo</option>
+        <option value="resolved">Đã đóng</option>
+      </select></label
+    >
+    <label
+      ><span>Ưu tiên</span
+      ><select
+        class="ant-field"
+        [value]="complaints.filter().priority || 'all'"
+        (change)="updatePriority($event)"
+      >
+        <option value="all">Tất cả</option>
+        <option value="high">Cao</option>
+        <option value="normal">Bình thường</option>
+      </select></label
+    >
+    <div class="toolbar-actions">
+      <button
+        class="ant-btn ant-btn--ghost"
+        type="button"
+        [disabled]="!hasFilters()"
+        (click)="clearFilters()"
+      >
+        Xóa bộ lọc</button
+      ><button
+        class="ant-btn ant-btn--secondary"
+        type="button"
+        [disabled]="complaints.loading()"
+        (click)="refresh()"
+      >
+        Làm mới
+      </button>
+    </div>
+  </div>
+  <div class="result-summary">
+    <strong>{{ resultCount() }} khiếu nại</strong>
+    @if (hasFilters()) {
+      <span class="admin-pill">Đang áp dụng bộ lọc</span>
+    }
+  </div>
+  @if (complaints.loading() && !resultCount()) {
+    <div class="table-state" role="status">Đang tải danh sách khiếu nại...</div>
+  } @else if (complaints.error() && !resultCount()) {
+    <div class="table-state table-state--error" role="alert">
+      <strong>Không thể tải khiếu nại</strong><span>{{ complaints.error() }}</span
+      ><button class="ant-btn ant-btn--secondary" type="button" (click)="refresh()">Thử lại</button>
+    </div>
+  } @else {
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th [attr.aria-sort]="ariaSort('code')">
+              <button class="sort-button" type="button" (click)="sort('code')">Mã</button>
+            </th>
+            <th [attr.aria-sort]="ariaSort('subject')">
+              <button class="sort-button" type="button" (click)="sort('subject')">Khiếu nại</button>
+            </th>
+            <th>Người gửi</th>
+            <th [attr.aria-sort]="ariaSort('priority')">
+              <button class="sort-button" type="button" (click)="sort('priority')">Ưu tiên</button>
+            </th>
+            <th [attr.aria-sort]="ariaSort('stage')">
+              <button class="sort-button" type="button" (click)="sort('stage')">Bước</button>
+            </th>
+            <th [attr.aria-sort]="ariaSort('updatedAt')">
+              <button class="sort-button" type="button" (click)="sort('updatedAt')">
+                Cập nhật
+              </button>
+            </th>
+            <th><span class="visually-hidden">Thao tác</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (complaint of visibleComplaints(); track complaint.id) {
+            <tr [class.is-selected]="complaints.selectedComplaintId() === complaint.id">
+              <td>
+                <strong>{{ complaint.code }}</strong>
+              </td>
+              <td>{{ complaint.subject }}</td>
+              <td>{{ complaint.complainant?.displayName || complaint.complainantId }}</td>
+              <td>
+                <span
+                  class="admin-pill"
+                  [class.admin-pill--warning]="complaint.priority === 'high'"
+                  >{{ priorityLabel(complaint.priority) }}</span
+                >
+              </td>
+              <td>{{ stageLabel(complaint.stage) }}</td>
+              <td>{{ complaint.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <button
+                  class="ant-btn ant-btn--ghost detail-button"
+                  type="button"
+                  (click)="open(complaint)"
+                  [attr.aria-label]="'Xem hồ sơ ' + complaint.code"
+                >
+                  Xem
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7">
+                <div class="table-state">
+                  <strong>{{
+                    hasFilters() ? 'Không có kết quả phù hợp' : 'Chưa có khiếu nại'
+                  }}</strong
+                  ><span>{{
+                    hasFilters()
+                      ? 'Điều chỉnh hoặc xóa bộ lọc để xem thêm.'
+                      : 'Khiếu nại mới sẽ xuất hiện tại đây.'
+                  }}</span>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (resultCount()) {
+      <nav class="pagination" aria-label="Phân trang khiếu nại">
+        <label
+          >Số dòng
+          <select class="ant-field" [value]="pageSize()" (change)="updatePageSize($event)">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+          </select></label
+        ><span>Trang {{ page() }} / {{ pageCount() }}</span
+        ><button
+          class="ant-btn ant-btn--ghost"
+          type="button"
+          [disabled]="page() === 1"
+          (click)="page.set(page() - 1)"
+        >
+          Trang trước</button
+        ><button
+          class="ant-btn ant-btn--ghost"
+          type="button"
+          [disabled]="page() === pageCount()"
+          (click)="page.set(page() + 1)"
+        >
+          Trang sau
+        </button>
+      </nav>
+    }
+  }
+</section>
+
+<app-admin-drawer
+  [open]="!!selected()"
+  width="complaint"
+  title="Hồ sơ khiếu nại"
+  [description]="selected()?.code || ''"
+  (closed)="close()"
+>
+  <div drawer-body>
+    @if (selected(); as complaint) {
+      <section class="workflow-progress" aria-label="Tiến độ xử lý khiếu nại">
+        <div class="workflow-progress__summary">
+          <div>
+            <strong
+              >Bước {{ complaintStepIndex(complaint) + 1 }} / {{ complaintStages.length }}</strong
+            >
+            <span>{{ stageLabel(complaint.stage) }} · {{ nextStepLabel(complaint) }}</span>
+          </div>
+          <span
+            class="admin-pill"
+            [class.admin-pill--danger]="slaTone(complaint) === 'danger'"
+            [class.admin-pill--warning]="slaTone(complaint) === 'warning'"
+            [class.admin-pill--success]="slaTone(complaint) === 'success'"
+          >
+            SLA: {{ slaState(complaint) }}
+          </span>
+        </div>
+        <div
+          class="workflow-meter"
+          role="progressbar"
+          [attr.aria-label]="'Tiến độ xử lý ' + complaint.code"
+          [attr.aria-valuenow]="complaintProgress(complaint)"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <span [style.width.%]="complaintProgress(complaint)"></span>
+        </div>
+        <ol class="workflow-steps">
+          @for (stage of complaintStages; track stage) {
+            <li
+              [class.done]="isCompletedStage(complaint, stage)"
+              [class.current]="complaint.stage === stage"
+              [attr.aria-current]="complaint.stage === stage ? 'step' : null"
+            >
+              {{ stageLabel(stage) }}
+            </li>
+          }
+        </ol>
+      </section>
+      <div class="complaint-tabs" role="tablist" aria-label="Thông tin khiếu nại">
+        @for (tab of tabs; track tab) {
+          <button
+            type="button"
+            role="tab"
+            [id]="'complaint-tab-' + tab"
+            [attr.tabindex]="activeTab() === tab ? 0 : -1"
+            [attr.aria-selected]="activeTab() === tab"
+            [attr.aria-controls]="'complaint-panel-' + tab"
+            (click)="setTab(tab)"
+            (keydown)="moveTab($event, tab)"
+          >
+            {{ tabLabel(tab) }}
+          </button>
+        }
+      </div>
+      @if (activeTab() === 'overview') {
+        <section
+          role="tabpanel"
+          id="complaint-panel-overview"
+          aria-labelledby="complaint-tab-overview"
+          class="complaint-section"
+          tabindex="0"
+        >
+          <dl>
+            <dt>Mã hồ sơ</dt>
+            <dd>{{ complaint.code }}</dd>
+            <dt>Mã nội bộ</dt>
+            <dd>{{ complaint.id }}</dd>
+            <dt>Loại</dt>
+            <dd>{{ categoryLabel(complaint.category) }}</dd>
+            <dt>Đơn liên quan</dt>
+            <dd>{{ complaint.orderId || 'Không có' }}</dd>
+            <dt>Ưu tiên</dt>
+            <dd>{{ priorityLabel(complaint.priority) }}</dd>
+            <dt>Bước hiện tại</dt>
+            <dd>{{ stageLabel(complaint.stage) }}</dd>
+            <dt>Người khiếu nại</dt>
+            <dd>{{ complaint.complainant?.displayName || complaint.complainantId }}</dd>
+            <dt>Bên liên quan</dt>
+            <dd>{{ complaint.respondent?.displayName || complaint.respondentId || 'Không có' }}</dd>
+            <dt>Quản trị phụ trách</dt>
+            <dd>
+              {{
+                complaint.assignedAdmin?.displayName ||
+                  complaint.assignedAdminId ||
+                  'Chưa phân công'
+              }}
+            </dd>
+            <dt>Hạn SLA</dt>
+            <dd>{{ slaDeadline(complaint) }} · {{ slaState(complaint) }}</dd>
+            <dt>Tạo lúc</dt>
+            <dd>{{ complaint.createdAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            <dt>Cập nhật</dt>
+            <dd>{{ complaint.updatedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+          </dl>
+          <h3>{{ complaint.subject }}</h3>
+          <p>{{ complaint.description }}</p>
+        </section>
+      }
+      @if (activeTab() === 'evidence') {
+        <section
+          role="tabpanel"
+          id="complaint-panel-evidence"
+          aria-labelledby="complaint-tab-evidence"
+          class="complaint-section"
+          tabindex="0"
+        >
+          @for (evidence of complaint.evidence; track evidence.id) {
+            <article class="evidence-card">
+              <strong>{{ evidence.label }}</strong
+              ><span
+                >{{
+                  evidence.type === 'image'
+                    ? 'Hình ảnh'
+                    : evidence.type === 'message'
+                      ? 'Tin nhắn'
+                      : evidence.type === 'document'
+                        ? 'Tài liệu'
+                        : 'Hệ thống'
+                }}
+                ·
+                {{
+                  evidence.strength === 'strong'
+                    ? 'Mạnh'
+                    : evidence.strength === 'medium'
+                      ? 'Trung bình'
+                      : 'Yếu'
+                }}
+                ·
+                {{
+                  evidence.validity === 'valid'
+                    ? 'Hợp lệ'
+                    : evidence.validity === 'invalid'
+                      ? 'Không hợp lệ'
+                      : 'Chờ xác minh'
+                }}</span
+              >
+              <p>{{ evidence.note || 'Không có ghi chú' }}</p>
+              <small
+                >{{ evidence.submitter?.displayName || evidence.createdBy }} ·
+                {{ evidence.createdAt | date: 'dd/MM/yyyy HH:mm' }}</small
+              >
+              @if (evidence.preview) {
+                <p>{{ evidence.preview }}</p>
+              }
+              @if (isSafeEvidenceUrl(evidence.url)) {
+                <a [href]="evidence.url" target="_blank" rel="noopener noreferrer"
+                  >Mở tệp chứng cứ</a
+                >
+              } @else if (evidence.url) {
+                <small class="ant-error">Liên kết chứng cứ không hợp lệ.</small>
+              }
+            </article>
+          } @empty {
+            <p class="admin-note">Chưa có chứng cứ được ghi nhận.</p>
+          }
+        </section>
+      }
+      @if (activeTab() === 'timeline') {
+        <section
+          role="tabpanel"
+          id="complaint-panel-timeline"
+          aria-labelledby="complaint-tab-timeline"
+          class="complaint-section"
+          tabindex="0"
+        >
+          @for (entry of complaint.timeline; track entry.id) {
+            <article class="history-entry">
+              <strong>{{ entry.action || stageLabel(entry.stage) }}</strong
+              ><span>{{ entry.output || entry.note || 'Đã cập nhật hồ sơ' }}</span
+              ><small
+                >{{ entry.actor?.displayName || entry.createdBy }} · {{ stageLabel(entry.stage) }} ·
+                {{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}</small
+              >
+            </article>
+          } @empty {
+            <p class="admin-note">Chưa có lịch sử xử lý.</p>
+          }
+        </section>
+      }
+      @if (activeTab() === 'decision') {
+        <section
+          role="tabpanel"
+          id="complaint-panel-decision"
+          aria-labelledby="complaint-tab-decision"
+          class="complaint-section"
+          tabindex="0"
+        >
+          <dl>
+            <dt>Nhận định</dt>
+            <dd>{{ complaint.assessment?.rationale || 'Chưa có' }}</dd>
+            <dt>Kết luận trách nhiệm</dt>
+            <dd>{{ findingLabel(complaint.assessment?.finding) }}</dd>
+            <dt>Mức độ</dt>
+            <dd>{{ severityLabel(complaint.assessment?.severity) }}</dd>
+            <dt>Người đánh giá</dt>
+            <dd>{{ complaint.assessment?.reviewerId || 'Chưa có' }}</dd>
+            <dt>Quyết định</dt>
+            <dd>{{ complaint.remedy?.conclusion || 'Chưa có' }}</dd>
+            <dt>Biện pháp</dt>
+            <dd>{{ remedyLabel(complaint.remedy?.type) }}</dd>
+            <dt>Bồi hoàn</dt>
+            <dd>{{ complaint.remedy?.amount || 0 }}</dd>
+            <dt>Chế tài</dt>
+            <dd>{{ complaint.remedy?.sanctionLevel ?? 'Chưa có' }}</dd>
+            <dt>Thông báo</dt>
+            <dd>
+              {{ notificationStateLabel(complaint.notification?.state) }} ·
+              @for (channel of complaint.notification?.channels || []; track channel) {
+                {{ channelLabel(channel) }}
+              }
+            </dd>
+            <dt>Phản hồi bên khiếu nại</dt>
+            <dd>{{ responseLabel(complaint.partyResponses?.complainant?.accepted) }}</dd>
+            <dt>Phản hồi bên liên quan</dt>
+            <dd>{{ responseLabel(complaint.partyResponses?.respondent?.accepted) }}</dd>
+            <dt>Phúc khảo</dt>
+            <dd>{{ complaint.appeal?.reason || 'Chưa có' }}</dd>
+          </dl>
+          @if (complaint.stage === 'notified' && canDecide() && canAppeal(complaint)) {
+            <div class="admin-actions">
+              <button
+                class="ant-btn ant-btn--ghost"
+                type="button"
+                [disabled]="complaints.loading()"
+                (click)="appeal(complaint)"
+              >
+                Mở phúc khảo
+              </button>
+            </div>
+          }
+        </section>
+      }
+    }
+  </div>
+  <div drawer-footer class="complaint-action">
+    @if (selected(); as complaint) {
+      @if (complaint.stage !== 'resolved' && canAct(complaint)) {
+        <label
+          ><span
+            >Ghi chú / kết quả
+            @if (complaint.stage === 'verifying' || complaint.stage === 'evaluating') {
+              (bắt buộc)
+            }</span
+          ><textarea
+            class="ant-field"
+            [value]="note()"
+            [attr.aria-invalid]="!!localError()"
+            aria-describedby="complaint-form-error"
+            (input)="note.set(valueOf($event))"
+          ></textarea>
+        </label>
+        @if (complaint.stage === 'received') {
+          <label
+            ><span>Người phụ trách</span
+            ><select
+              class="ant-field"
+              [value]="assigneeId()"
+              (change)="assigneeId.set(valueOf($event))"
+            >
+              <option value="">Chọn người phụ trách</option>
+              @for (staff of staffOptions(); track staff.id) {
+                <option [value]="staff.id">{{ staff.displayName }} · {{ staff.id }}</option>
+              }
+            </select></label
+          >
+        }
+        @if (complaint.stage === 'verifying') {
+          <label
+            ><span>Kết quả xác minh</span
+            ><select class="ant-field" (change)="updateVerificationValid($event)">
+              <option value="true">Hợp lệ</option>
+              <option value="false">Không hợp lệ</option>
+            </select></label
+          >
+        }
+        @if (complaint.stage === 'evaluating') {
+          <label
+            ><span>Kết luận trách nhiệm</span
+            ><select class="ant-field" (change)="updateFinding($event)">
+              <option value="shared">Hai bên</option>
+              <option value="complainant">Bên khiếu nại</option>
+              <option value="respondent">Bên liên quan</option>
+              <option value="none">Không quy trách nhiệm</option>
+            </select></label
+          ><label
+            ><span>Mức độ</span
+            ><select class="ant-field" (change)="updateSeverity($event)">
+              <option value="medium">Trung bình</option>
+              <option value="none">Không có</option>
+              <option value="low">Thấp</option>
+              <option value="high">Cao</option>
+            </select></label
+          >
+        }
+        @if (complaint.stage === 'resolving' && !complaint.remedy) {
+          <label
+            ><span>Biện pháp</span
+            ><select class="ant-field" (change)="updateRemedyType($event)">
+              <option value="compensation">Bồi hoàn</option>
+              <option value="refund">Hoàn tiền</option>
+              <option value="redo">Làm lại</option>
+              <option value="warning">Cảnh báo</option>
+              <option value="none">Không áp dụng</option>
+            </select></label
+          ><label
+            ><span>Kết luận (bắt buộc)</span
+            ><input
+              class="ant-field"
+              [value]="resolution()"
+              (input)="resolution.set(valueOf($event))" /></label
+          ><label
+            ><span>Số tiền bồi hoàn</span
+            ><input
+              class="ant-field"
+              type="number"
+              min="0"
+              inputmode="decimal"
+              [value]="amount()"
+              (input)="amount.set(valueOf($event))" /></label
+          ><label
+            ><span>Mức chế tài</span
+            ><select class="ant-field" (change)="updateSanctionLevel($event)">
+              @for (level of [0, 1, 2, 3, 4, 5, 6]; track level) {
+                <option [value]="level">{{ level }}</option>
+              }
+            </select></label
+          >
+        }
+        @if (complaint.stage === 'resolving' && complaint.remedy) {
+          <fieldset class="channel-options">
+            <legend>Kênh thông báo</legend>
+            <label
+              ><input
+                type="checkbox"
+                [checked]="isChannelSelected('in_app')"
+                (change)="toggleChannel('in_app', checkedOf($event))"
+              />
+              Trong ứng dụng</label
+            ><label
+              ><input
+                type="checkbox"
+                [checked]="isChannelSelected('email')"
+                (change)="toggleChannel('email', checkedOf($event))"
+              />
+              Email</label
+            ><label
+              ><input
+                type="checkbox"
+                [checked]="isChannelSelected('sms')"
+                (change)="toggleChannel('sms', checkedOf($event))"
+              />
+              SMS</label
+            >
+          </fieldset>
+        }
+        @if (complaint.stage === 'notified') {
+          <label
+            ><span>Kết luận đóng hồ sơ</span
+            ><input
+              class="ant-field"
+              [value]="resolution()"
+              (input)="resolution.set(valueOf($event))" /></label
+          ><label
+            ><span>Bên phản hồi</span
+            ><select class="ant-field" (change)="updateResponseParty($event)">
+              <option value="complainant">Bên khiếu nại</option>
+              @if (complaint.respondentId) {
+                <option value="respondent">Bên liên quan</option>
+              }
+            </select></label
+          ><label
+            ><span>Kết quả phản hồi</span
+            ><select class="ant-field" (change)="updateResponseAccepted($event)">
+              <option value="true">Chấp nhận</option>
+              <option value="false">Không chấp nhận</option>
+            </select></label
+          ><button
+            class="ant-btn ant-btn--secondary"
+            type="button"
+            [disabled]="complaints.loading()"
+            (click)="recordSelectedResponse(complaint)"
+          >
+            Ghi phản hồi
+          </button>
+        }
+        <button
+          class="ant-btn ant-btn--primary"
+          type="button"
+          [disabled]="complaints.loading()"
+          (click)="act(complaint)"
+        >
+          {{ complaints.loading() ? 'Đang xử lý...' : actionLabel(complaint) }}
+        </button>
+      }
+      @if (localError() || complaints.error()) {
+        <p id="complaint-form-error" class="ant-error" role="alert">
+          {{ localError() || complaints.error() }}
+        </p>
+      }
+    }
+  </div>
+</app-admin-drawer>
+
+<app-admin-confirm-dialog
+  [open]="!!pendingConfirmation()"
+  [request]="confirmationRequest()"
+  (confirmed)="confirmPendingAction()"
+  (cancelled)="pendingConfirmation.set(null)"
+/>

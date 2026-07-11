@@ -1,0 +1,69 @@
+.feed-overlay {
+  position: fixed;
+  z-index: 1050;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 35px;
+  animation: feed-fade-in 160ms ease-out;
+}
+.feed-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(28 16 8 / 56%);
+  backdrop-filter: blur(4px);
+}
+.feed-overlay__content {
+  position: relative;
+}
+.feed-toast {
+  position: fixed;
+  z-index: 1200;
+  right: 28px;
+  bottom: 28px;
+  display: grid;
+  width: 385px;
+  grid-template-columns: 30px 1fr 24px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #b9e2d2;
+  border-radius: var(--ant-radius-md);
+  padding: 13px;
+  color: #135d43;
+  background: #f3fff9;
+  box-shadow: var(--ant-shadow-md);
+  animation: feed-toast-in 220ms ease-out;
+}
+.feed-toast > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--ant-green);
+  font-weight: 800;
+}
+.feed-toast p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.feed-toast button {
+  border: 0;
+  color: #45816b;
+  background: transparent;
+  font-size: 20px;
+}
+@keyframes feed-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes feed-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}

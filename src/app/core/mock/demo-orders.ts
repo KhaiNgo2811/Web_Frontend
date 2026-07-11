@@ -1,0 +1,106 @@
+import type { Application, Order, Review } from '../models';
+
+export const DEMO_APPLICATIONS: Application[] = [
+  {
+    id: 'application-aircon-minh',
+    postId: 'post-aircon',
+    applicantId: 'user-minh',
+    message: 'Mình có đầy đủ dụng cụ và có thể đến lúc 9 giờ sáng.',
+    proposedPrice: 230000,
+    status: 'pending',
+    createdAt: '2026-07-10T02:20:00.000Z',
+    updatedAt: '2026-07-10T02:20:00.000Z',
+  },
+  {
+    id: 'application-aircon-huy',
+    postId: 'post-aircon',
+    applicantId: 'user-huy',
+    message: 'Mình từng làm vệ sinh máy lạnh và rảnh sáng thứ Bảy.',
+    status: 'pending',
+    createdAt: '2026-07-10T03:15:00.000Z',
+    updatedAt: '2026-07-10T03:15:00.000Z',
+  },
+  {
+    id: 'application-groceries-demo',
+    postId: 'post-groceries',
+    applicantId: 'user-demo',
+    message: 'Mình đang ở gần siêu thị và có thể giao trước 18 giờ.',
+    proposedPrice: 80000,
+    status: 'pending',
+    createdAt: '2026-07-10T09:20:00.000Z',
+    updatedAt: '2026-07-10T09:20:00.000Z',
+  },
+  {
+    id: 'application-plants-minh',
+    postId: 'post-plants',
+    applicantId: 'user-minh',
+    message: 'Mình ở cùng khu nên có thể ghé đúng lịch.',
+    proposedPrice: 180000,
+    status: 'selected',
+    createdAt: '2026-07-07T02:00:00.000Z',
+    updatedAt: '2026-07-09T07:00:00.000Z',
+  },
+  {
+    id: 'application-tutor-lan',
+    postId: 'post-tutor',
+    applicantId: 'user-lan',
+    message: 'Mình muốn đăng ký buổi học thử đầu tiên.',
+    proposedPrice: 150000,
+    status: 'selected',
+    createdAt: '2026-07-06T04:00:00.000Z',
+    updatedAt: '2026-07-08T09:00:00.000Z',
+  },
+];
+
+export const DEMO_ORDERS: Order[] = [
+  {
+    id: 'order-plants',
+    code: 'AG-000124',
+    postId: 'post-plants',
+    applicationId: 'application-plants-minh',
+    customerId: 'user-demo',
+    providerId: 'user-minh',
+    status: 'in_progress',
+    statusHistory: [
+      { status: 'pending', at: '2026-07-09T07:00:00.000Z', byUserId: 'user-demo' },
+      { status: 'in_progress', at: '2026-07-10T00:30:00.000Z', byUserId: 'user-minh' },
+    ],
+    escrowState: 'none',
+    createdAt: '2026-07-09T07:00:00.000Z',
+    updatedAt: '2026-07-10T00:30:00.000Z',
+  },
+  {
+    id: 'order-tutor',
+    code: 'AG-000119',
+    postId: 'post-tutor',
+    applicationId: 'application-tutor-lan',
+    customerId: 'user-lan',
+    providerId: 'user-demo',
+    status: 'completed',
+    statusHistory: [
+      { status: 'pending', at: '2026-07-08T09:00:00.000Z', byUserId: 'user-demo' },
+      { status: 'in_progress', at: '2026-07-08T11:00:00.000Z', byUserId: 'user-demo' },
+      { status: 'completed', at: '2026-07-08T14:00:00.000Z', byUserId: 'user-lan' },
+    ],
+    providerReportedDoneAt: '2026-07-08T13:45:00.000Z',
+    customerConfirmedAt: '2026-07-08T14:00:00.000Z',
+    escrowState: 'released',
+    escrowFeePct: 1,
+    heldAmount: 150000,
+    createdAt: '2026-07-08T09:00:00.000Z',
+    updatedAt: '2026-07-08T14:00:00.000Z',
+  },
+];
+
+export const DEMO_REVIEWS: Review[] = [
+  {
+    id: 'review-tutor-lan',
+    orderId: 'order-tutor',
+    raterId: 'user-lan',
+    rateeId: 'user-demo',
+    stars: 5,
+    comment: 'Giải thích dễ hiểu và rất đúng giờ.',
+    hidden: false,
+    createdAt: '2026-07-08T14:20:00.000Z',
+  },
+];

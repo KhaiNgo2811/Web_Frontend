@@ -1,0 +1,328 @@
+<section class="admin-page" aria-labelledby="moderation-heading">
+  <h2 id="moderation-heading" class="visually-hidden">Hàng đợi kiểm duyệt</h2>
+  <p class="visually-hidden" aria-live="polite">{{ announcement() }}</p>
+  <div class="admin-toolbar" role="search" aria-label="Bộ lọc báo cáo">
+    <label
+      ><span>Tìm kiếm</span
+      ><input
+        class="ant-field"
+        type="search"
+        placeholder="Lý do, mô tả"
+        [value]="moderation.filter().search || ''"
+        (input)="updateSearch($event)"
+    /></label>
+    <label
+      ><span>Trạng thái</span
+      ><select
+        class="ant-field"
+        [value]="moderation.filter().status || 'all'"
+        (change)="updateStatus($event)"
+      >
+        <option value="all">Tất cả</option>
+        <option value="pending">Chờ xử lý</option>
+        <option value="hidden">Đã ẩn</option>
+        <option value="dismissed">Đã bỏ qua</option>
+      </select></label
+    >
+    <label
+      ><span>Loại nội dung</span
+      ><select
+        class="ant-field"
+        [value]="moderation.filter().targetType || 'all'"
+        (change)="updateType($event)"
+      >
+        <option value="all">Tất cả</option>
+        <option value="post">Bài đăng</option>
+        <option value="review">Đánh giá</option>
+        <option value="message">Tin nhắn</option>
+      </select></label
+    >
+    <div class="toolbar-actions">
+      <button
+        class="ant-btn ant-btn--ghost"
+        type="button"
+        [disabled]="!hasFilters()"
+        (click)="clearFilters()"
+      >
+        Xóa bộ lọc</button
+      ><button
+        class="ant-btn ant-btn--secondary"
+        type="button"
+        [disabled]="moderation.loading()"
+        (click)="refresh()"
+      >
+        Làm mới
+      </button>
+    </div>
+  </div>
+  <div class="result-summary">
+    <strong>{{ resultCount() }} báo cáo</strong>
+    @if (hasFilters()) {
+      <span class="admin-pill">Đang áp dụng bộ lọc</span>
+    }
+  </div>
+  @if (moderation.loading() && !resultCount()) {
+    <div class="table-state" role="status">Đang tải danh sách báo cáo...</div>
+  } @else if (moderation.error() && !resultCount()) {
+    <div class="table-state table-state--error" role="alert">
+      <strong>Không thể tải báo cáo</strong><span>{{ moderation.error() }}</span
+      ><button class="ant-btn ant-btn--secondary" type="button" (click)="refresh()">Thử lại</button>
+    </div>
+  } @else {
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th [attr.aria-sort]="ariaSort('reason')">
+              <button class="sort-button" type="button" (click)="sort('reason')">Báo cáo</button>
+            </th>
+            <th [attr.aria-sort]="ariaSort('targetType')">
+              <button class="sort-button" type="button" (click)="sort('targetType')">
+                Nội dung
+              </button>
+            </th>
+            <th>Người báo cáo</th>
+            <th [attr.aria-sort]="ariaSort('status')">
+              <button class="sort-button" type="button" (click)="sort('status')">Trạng thái</button>
+            </th>
+            <th [attr.aria-sort]="ariaSort('createdAt')">
+              <button class="sort-button" type="button" (click)="sort('createdAt')">
+                Thời điểm
+              </button>
+            </th>
+            <th><span class="visually-hidden">Thao tác</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (report of visibleReports(); track report.id) {
+            <tr [class.is-selected]="moderation.selectedReportId() === report.id">
+              <td>
+                <strong>{{ report.reason }}</strong
+                ><br /><span>{{ report.details || 'Không có mô tả thêm' }}</span>
+              </td>
+              <td>
+                <span class="admin-pill">{{ typeLabel(report.targetType) }}</span>
+                {{ targetText(report) }}
+              </td>
+              <td>{{ report.reporter?.displayName || report.reporterId }}</td>
+              <td>
+                <span class="admin-pill">{{ statusLabel(report.status) }}</span
+                ><br /><small>{{ report.assignedAdminId || 'Chưa phân công' }}</small>
+              </td>
+              <td>{{ report.createdAt }}</td>
+              <td>
+                <button
+                  class="ant-btn ant-btn--ghost detail-button"
+                  type="button"
+                  (click)="openReport(report)"
+                  [attr.aria-label]="'Xem chi tiết báo cáo ' + report.reason"
+                >
+                  Xem
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6">
+                <div class="table-state">
+                  <strong>{{
+                    hasFilters() ? 'Không có kết quả phù hợp' : 'Chưa có báo cáo'
+                  }}</strong
+                  ><span>{{
+                    hasFilters()
+                      ? 'Điều chỉnh hoặc xóa bộ lọc để xem thêm.'
+                      : 'Báo cáo mới sẽ xuất hiện tại đây.'
+                  }}</span>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (resultCount()) {
+      <nav class="pagination" aria-label="Phân trang báo cáo">
+        <label
+          >Số dòng
+          <select class="ant-field" [value]="pageSize()" (change)="updatePageSize($event)">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+          </select></label
+        ><span>Trang {{ page() }} / {{ pageCount() }}</span
+        ><button
+          class="ant-btn ant-btn--ghost"
+          type="button"
+          [disabled]="page() === 1"
+          (click)="page.set(page() - 1)"
+        >
+          Trang trước</button
+        ><button
+          class="ant-btn ant-btn--ghost"
+          type="button"
+          [disabled]="page() === pageCount()"
+          (click)="page.set(page() + 1)"
+        >
+          Trang sau
+        </button>
+      </nav>
+    }
+  }
+</section>
+
+<app-admin-drawer
+  [open]="!!selectedReport()"
+  width="moderation"
+  title="Chi tiết báo cáo"
+  [description]="selectedReport()?.reason || ''"
+  (closed)="closeDrawer()"
+>
+  <div drawer-body class="moderation-detail">
+    @if (selectedReport(); as report) {
+      <section class="moderation-progress" aria-label="Tiến độ xử lý báo cáo">
+        <div class="moderation-progress__summary">
+          <div>
+            <strong>Bước {{ moderationStepIndex(report) + 1 }} / 4</strong>
+            <span>{{ moderationStatusNote(report) }}</span>
+          </div>
+          <span class="admin-pill">{{ statusLabel(report.status) }}</span>
+        </div>
+        <div
+          class="progress moderation-meter"
+          role="progressbar"
+          [attr.aria-label]="'Tiến độ báo cáo ' + report.id"
+          [attr.aria-valuenow]="moderationProgress(report)"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <span class="progress-bar" [style.width.%]="moderationProgress(report)"></span>
+        </div>
+        <ol class="moderation-steps">
+          @for (step of [0, 1, 2, 3]; track step) {
+            <li
+              [class.done]="step < moderationStepIndex(report)"
+              [class.current]="step === moderationStepIndex(report)"
+              [attr.aria-current]="step === moderationStepIndex(report) ? 'step' : null"
+            >
+              {{ moderationStepLabel(step) }}
+            </li>
+          }
+        </ol>
+        <p class="admin-note">{{ lastHistoryLabel(report) }}</p>
+      </section>
+      <dl>
+        <dt>Mã</dt>
+        <dd>{{ report.id }}</dd>
+        <dt>Lý do</dt>
+        <dd>{{ report.reason }}</dd>
+        <dt>Trạng thái</dt>
+        <dd>{{ statusLabel(report.status) }}</dd>
+        <dt>Ưu tiên</dt>
+        <dd>{{ priorityLabel(report.priority) }}</dd>
+        <dt>Tạo lúc</dt>
+        <dd>{{ report.createdAt }}</dd>
+        <dt>Xử lý lúc</dt>
+        <dd>{{ report.resolvedAt || 'Chưa xử lý' }}</dd>
+        <dt>Ghi chú cuối</dt>
+        <dd>{{ report.resolutionNote || 'Chưa có' }}</dd>
+        <dt>Người xử lý</dt>
+        <dd>{{ report.assignedAdminId || 'Chưa phân công' }}</dd>
+        <dt>Người báo cáo</dt>
+        <dd>{{ report.reporter?.displayName || report.reporterId }}</dd>
+        <dt>Loại nội dung</dt>
+        <dd>{{ typeLabel(report.targetType) }}</dd>
+        <dt>Mã nội dung</dt>
+        <dd>{{ report.targetId }}</dd>
+        <dt>Nội dung</dt>
+        <dd>{{ targetText(report) }}</dd>
+        <dt>Người tạo</dt>
+        <dd>{{ report.targetAuthor?.displayName || 'Không xác định' }}</dd>
+        <dt>Ngữ cảnh</dt>
+        <dd>{{ report.contextLabel || report.targetId }}</dd>
+        <dt>Bàn giao</dt>
+        <dd>{{ report.handoffNote || 'Chưa có' }}</dd>
+      </dl>
+      <p class="admin-note">{{ report.details || report.reason }}</p>
+      @if (report.internalNotes?.length) {
+        <h3>Ghi chú nội bộ</h3>
+        @for (internalNote of report.internalNotes; track internalNote) {
+          <p class="admin-note">{{ internalNote }}</p>
+        }
+      }
+      <h3>Lịch sử xử lý</h3>
+      @for (entry of report.history || []; track entry.id) {
+        <article class="history-entry">
+          <strong>{{ actionHistoryLabel(entry.action) }}</strong
+          ><span>{{ entry.note || 'Không có ghi chú' }}</span
+          ><small>{{ entry.createdAt }}</small>
+        </article>
+      } @empty {
+        <p class="admin-note">Chưa có thao tác xử lý.</p>
+      }
+      @if (validActions(report).length) {
+        <label class="note-field"
+          ><span
+            >Ghi chú xử lý
+            @if (report.status === 'pending') {
+              (bắt buộc)
+            }</span
+          ><textarea
+            class="ant-field"
+            [value]="note()"
+            [attr.aria-invalid]="!!localError()"
+            aria-describedby="moderation-note-error"
+            (input)="note.set(valueOf($event))"
+          ></textarea>
+        </label>
+      }
+      @if (localError() || moderation.error()) {
+        <p id="moderation-note-error" class="ant-error" role="alert">
+          {{ localError() || moderation.error() }}
+        </p>
+      }
+    }
+  </div>
+  <div drawer-footer class="admin-actions">
+    @if (selectedReport(); as report) {
+      @if (canAct()) {
+        @if (report.status === 'pending') {
+          <button
+            class="ant-btn ant-btn--danger"
+            type="button"
+            [disabled]="moderation.loading()"
+            (click)="act(report, 'hide')"
+          >
+            Ẩn nội dung</button
+          ><button
+            class="ant-btn ant-btn--ghost"
+            type="button"
+            [disabled]="moderation.loading()"
+            (click)="act(report, 'dismiss')"
+          >
+            Bỏ qua
+          </button>
+        }
+        @if (report.status === 'hidden') {
+          <button
+            class="ant-btn ant-btn--secondary"
+            type="button"
+            [disabled]="moderation.loading()"
+            (click)="act(report, 'restore')"
+          >
+            Khôi phục
+          </button>
+        }
+        @if (!validActions(report).length) {
+          <span class="admin-note">Báo cáo này không còn thao tác xử lý.</span>
+        }
+      }
+    }
+  </div>
+</app-admin-drawer>
+
+<app-admin-confirm-dialog
+  [open]="!!pendingAction()"
+  [request]="confirmationRequest()"
+  (confirmed)="confirmAction()"
+  (cancelled)="pendingAction.set(null)"
+/>

@@ -1,0 +1,56 @@
+import { Component, computed, input, output } from '@angular/core';
+
+import type { Post, ServiceCategory, User } from '../../core/models';
+import { StatusPill } from '../status-pill/status-pill';
+
+const CATEGORY_META: Record<ServiceCategory, { icon: string; label: string }> = {
+  food: { icon: '🥕', label: 'Đi chợ & ăn uống' },
+  laundry: { icon: '🧺', label: 'Giặt ủi' },
+  goods: { icon: '📦', label: 'Giao nhận đồ' },
+  repair: { icon: '🛠', label: 'Sửa chữa' },
+  support: { icon: '🤝', label: 'Hỗ trợ' },
+  other: { icon: '✨', label: 'Khác' },
+};
+
+@Component({
+  selector: 'app-post-card',
+  imports: [StatusPill],
+  templateUrl: './post-card.html',
+  styleUrl: './post-card.scss',
+})
+export class PostCard {
+  readonly post = input.required<Post>();
+  readonly author = input<User>();
+  readonly opened = output<Post>();
+  readonly acceptRequested = output<Post>();
+  readonly likeRequested = output<Post>();
+
+  protected readonly category = computed(() => CATEGORY_META[this.post().category]);
+  protected readonly typeLabel = computed(() =>
+    this.post().type === 'request' ? 'Cần giúp' : 'Cung cấp',
+  );
+  protected readonly actionLabel = computed(() =>
+    this.post().type === 'request' ? 'Nhận việc' : 'Đặt dịch vụ',
+  );
+  protected readonly price = computed(() =>
+    new Intl.NumberFormat('vi-VN').format(this.post().price),
+  );
+  protected readonly authorInitials = computed(() => {
+    const name = this.author()?.displayName ?? 'AntGo';
+    return name
+      .split(' ')
+      .slice(-2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase();
+  });
+  protected readonly timeLabel = computed(() => {
+    const elapsed = Math.max(0, Date.now() - new Date(this.post().createdAt).getTime());
+    const hours = Math.floor(elapsed / 3_600_000);
+    if (hours < 1) return 'Vừa đăng';
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    return days === 1 ? 'Hôm qua' : `${days} ngày trước`;
+  });
+  protected readonly isOpen = computed(() => this.post().status === 'open');
+}

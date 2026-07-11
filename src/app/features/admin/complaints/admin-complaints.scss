@@ -1,0 +1,245 @@
+@use '../admin-page';
+
+.admin-table tr.is-selected td {
+  background: var(--ant-surface-soft);
+}
+.complaint-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--ant-border);
+  margin-bottom: 16px;
+  overflow: auto;
+}
+.complaint-tabs button {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 9px 10px;
+  background: none;
+  color: var(--ant-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+.complaint-tabs button[aria-selected='true'] {
+  border-color: var(--ant-blue);
+  color: var(--ant-blue);
+}
+.workflow-progress {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+  border: 1px solid var(--ant-border);
+  border-radius: 4px;
+  padding: 12px;
+  background: #fffaf5;
+}
+.workflow-progress__summary {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.workflow-progress__summary div {
+  display: grid;
+  gap: 3px;
+}
+.workflow-progress__summary span:not(.admin-pill) {
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+.workflow-meter {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--ant-surface-soft);
+}
+.workflow-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ant-blue);
+}
+.workflow-steps {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.workflow-steps li {
+  min-height: 34px;
+  border: 1px solid var(--ant-border);
+  border-radius: 4px;
+  padding: 6px;
+  color: var(--ant-muted);
+  background: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.workflow-steps li.done {
+  border-color: var(--ant-green);
+  color: var(--ant-green);
+  background: var(--ant-green-soft);
+}
+.workflow-steps li.current {
+  border-color: var(--ant-blue);
+  color: #fff;
+  background: var(--ant-blue);
+}
+.complaint-section dl {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 9px 12px;
+  font-size: 13px;
+}
+.complaint-section dt {
+  color: var(--ant-muted);
+}
+.complaint-section dd {
+  margin: 0;
+}
+.evidence-card,
+.history-entry {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ant-border);
+  font-size: 13px;
+}
+.evidence-card span,
+.history-entry small {
+  color: var(--ant-muted);
+}
+.evidence-card p {
+  margin: 0;
+}
+.complaint-action {
+  display: grid;
+  gap: 9px;
+}
+.complaint-action label {
+  display: grid;
+  gap: 4px;
+  color: var(--ant-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-table tr {
+  cursor: pointer;
+}
+
+.admin-table span {
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+.timeline {
+  display: grid;
+  gap: 9px;
+  margin: 16px 0;
+}
+
+.timeline article {
+  border-left: 3px solid var(--ant-orange);
+  padding-left: 10px;
+}
+
+.timeline p {
+  margin: 2px 0 0;
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+.note-field {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0;
+  color: var(--ant-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.toolbar-actions,
+.result-summary,
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.toolbar-actions {
+  margin-left: auto;
+}
+.result-summary {
+  min-height: 32px;
+}
+.admin-table-wrap {
+  max-height: 600px;
+  overflow: auto;
+}
+.admin-table thead th {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  background: #fff;
+}
+.sort-button {
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-transform: inherit;
+}
+.sort-button:focus-visible,
+.detail-button:focus-visible,
+.complaint-tabs button:focus-visible {
+  outline: 2px solid var(--ant-blue);
+  outline-offset: 3px;
+}
+.table-state {
+  display: grid;
+  justify-items: start;
+  gap: 7px;
+  padding: 28px;
+  color: var(--ant-muted);
+}
+.table-state--error {
+  border: 1px solid var(--ant-border);
+  color: var(--ant-red);
+  background: #fff;
+}
+.pagination {
+  justify-content: flex-end;
+  padding: 10px 0;
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+.pagination label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.pagination select {
+  width: 72px;
+}
+.channel-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  border: 1px solid var(--ant-border);
+  padding: 10px 12px;
+}
+.channel-options legend {
+  padding: 0 5px;
+  color: var(--ant-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.channel-options label {
+  display: flex;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 6px;
+}
