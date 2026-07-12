@@ -245,7 +245,16 @@
 
             <label class="auth-check terms-check">
               <input type="checkbox" formControlName="acceptTerms" />
-              <span>Tôi đồng ý với các điều khoản của AntGo</span>
+              <span>
+                Tôi đồng ý với các
+                <button
+                  type="button"
+                  class="terms-link"
+                  (click)="openTermsDialog()"
+                >
+                  điều khoản của AntGo
+                </button>
+              </span>
             </label>
             @if (detailsForm.controls.acceptTerms.touched && detailsForm.controls.acceptTerms.invalid) {
               <p class="ant-error terms-error">Bạn cần đồng ý trước khi tiếp tục.</p>
@@ -265,3 +274,179 @@
   </div>
   <p class="register-copyright">© 2026 AntGo</p>
 </div>
+
+@if (termsDialogOpen()) {
+  <div class="terms-dialog-overlay" (click)="closeTermsDialog()">
+    <div class="terms-dialog" role="dialog" aria-modal="true" aria-labelledby="terms-title" (click)="$event.stopPropagation()">
+      <div class="terms-dialog__header">
+        <h2 id="terms-title" class="terms-dialog__title">Chính sách xử lý trách nhiệm và khiếu nại - AntGo</h2>
+        <button class="terms-dialog__close" type="button" (click)="closeTermsDialog()" aria-label="Đóng">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="terms-dialog__body">
+        <p class="terms-dialog__summary">{{ policy.summary }}</p>
+
+        @for (section of policy.sections; track section.id) {
+          <section class="terms-section">
+            <h3 class="terms-section__title">
+              @if (section.numbering) {
+                {{ section.numbering }}.
+              }
+              {{ section.title }}
+            </h3>
+
+            @if (section.blocks) {
+              @for (block of section.blocks; track $index) {
+                @switch (block.type) {
+                  @case ('paragraph') {
+                    <p class="terms-paragraph">{{ block.text }}</p>
+                  }
+                  @case ('list') {
+                    @if (block.ordered) {
+                      <ol class="terms-list terms-list--ordered">
+                        @for (item of block.items; track item.text) {
+                          <li>
+                            @if (item.label) {
+                              <strong>{{ item.label }}</strong>
+                            }
+                            {{ item.text }}
+                          </li>
+                        }
+                      </ol>
+                    } @else {
+                      <ul class="terms-list">
+                        @for (item of block.items; track item.text) {
+                          <li>
+                            @if (item.label) {
+                              <strong>{{ item.label }}</strong>
+                            }
+                            {{ item.text }}
+                          </li>
+                        }
+                      </ul>
+                    }
+                  }
+                  @case ('table') {
+                    <figure class="terms-table-wrap">
+                      @if (block.caption) {
+                        <figcaption class="terms-table-caption">{{ block.caption }}</figcaption>
+                      }
+                      <table class="terms-table">
+                        <thead>
+                          <tr>
+                            @for (col of block.columns; track col) {
+                              <th>{{ col }}</th>
+                            }
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of block.rows; track $index) {
+                            <tr>
+                              @for (cell of row; track $index) {
+                                <td>{{ cell }}</td>
+                              }
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </figure>
+                  }
+                  @case ('note') {
+                    <div class="terms-note">
+                      <strong>Lưu ý:</strong>
+                      {{ block.text }}
+                    </div>
+                  }
+                }
+              }
+            }
+
+            @if (section.subsections) {
+              @for (sub of section.subsections; track sub.id) {
+                <div class="terms-subsection">
+                  <h4 class="terms-subsection__title">
+                    @if (sub.numbering) {
+                      {{ sub.numbering }}
+                    }
+                    {{ sub.title }}
+                  </h4>
+
+                  @for (block of sub.blocks; track $index) {
+                    @switch (block.type) {
+                      @case ('paragraph') {
+                        <p class="terms-paragraph">{{ block.text }}</p>
+                      }
+                      @case ('list') {
+                        @if (block.ordered) {
+                          <ol class="terms-list terms-list--ordered">
+                            @for (item of block.items; track item.text) {
+                              <li>
+                                @if (item.label) {
+                                  <strong>{{ item.label }}</strong>
+                                }
+                                {{ item.text }}
+                              </li>
+                            }
+                          </ol>
+                        } @else {
+                          <ul class="terms-list">
+                            @for (item of block.items; track item.text) {
+                              <li>
+                                @if (item.label) {
+                                  <strong>{{ item.label }}</strong>
+                                }
+                                {{ item.text }}
+                              </li>
+                            }
+                          </ul>
+                        }
+                      }
+                      @case ('table') {
+                        <figure class="terms-table-wrap">
+                          @if (block.caption) {
+                            <figcaption class="terms-table-caption">{{ block.caption }}</figcaption>
+                          }
+                          <table class="terms-table">
+                            <thead>
+                              <tr>
+                                @for (col of block.columns; track col) {
+                                  <th>{{ col }}</th>
+                                }
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (row of block.rows; track $index) {
+                                <tr>
+                                  @for (cell of row; track $index) {
+                                    <td>{{ cell }}</td>
+                                  }
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        </figure>
+                      }
+                      @case ('note') {
+                        <div class="terms-note">
+                          <strong>Lưu ý:</strong>
+                          {{ block.text }}
+                        </div>
+                      }
+                    }
+                  }
+                </div>
+              }
+            }
+          </section>
+        }
+      </div>
+      <div class="terms-dialog__footer">
+        <button class="btn-submit" type="button" (click)="closeTermsDialog()">Tôi đã hiểu</button>
+      </div>
+    </div>
+  </div>
+}

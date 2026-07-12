@@ -1,0 +1,84 @@
+<main class="my-posts-page">
+  <section class="my-posts ant-container">
+    <div class="my-posts__heading">
+      <div>
+        <span class="ant-kicker">Quản lý bài đăng</span>
+        <h1>Đăng đơn của tôi</h1>
+        <p>Theo dõi và quản lý các yêu cầu, dịch vụ bạn đã đăng trên AntGo.</p>
+      </div>
+      <button type="button" class="ant-btn ant-btn--primary" (click)="openTypeModal()">
+        <span aria-hidden="true">+</span> Đăng bài mới
+      </button>
+    </div>
+
+    <div class="my-posts__tabs" aria-label="Lọc theo loại bài đăng">
+      @for (tab of tabs; track tab.value) {
+        <button
+          type="button"
+          [class.active]="selectedTab() === tab.value"
+          (click)="chooseTab(tab.value)"
+        >
+          {{ tab.label }}
+          @if (tab.value === 'request') {
+            <span class="my-posts__count">{{ requestCount() }}</span>
+          }
+          @if (tab.value === 'service') {
+            <span class="my-posts__count">{{ serviceCount() }}</span>
+          }
+        </button>
+      }
+    </div>
+
+    @if (filteredPosts().length) {
+      <div class="my-posts__grid">
+        @for (post of filteredPosts(); track post.id) {
+          <app-post-card [post]="post" [author]="userFor(post)" />
+        }
+      </div>
+    } @else {
+      <app-empty-state
+        icon="📝"
+        title="Chưa có bài đăng nào"
+        description="Bạn chưa đăng yêu cầu hay dịch vụ nào. Hãy tạo bài đăng đầu tiên để kết nối cộng đồng."
+      >
+        <button type="button" class="ant-btn ant-btn--primary" (click)="openTypeModal()">
+          Đăng bài mới
+        </button>
+      </app-empty-state>
+    }
+  </section>
+</main>
+
+@if (showTypeModal()) {
+  <div class="type-modal" role="dialog" aria-modal="true" aria-labelledby="type-modal-title">
+    <button
+      type="button"
+      class="type-modal__backdrop"
+      aria-label="Đóng"
+      (click)="closeTypeModal()"
+    ></button>
+    <div class="type-modal__content">
+      <div class="type-modal__header">
+        <div>
+          <h2 id="type-modal-title">Bạn muốn đăng gì?</h2>
+          <p>Chọn loại bài đăng phù hợp với nhu cầu của bạn</p>
+        </div>
+        <button type="button" class="type-modal__close" aria-label="Đóng" (click)="closeTypeModal()">
+          ×
+        </button>
+      </div>
+      <div class="type-modal__choices">
+        <a class="type-choice type-choice--request" routerLink="/posts/new/request" (click)="closeTypeModal()">
+          <span class="type-choice__icon" aria-hidden="true">🙌</span>
+          <strong>Yêu cầu</strong>
+          <span>Nhờ hàng xóm giúp việc, ship đồ, mua hộ...</span>
+        </a>
+        <a class="type-choice type-choice--service" routerLink="/posts/new/service" (click)="closeTypeModal()">
+          <span class="type-choice__icon" aria-hidden="true">✦</span>
+          <strong>Dịch vụ</strong>
+          <span>Cung cấp dịch vụ cho người trong khu...</span>
+        </a>
+      </div>
+    </div>
+  </div>
+}
