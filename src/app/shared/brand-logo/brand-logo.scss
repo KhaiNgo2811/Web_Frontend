@@ -14,12 +14,8 @@
   height: 40px;
   place-items: center;
   border-radius: 13px 13px 13px 5px;
-  color: #fff;
-  background: var(--ant-gradient);
+  object-fit: cover;
   box-shadow: var(--ant-shadow-orange);
-  font-family: 'Baloo 2', sans-serif;
-  font-size: 22px;
-  font-weight: 800;
 }
 
 .brand__name {
@@ -42,7 +38,6 @@
   width: 32px;
   height: 32px;
   border-radius: 10px 10px 10px 4px;
-  font-size: 18px;
 }
 
 .brand--compact .brand__name {

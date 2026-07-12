@@ -7,7 +7,7 @@
         <p>Theo dõi và quản lý các yêu cầu, dịch vụ bạn đã đăng trên AntGo.</p>
       </div>
       <button type="button" class="ant-btn ant-btn--primary" (click)="openTypeModal()">
-        <span aria-hidden="true">+</span> Đăng bài mới
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Đăng bài mới
       </button>
     </div>
 
@@ -37,12 +37,12 @@
       </div>
     } @else {
       <app-empty-state
-        icon="📝"
+        icon="bi-journal-text"
         title="Chưa có bài đăng nào"
         description="Bạn chưa đăng yêu cầu hay dịch vụ nào. Hãy tạo bài đăng đầu tiên để kết nối cộng đồng."
       >
         <button type="button" class="ant-btn ant-btn--primary" (click)="openTypeModal()">
-          Đăng bài mới
+          <i class="bi bi-plus-lg" aria-hidden="true"></i> Đăng bài mới
         </button>
       </app-empty-state>
     }
@@ -64,17 +64,17 @@
           <p>Chọn loại bài đăng phù hợp với nhu cầu của bạn</p>
         </div>
         <button type="button" class="type-modal__close" aria-label="Đóng" (click)="closeTypeModal()">
-          ×
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
         </button>
       </div>
       <div class="type-modal__choices">
         <a class="type-choice type-choice--request" routerLink="/posts/new/request" (click)="closeTypeModal()">
-          <span class="type-choice__icon" aria-hidden="true">🙌</span>
+          <i class="type-choice__icon bi bi-hand-index-thumb-fill" aria-hidden="true"></i>
           <strong>Yêu cầu</strong>
           <span>Nhờ hàng xóm giúp việc, ship đồ, mua hộ...</span>
         </a>
         <a class="type-choice type-choice--service" routerLink="/posts/new/service" (click)="closeTypeModal()">
-          <span class="type-choice__icon" aria-hidden="true">✦</span>
+          <i class="type-choice__icon bi bi-briefcase-fill" aria-hidden="true"></i>
           <strong>Dịch vụ</strong>
           <span>Cung cấp dịch vụ cho người trong khu...</span>
         </a>

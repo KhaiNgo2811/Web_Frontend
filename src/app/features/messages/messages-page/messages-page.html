@@ -19,7 +19,7 @@
       </button>
     </div>
     <label class="search"
-      ><span aria-hidden="true">⌕</span><input placeholder="Tìm cuộc trò chuyện..."
+      ><i class="bi bi-search" aria-hidden="true"></i><input placeholder="Tìm cuộc trò chuyện..."
     /></label>
     <div class="conversation-list">
       @for (conversation of store.conversations(); track conversation.id) {
@@ -57,7 +57,13 @@
         @for (message of conversationMessages(); track message.id) {
           <div class="message" [class.message--mine]="message.senderId === currentUserId()">
             @if (message.kind !== 'text') {
-              <span class="attachment">{{ message.kind === 'image' ? '▧ Ảnh' : '▦ QR mẫu' }}</span>
+              <span class="attachment">
+                @if (message.kind === 'image') {
+                  <i class="bi bi-image" aria-hidden="true"></i> Ảnh
+                } @else {
+                  <i class="bi bi-qr-code" aria-hidden="true"></i> QR mẫu
+                }
+              </span>
             }
             <p>{{ message.content }}</p>
             <time>11:45</time>
@@ -66,19 +72,24 @@
       </div>
       <footer>
         <div class="attach">
-          <button type="button" aria-label="Gửi ảnh" (click)="send('image')">▧</button
-          ><button type="button" aria-label="Gửi QR mẫu" (click)="send('qr')">▦</button>
+          <button type="button" aria-label="Gửi ảnh" (click)="send('image')">
+            <i class="bi bi-image" aria-hidden="true"></i></button
+          ><button type="button" aria-label="Gửi QR mẫu" (click)="send('qr')">
+            <i class="bi bi-qr-code" aria-hidden="true"></i>
+          </button>
         </div>
         <input
           [(ngModel)]="draft"
           (keydown.enter)="send()"
           placeholder="Nhắn tin..."
           aria-label="Nội dung tin nhắn"
-        /><button class="send" type="button" aria-label="Gửi tin nhắn" (click)="send()">➜</button>
+        /><button class="send" type="button" aria-label="Gửi tin nhắn" (click)="send()">
+          <i class="bi bi-send-fill" aria-hidden="true"></i>
+        </button>
       </footer>
     } @else {
       <app-empty-state
-        icon="✉"
+        icon="bi-chat-left-text"
         title="Chọn một cuộc trò chuyện"
         description="Tin nhắn gắn với đơn hàng giúp hai bên trao đổi minh bạch."
       />

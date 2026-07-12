@@ -4,12 +4,12 @@
     [class]="'post-card__visual post-card__visual--' + post().category"
   >
     <span class="post-card__pattern" aria-hidden="true"></span>
-    <span class="post-card__category-icon" aria-hidden="true">{{ category().icon }}</span>
+    <i class="post-card__category-icon" [class]="'bi ' + category().icon" aria-hidden="true"></i>
     <span class="post-card__type" [class.post-card__type--service]="post().type === 'service'">
       {{ typeLabel() }}
     </span>
     @if (post().isPriority) {
-      <app-status-pill status="priority">⚡ Ưu tiên</app-status-pill>
+      <app-status-pill status="priority"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> Ưu tiên</app-status-pill>
     }
     <button
       type="button"
@@ -17,7 +17,8 @@
       [attr.aria-label]="'Yêu thích ' + post().title"
       (click)="likeRequested.emit(post())"
     >
-      <span aria-hidden="true">♡</span> {{ post().likedBy.length }}
+      <i [class]="liked() ? 'bi bi-heart-fill' : 'bi bi-heart'" aria-hidden="true"></i>
+      {{ post().likedBy.length }}
     </button>
   </div>
 
@@ -33,12 +34,12 @@
     <p class="post-card__description">{{ post().description }}</p>
 
     <div class="post-card__meta">
-      <span aria-hidden="true">⌖</span>
+      <i class="bi bi-geo-alt" aria-hidden="true"></i>
       <span>{{ author()?.location?.building ?? 'Trong khu vực của bạn' }}</span>
     </div>
     @if (post().expectedTime) {
       <div class="post-card__meta">
-        <span aria-hidden="true">◷</span>
+        <i class="bi bi-clock" aria-hidden="true"></i>
         <span>{{ post().expectedTime }}</span>
       </div>
     }
@@ -49,7 +50,7 @@
         <strong>{{ author()?.displayName ?? 'Thành viên AntGo' }}</strong>
         <small>
           @if (author()?.isVerified) {
-            <span class="verified">✓</span>
+            <i class="bi bi-patch-check-fill verified" aria-hidden="true"></i>
           }
           {{ author()?.reputationScore ?? 'Mới' }} sao
         </small>

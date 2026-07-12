@@ -9,7 +9,9 @@
     </nav>
     <div class="site-actions">
       <button type="button" class="location-button" (click)="toggle('location')">
-        <span aria-hidden="true">●</span> {{ location() }} <span aria-hidden="true">⌄</span>
+        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+        {{ location() }}
+        <i class="bi bi-chevron-down" aria-hidden="true"></i>
       </button>
       <button
         type="button"
@@ -17,7 +19,8 @@
         aria-label="Thông báo"
         (click)="toggle('notifications')"
       >
-        ♢<span class="notification-dot"></span>
+        <i class="bi bi-bell" aria-hidden="true"></i>
+        <span class="notification-dot"></span>
       </button>
       <button
         type="button"
@@ -32,7 +35,9 @@
         <div class="nav-menu nav-menu--location">
           <strong>Chọn khu vực</strong>
           @for (item of ['KTX Khu A', 'KTX Khu B', 'KTX Khu C']; track item) {
-            <button type="button" (click)="chooseLocation(item)"><span>⌖</span>{{ item }}</button>
+            <button type="button" (click)="chooseLocation(item)">
+              <i class="bi bi-geo-alt" aria-hidden="true"></i>{{ item }}
+            </button>
           }
         </div>
       }
@@ -47,8 +52,8 @@
           >
           <a routerLink="/notifications" (click)="openMenu.set(null)">Đơn hàng đã hoàn thành</a>
           <a class="menu-all" routerLink="/notifications" (click)="openMenu.set(null)"
-            >Xem tất cả →</a
-          >
+            >Xem tất cả <i class="bi bi-arrow-right" aria-hidden="true"></i
+          ></a>
         </div>
       }
       @if (openMenu() === 'account') {

@@ -1,6 +1,6 @@
 <app-ui-dialog title="Xác nhận kết nối" [width]="520" (closed)="cancelled.emit()">
   <div class="accept-dialog__intro">
-    <span class="accept-dialog__icon" aria-hidden="true">🤝</span>
+    <i class="accept-dialog__icon bi bi-hand-thumbs-up-fill" aria-hidden="true"></i>
     <div>
       <span class="ant-kicker">AntGo kết nối cộng đồng</span>
       <p>Bạn sắp gửi yêu cầu kết nối đến {{ author()?.displayName ?? 'người đăng' }}.</p>
@@ -29,7 +29,7 @@
   <div class="accept-dialog__counter">{{ note().length }}/300</div>
 
   <div class="accept-dialog__assurance">
-    <span aria-hidden="true">✓</span>
+    <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
     <p>
       <strong>Chưa phát sinh thanh toán.</strong> Hai bên có thể trao đổi trước khi xác nhận đơn.
     </p>

@@ -105,7 +105,7 @@
         </div>
         <div>
           <h3>{{ userName(application.applicantId) }}</h3>
-          <p>★ 4.9 · Đã hoàn thành 51 công việc</p>
+          <p><i class="bi bi-star-fill" aria-hidden="true"></i> 4.9 · Đã hoàn thành 51 công việc</p>
         </div>
       </div>
       <div class="message-card">
@@ -121,10 +121,10 @@
         ><span>Đang thực hiện</span><span>Hoàn thành</span>
       </div>
       <div class="detail-actions">
-        <button class="ant-btn ant-btn--secondary" type="button">Nhắn tin</button>
+        <button class="ant-btn ant-btn--secondary" type="button"><i class="bi bi-chat-dots" aria-hidden="true"></i> Nhắn tin</button>
         @if (application.status === 'pending') {
           <button class="ant-btn ant-btn--primary" type="button" (click)="acceptApplication()">
-            Chọn ứng viên
+            <i class="bi bi-check-lg" aria-hidden="true"></i> Chọn ứng viên
           </button>
         }
       </div>
@@ -164,13 +164,13 @@
         <a
           class="ant-btn ant-btn--secondary"
           [routerLink]="['/messages', 'conversation-' + order.postId.replace('post-', '')]"
-          >Mở chat</a
+          ><i class="bi bi-chat-dots" aria-hidden="true"></i> Mở chat</a
         >
       </div>
       <div class="detail-actions">
         @if (order.status === 'pending') {
           <button class="ant-btn ant-btn--primary" type="button" (click)="transition('start')">
-            Bắt đầu công việc
+            <i class="bi bi-play-fill" aria-hidden="true"></i> Bắt đầu công việc
           </button>
         }
         @if (order.status === 'in_progress') {
@@ -179,21 +179,21 @@
             type="button"
             (click)="transition('confirm_complete')"
           >
-            ✓ Hoàn thành
+            <i class="bi bi-check-lg" aria-hidden="true"></i> Hoàn thành
           </button>
         }
         @if (order.status === 'completed') {
           <button class="ant-btn ant-btn--primary" type="button" (click)="dialog.set('review')">
-            Đánh giá
+            <i class="bi bi-star-fill" aria-hidden="true"></i> Đánh giá
           </button>
         }
         @if (order.status !== 'completed' && order.status !== 'cancelled') {
           <button class="ant-btn ant-btn--danger" type="button" (click)="dialog.set('cancel')">
-            Huỷ
+            <i class="bi bi-x-lg" aria-hidden="true"></i> Huỷ
           </button>
         }
         <button class="ant-btn ant-btn--ghost" type="button" (click)="dialog.set('complaint')">
-          Báo cáo vấn đề
+          <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Báo cáo vấn đề
         </button>
       </div>
     } @else {

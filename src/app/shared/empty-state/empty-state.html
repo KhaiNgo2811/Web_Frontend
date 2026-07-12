@@ -1,5 +1,5 @@
 <section class="empty-state">
-  <span class="empty-state__icon" aria-hidden="true">{{ icon() }}</span>
+  <i class="empty-state__icon" [class]="'bi ' + icon()" aria-hidden="true"></i>
   <h3>{{ title() }}</h3>
   @if (description()) {
     <p>{{ description() }}</p>
