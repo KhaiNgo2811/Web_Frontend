@@ -52,6 +52,11 @@ import type {
   InboxAssignmentInput,
   InboxFilter,
   InboxItem,
+  BoostPostInput,
+  ClaimWalletEarningInput,
+  PurchaseProviderPlanInput,
+  PurchaseTokenPackageInput,
+  WalletSummary,
 } from '../models';
 
 export abstract class AuthRepository {
@@ -163,4 +168,12 @@ export abstract class AuditRepository {
 export abstract class InboxRepository {
   abstract list(actorId: string, filter?: InboxFilter): Observable<InboxItem[]>;
   abstract assign(input: InboxAssignmentInput): Observable<InboxItem[]>;
+}
+
+export abstract class WalletRepository {
+  abstract getSummary(userId: string): Observable<WalletSummary>;
+  abstract claimEarning(input: ClaimWalletEarningInput): Observable<WalletSummary>;
+  abstract purchasePackage(input: PurchaseTokenPackageInput): Observable<WalletSummary>;
+  abstract boostPost(input: BoostPostInput): Observable<WalletSummary>;
+  abstract purchaseProviderPlan(input: PurchaseProviderPlanInput): Observable<WalletSummary>;
 }

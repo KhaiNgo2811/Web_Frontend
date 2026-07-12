@@ -186,6 +186,13 @@ export const routes: Routes = [
           import('./features/messages/messages-page/messages-page').then((m) => m.MessagesPage),
       },
       {
+        path: 'wallet',
+        title: 'Ví Ant Xu | AntGo',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/wallet/wallet-page/wallet-page').then((m) => m.WalletPage),
+      },
+      {
         path: 'notifications',
         canActivate: [authGuard],
         loadComponent: () =>

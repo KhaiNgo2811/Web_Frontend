@@ -10,7 +10,7 @@ interface StoredDatabase {
 
 const DATABASE_KEY = 'antgo.mock-db';
 const SESSION_KEY = 'antgo.session';
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 const COLLECTION_KEYS: (keyof MockDatabaseData)[] = [
   'users',
   'authAccounts',
@@ -28,6 +28,10 @@ const COLLECTION_KEYS: (keyof MockDatabaseData)[] = [
   'adminAccountActivities',
   'auditEvents',
   'exportJobs',
+  'walletTransactions',
+  'walletRewardClaims',
+  'walletBoosts',
+  'walletSubscriptions',
 ];
 
 function clone<T>(value: T): T {
