@@ -35,14 +35,10 @@ nav a {
   color: var(--ant-muted);
   font-size: 14px;
   font-weight: 600;
+  transition: color var(--ant-transition);
 }
 
-nav a.active,
-nav a:hover {
-  color: var(--ant-orange-deep);
-}
-
-nav a.active::after {
+nav a::after {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -51,6 +47,18 @@ nav a.active::after {
   border-radius: 3px 3px 0 0;
   background: var(--ant-orange);
   content: '';
+  transform: scaleX(0);
+  transition: transform var(--ant-transition);
+}
+
+nav a.active,
+nav a:hover {
+  color: var(--ant-orange-deep);
+}
+
+nav a.active::after,
+nav a:hover::after {
+  transform: scaleX(1);
 }
 
 .site-actions {
@@ -67,6 +75,8 @@ nav a.active::after {
   border: 1px solid var(--ant-border);
   color: var(--ant-ink-soft);
   background: #fff;
+  cursor: pointer;
+  transition: all var(--ant-transition);
 }
 
 .location-button {
@@ -96,6 +106,25 @@ nav a.active::after {
   background: var(--ant-gradient);
   font-size: 12px;
   font-weight: 800;
+}
+
+@media (hover: hover) {
+  .location-button:hover {
+    border-color: var(--ant-orange);
+    color: var(--ant-orange-deep);
+    background: var(--ant-orange-soft);
+  }
+
+  .icon-button:hover {
+    color: var(--ant-orange);
+    border-color: var(--ant-orange);
+    transform: scale(1.1);
+  }
+
+  .avatar-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px rgb(249 115 22 / 25%);
+  }
 }
 
 .notification-dot {
