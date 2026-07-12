@@ -16,6 +16,10 @@ import type {
   Review,
   StoredAuthChallenge,
   User,
+  WalletBoost,
+  WalletRewardClaim,
+  WalletSubscription,
+  WalletTransaction,
 } from '../models';
 import {
   DEMO_BUSINESS_CONFIG,
@@ -28,6 +32,12 @@ import { DEMO_CONVERSATIONS, DEMO_MESSAGES, DEMO_NOTIFICATIONS } from './demo-co
 import { DEMO_APPLICATIONS, DEMO_ORDERS, DEMO_REVIEWS } from './demo-orders';
 import { DEMO_POSTS } from './demo-posts';
 import { DEMO_AUTH_ACCOUNTS, DEMO_USERS } from './demo-users';
+import {
+  DEMO_WALLET_BOOSTS,
+  DEMO_WALLET_REWARD_CLAIMS,
+  DEMO_WALLET_SUBSCRIPTIONS,
+  DEMO_WALLET_TRANSACTIONS,
+} from './demo-wallet';
 
 export interface MockDatabaseData {
   users: User[];
@@ -47,6 +57,10 @@ export interface MockDatabaseData {
   adminAccountActivities: AdminAccountActivity[];
   auditEvents: AuditEvent[];
   exportJobs: ExportJob[];
+  walletTransactions: WalletTransaction[];
+  walletRewardClaims: WalletRewardClaim[];
+  walletBoosts: WalletBoost[];
+  walletSubscriptions: WalletSubscription[];
 }
 
 export const DEMO_DATABASE: MockDatabaseData = {
@@ -67,4 +81,8 @@ export const DEMO_DATABASE: MockDatabaseData = {
   adminAccountActivities: DEMO_ADMIN_ACCOUNT_ACTIVITIES,
   auditEvents: [],
   exportJobs: [],
+  walletTransactions: DEMO_WALLET_TRANSACTIONS,
+  walletRewardClaims: DEMO_WALLET_REWARD_CLAIMS,
+  walletBoosts: DEMO_WALLET_BOOSTS,
+  walletSubscriptions: DEMO_WALLET_SUBSCRIPTIONS,
 };

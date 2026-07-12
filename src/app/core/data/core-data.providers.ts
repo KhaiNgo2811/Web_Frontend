@@ -12,6 +12,7 @@ import { LocalNotificationRepository } from './local-notification-repository';
 import { LocalOrderRepository } from './local-order-repository';
 import { LocalPostRepository } from './local-post-repository';
 import { LocalUserRepository } from './local-user-repository';
+import { LocalWalletRepository } from './local-wallet-repository';
 import {
   ApplicationRepository,
   AuthRepository,
@@ -26,6 +27,7 @@ import {
   OrderRepository,
   PostRepository,
   UserRepository,
+  WalletRepository,
 } from './repositories';
 
 export function provideAntgoCore(): EnvironmentProviders {
@@ -43,5 +45,6 @@ export function provideAntgoCore(): EnvironmentProviders {
     { provide: ConfigRepository, useClass: LocalConfigRepository },
     { provide: AuditRepository, useClass: LocalAuditRepository },
     { provide: InboxRepository, useClass: LocalInboxRepository },
+    { provide: WalletRepository, useClass: LocalWalletRepository },
   ]);
 }

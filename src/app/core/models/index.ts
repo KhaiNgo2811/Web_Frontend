@@ -11,3 +11,4 @@ export * from './notification';
 export * from './order';
 export * from './post';
 export * from './user';
+export * from './wallet';

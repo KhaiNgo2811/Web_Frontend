@@ -5,3 +5,4 @@ export * from './repositories';
 export * from './local-admin-repositories';
 export { LocalAuditRepository } from './local-audit-repository';
 export { LocalInboxRepository } from './local-inbox-repository';
+export { LocalWalletRepository } from './local-wallet-repository';
