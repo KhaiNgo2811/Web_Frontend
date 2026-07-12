@@ -4,13 +4,21 @@
     <h1>{{ type === 'request' ? 'Bạn cần giúp việc gì?' : 'Bạn muốn cung cấp gì?' }}</h1>
     <p>Thông tin rõ ràng giúp bạn kết nối nhanh hơn với đúng người trong cộng đồng.</p>
     <div class="tips ant-card">
-      <strong>Gợi ý viết bài tốt</strong><span>✓ Tiêu đề cụ thể, dễ hiểu</span
-      ><span>✓ Nêu rõ thời gian và mức giá</span><span>✓ Không chia sẻ thông tin nhạy cảm</span>
+      <strong>Gợi ý viết bài tốt</strong>
+      <span><i class="bi bi-check-lg" aria-hidden="true"></i> Tiêu đề cụ thể, dễ hiểu</span>
+      <span><i class="bi bi-check-lg" aria-hidden="true"></i> Nêu rõ thời gian và mức giá</span>
+      <span><i class="bi bi-check-lg" aria-hidden="true"></i> Không chia sẻ thông tin nhạy cảm</span>
     </div>
   </aside>
 
   <form class="editor-form ant-card" [formGroup]="form" (ngSubmit)="submit()">
-    <div class="type-chip">{{ type === 'request' ? '🙌 Cần giúp' : '✦ Cung cấp dịch vụ' }}</div>
+    <div class="type-chip">
+      @if (type === 'request') {
+        <i class="bi bi-hand-index-thumb-fill" aria-hidden="true"></i> Cần giúp
+      } @else {
+        <i class="bi bi-briefcase-fill" aria-hidden="true"></i> Cung cấp dịch vụ
+      }
+    </div>
     <label
       ><span class="ant-label">Tiêu đề</span
       ><input
@@ -65,14 +73,14 @@
     <div class="form-actions">
       @if (postId) {
         <button class="ant-btn ant-btn--ghost" type="button" (click)="dialog.set('extend')">
-          Gia hạn</button
+          <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Gia hạn</button
         ><button class="ant-btn ant-btn--danger" type="button" (click)="dialog.set('delete')">
-          Xoá bài
+          <i class="bi bi-trash" aria-hidden="true"></i> Xoá bài
         </button>
       }
-      <a class="ant-btn ant-btn--secondary" routerLink="/feed">Huỷ</a>
+      <a class="ant-btn ant-btn--secondary" routerLink="/feed"><i class="bi bi-arrow-left" aria-hidden="true"></i> Huỷ</a>
       <button class="ant-btn ant-btn--primary" type="submit">
-        {{ postId ? 'Lưu thay đổi' : 'Đăng bài ngay' }}
+        <i class="bi bi-send-fill" aria-hidden="true"></i> {{ postId ? 'Lưu thay đổi' : 'Đăng bài ngay' }}
       </button>
     </div>
   </form>

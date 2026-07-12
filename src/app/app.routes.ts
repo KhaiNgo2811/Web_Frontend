@@ -35,6 +35,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'forgot-password/verify',
+        loadComponent: () =>
+          import('./features/auth/password-recovery/password-recovery').then(
+            (m) => m.PasswordRecoveryPage,
+          ),
+      },
+      {
         path: 'forgot-password/reset',
         loadComponent: () =>
           import('./features/auth/password-recovery/password-recovery').then(
@@ -120,6 +127,12 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () =>
           import('./features/posts/post-chooser/post-chooser').then((m) => m.PostChooser),
+      },
+      {
+        path: 'my-posts',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/posts/my-posts/my-posts').then((m) => m.MyPostsPage),
       },
       {
         path: 'posts/new/request',

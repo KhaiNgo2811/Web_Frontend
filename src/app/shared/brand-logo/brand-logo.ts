@@ -7,4 +7,5 @@ import { Component, input } from '@angular/core';
 })
 export class BrandLogo {
   readonly compact = input(false);
+  readonly logoUrl = input('assets/images/logo-placeholder.png');
 }

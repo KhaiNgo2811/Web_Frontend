@@ -10,7 +10,7 @@
       aria-label="Đóng chi tiết"
       (click)="closed.emit()"
     >
-      ×
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
     </button>
   </header>
 
@@ -22,7 +22,7 @@
       >
         <span class="detail-panel__type">{{ typeLabel() }}</span>
         @if (post().isPriority) {
-          <span class="detail-panel__priority">⚡ Tin ưu tiên</span>
+          <span class="detail-panel__priority"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> Tin ưu tiên</span>
         }
         <span class="detail-panel__cover-mark" aria-hidden="true">AG</span>
       </div>
@@ -38,15 +38,15 @@
 
       <dl class="detail-panel__facts">
         <div>
-          <dt>⌖ Khu vực</dt>
+          <dt><i class="bi bi-geo-alt" aria-hidden="true"></i> Khu vực</dt>
           <dd>{{ author()?.location?.building ?? 'Khu vực nội thành' }}</dd>
         </div>
         <div>
-          <dt>◷ Thời gian mong muốn</dt>
+          <dt><i class="bi bi-clock" aria-hidden="true"></i> Thời gian mong muốn</dt>
           <dd>{{ post().expectedTime ?? 'Trao đổi trực tiếp' }}</dd>
         </div>
         <div>
-          <dt>◈ Ngân sách</dt>
+          <dt><i class="bi bi-cash-coin" aria-hidden="true"></i> Ngân sách</dt>
           <dd class="detail-panel__price">{{ price() }}đ</dd>
         </div>
       </dl>
@@ -66,7 +66,7 @@
           <small>Người đăng</small>
           <h2>{{ author()?.displayName ?? 'Thành viên AntGo' }}</h2>
           @if (author()?.isVerified) {
-            <span class="detail-panel__verified">✓ Đã xác thực</span>
+            <span class="detail-panel__verified"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Đã xác thực</span>
           }
         </div>
       </div>
@@ -96,7 +96,7 @@
         class="ant-btn ant-btn--secondary"
         (click)="messageRequested.emit(post())"
       >
-        <span aria-hidden="true">◌</span> Nhắn tin trao đổi
+        <i class="bi bi-chat-dots" aria-hidden="true"></i> Nhắn tin trao đổi
       </button>
       <p class="detail-panel__hint">Bạn chưa bị tính phí khi gửi yêu cầu kết nối.</p>
     </aside>

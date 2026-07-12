@@ -10,7 +10,7 @@
       type="button"
       (click)="store.markAllNotificationsRead()"
     >
-      Đánh dấu tất cả đã đọc
+      <i class="bi bi-check-all" aria-hidden="true"></i> Đánh dấu tất cả đã đọc
     </button>
   </header>
   <div class="notification-card ant-card">
@@ -20,13 +20,15 @@
         [class.unread]="!notification.read"
         (click)="store.markNotificationRead(notification.id)"
       >
-        <span class="notification-icon" aria-hidden="true">{{
-          notification.type.includes('review')
-            ? '★'
-            : notification.type.includes('message')
-              ? '✉'
-              : '✓'
-        }}</span>
+        <span class="notification-icon" aria-hidden="true">
+          @if (notification.type.includes('review')) {
+            <i class="bi bi-star-fill"></i>
+          } @else if (notification.type.includes('message')) {
+            <i class="bi bi-chat-left-text"></i>
+          } @else {
+            <i class="bi bi-check-lg"></i>
+          }
+        </span>
         <span
           ><strong>{{ notification.title }}</strong>
           <p>{{ notification.body }}</p>
@@ -38,7 +40,7 @@
       </a>
     } @empty {
       <app-empty-state
-        icon="♢"
+        icon="bi-bell-slash"
         title="Bạn đã xem hết"
         description="Thông báo mới sẽ xuất hiện tại đây."
       />

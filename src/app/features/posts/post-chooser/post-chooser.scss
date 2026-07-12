@@ -41,7 +41,9 @@ h1 {
   box-shadow: var(--ant-shadow-sm);
   transition:
     transform var(--ant-transition),
-    box-shadow var(--ant-transition);
+    box-shadow var(--ant-transition),
+    border-color var(--ant-transition);
+  cursor: pointer;
 }
 
 .choice::before {
@@ -57,6 +59,11 @@ h1 {
 .choice:hover {
   transform: translateY(-5px);
   box-shadow: var(--ant-shadow-md);
+  border-color: var(--ant-orange);
+}
+
+.choice--service:hover {
+  border-color: var(--ant-green);
 }
 
 .choice__icon {
@@ -68,6 +75,11 @@ h1 {
   border-radius: 24px;
   background: var(--ant-orange-soft);
   font-size: 34px;
+  transition: transform var(--ant-transition);
+}
+
+.choice:hover .choice__icon {
+  transform: scale(1.08);
 }
 
 .choice--service .choice__icon {
@@ -102,4 +114,10 @@ h1 {
   color: var(--ant-muted);
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
+  transition: color var(--ant-transition);
+}
+
+.chooser__back:hover {
+  color: var(--ant-orange-deep);
 }

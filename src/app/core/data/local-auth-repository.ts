@@ -102,7 +102,7 @@ export class LocalAuthRepository extends AuthRepository {
           data.authChallenges.find((candidate) => candidate.id === challengeId),
           'Mã xác thực không còn hiệu lực.',
         );
-        if (challenge.kind !== 'registration' || otp !== '000000') {
+        if (challenge.kind !== 'registration' || otp !== '123456') {
           throw new RepositoryError('Mã OTP không chính xác.');
         }
         if (Date.parse(challenge.expiresAt) < Date.now()) {

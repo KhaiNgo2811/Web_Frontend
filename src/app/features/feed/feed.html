@@ -2,7 +2,7 @@
   <section class="hero" aria-labelledby="hero-title">
     <div class="ant-container hero__layout">
       <div class="hero__content">
-        <span class="hero__eyebrow"><i aria-hidden="true"></i> Cộng đồng tử tế quanh bạn</span>
+        <span class="hero__eyebrow"><i class="bi bi-stars" aria-hidden="true"></i> Cộng đồng tử tế quanh bạn</span>
         <h1 id="hero-title">Việc nhỏ sẻ chia,<br /><em>niềm vui lan tỏa.</em></h1>
         <p>
           Đăng điều bạn cần hoặc tìm một công việc phù hợp. AntGo giúp hàng xóm kết nối nhanh, an
@@ -10,7 +10,7 @@
         </p>
 
         <div class="hero__search" role="search">
-          <span aria-hidden="true">⌕</span>
+          <i class="bi bi-search" aria-hidden="true"></i>
           <input
             type="search"
             aria-label="Tìm kiếm bài đăng"
@@ -26,8 +26,8 @@
             <span>AN</span><span>MH</span><span>LN</span><span>+</span>
           </div>
           <p><strong>2.400+ thành viên</strong><br />đang sẵn sàng giúp đỡ</p>
-          <i aria-hidden="true"></i>
-          <p><strong>4,9 / 5</strong><br />điểm tin cậy cộng đồng</p>
+          <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+          <p><strong>Việc đã hoàn thành</strong><br />nhanh hơn mong đợi!</p>
         </div>
       </div>
 
@@ -37,11 +37,11 @@
           <span>ant</span><strong>Go</strong><small>cùng nhau, đi xa hơn</small>
         </div>
         <div class="hero__float hero__float--top">
-          <span>✓</span>
+          <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
           <p><strong>Việc đã hoàn thành</strong>nhanh hơn mong đợi!</p>
         </div>
         <div class="hero__float hero__float--bottom">
-          <span>★</span>
+          <i class="bi bi-star-fill" aria-hidden="true"></i>
           <p><strong>Hàng xóm tin cậy</strong>4,9 điểm đánh giá</p>
         </div>
         <div class="hero__trail"><i></i><i></i><i></i><i></i><i></i></div>
@@ -85,8 +85,7 @@
             [class.active]="selectedCategory() === category.value"
             (click)="setCategory(category.value)"
           >
-            <span aria-hidden="true">{{ category.icon }}</span
-            >{{ category.label }}
+            <i [class]="'bi ' + category.icon" aria-hidden="true"></i>{{ category.label }}
           </button>
         }
       </div>
@@ -127,11 +126,11 @@
         }
       </div>
       <button type="button" class="marketplace__more ant-btn ant-btn--secondary">
-        Xem thêm bài đăng <span aria-hidden="true">↓</span>
+        Xem thêm bài đăng <i class="bi bi-arrow-down" aria-hidden="true"></i>
       </button>
     } @else {
       <app-empty-state
-        icon="⌕"
+        icon="bi-search"
         title="Chưa tìm thấy bài đăng phù hợp"
         description="Thử thay đổi từ khóa hoặc mở rộng danh mục để xem thêm kết quả."
       >
@@ -173,9 +172,11 @@
 
   @if (successMessage()) {
     <div class="feed-toast" role="status">
-      <span aria-hidden="true">✓</span>
+      <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
       <p>{{ successMessage() }}</p>
-      <button type="button" aria-label="Đóng thông báo" (click)="successMessage.set('')">×</button>
+      <button type="button" aria-label="Đóng thông báo" (click)="successMessage.set('')">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
     </div>
   }
 </main>

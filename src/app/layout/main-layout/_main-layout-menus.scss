@@ -24,11 +24,14 @@
   background: transparent;
   font-size: 13px;
   text-align: left;
+  cursor: pointer;
+  transition: background var(--ant-transition), color var(--ant-transition);
 }
 
 .nav-menu a:hover,
 .nav-menu button:hover {
   background: var(--ant-surface-soft);
+  color: var(--ant-orange-deep);
 }
 
 .nav-menu--location {
@@ -112,6 +115,14 @@
 .site-footer__top nav {
   gap: 26px;
   margin-left: auto;
+}
+
+.site-footer__top nav a {
+  transition: color var(--ant-transition);
+}
+
+.site-footer__top nav a:hover {
+  color: var(--ant-orange-deep);
 }
 
 .site-footer__bottom {

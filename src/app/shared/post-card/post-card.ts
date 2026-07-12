@@ -4,12 +4,12 @@ import type { Post, ServiceCategory, User } from '../../core/models';
 import { StatusPill } from '../status-pill/status-pill';
 
 const CATEGORY_META: Record<ServiceCategory, { icon: string; label: string }> = {
-  food: { icon: '🥕', label: 'Đi chợ & ăn uống' },
-  laundry: { icon: '🧺', label: 'Giặt ủi' },
-  goods: { icon: '📦', label: 'Giao nhận đồ' },
-  repair: { icon: '🛠', label: 'Sửa chữa' },
-  support: { icon: '🤝', label: 'Hỗ trợ' },
-  other: { icon: '✨', label: 'Khác' },
+  food: { icon: 'bi-basket2-fill', label: 'Đi chợ & ăn uống' },
+  laundry: { icon: 'bi-droplet', label: 'Giặt ủi' },
+  goods: { icon: 'bi-box-seam-fill', label: 'Giao nhận đồ' },
+  repair: { icon: 'bi-tools', label: 'Sửa chữa' },
+  support: { icon: 'bi-hand-thumbs-up-fill', label: 'Hỗ trợ' },
+  other: { icon: 'bi-three-dots', label: 'Khác' },
 };
 
 @Component({
@@ -53,4 +53,5 @@ export class PostCard {
     return days === 1 ? 'Hôm qua' : `${days} ngày trước`;
   });
   protected readonly isOpen = computed(() => this.post().status === 'open');
+  protected readonly liked = computed(() => this.post().likedBy.length > 0);
 }

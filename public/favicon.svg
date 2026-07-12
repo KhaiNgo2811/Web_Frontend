@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AntGo">
+  <defs>
+    <linearGradient id="antgo-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffb347" />
+      <stop offset="1" stop-color="#ff7a1a" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#antgo-gradient)" />
+  <path
+    d="M19 46L31.2 18H36.8L49 46H42.6L40 39.8H28L25.4 46H19ZM30.1 34.7H37.9L34 25.3 30.1 34.7Z"
+    fill="#fff"
+  />
+</svg>

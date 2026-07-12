@@ -9,6 +9,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 
 import { SessionStore } from '../../../core/stores/session.store';
+import { ANTGO_POLICY } from '../../../core/mock/demo-policy';
 import { Stepper } from '../shared/stepper/stepper';
 import { BrandLogo } from '../../../shared/brand-logo/brand-logo';
 
@@ -39,7 +40,9 @@ export class RegisterPage implements OnInit, OnDestroy {
   readonly resendCountdown = signal(0);
   readonly registeredPhone = signal('');
   readonly registeredName = signal('');
+  readonly termsDialogOpen = signal(false);
   readonly otpSlots = [0, 1, 2, 3, 4, 5];
+  readonly policy = ANTGO_POLICY;
 
   readonly stepperSteps = [
     { label: 'Thông tin' },
@@ -137,6 +140,14 @@ export class RegisterPage implements OnInit, OnDestroy {
 
   goHome(): void {
     void this.router.navigateByUrl('/feed');
+  }
+
+  openTermsDialog(): void {
+    this.termsDialogOpen.set(true);
+  }
+
+  closeTermsDialog(): void {
+    this.termsDialogOpen.set(false);
   }
 
   otpDigit(index: number): string {

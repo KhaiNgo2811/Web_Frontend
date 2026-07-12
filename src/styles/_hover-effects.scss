@@ -1,0 +1,176 @@
+// ------------------------------------------------------------------
+// Hover effect utilities & mixins — AntGo design system
+// ------------------------------------------------------------------
+// Bọc tất cả hover effect trong @media (hover: hover) để tránh lỗi
+// "sticky hover" trên touch devices.
+// ------------------------------------------------------------------
+
+// Mixin: nâng nhẹ element khi hover (dùng cho card, button)
+@mixin hover-lift($y: -4px, $shadow: var(--ant-shadow-md)) {
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY($y);
+      box-shadow: $shadow;
+    }
+  }
+}
+
+// Mixin: phóng to nhẹ khi hover (dùng cho icon, avatar)
+@mixin hover-scale($scale: 1.05) {
+  @media (hover: hover) {
+    &:hover {
+      transform: scale($scale);
+    }
+  }
+}
+
+// Mixin: đổi màu chữ khi hover (dùng cho link, text)
+@mixin hover-color($color: var(--ant-orange-deep)) {
+  @media (hover: hover) {
+    &:hover {
+      color: $color;
+    }
+  }
+}
+
+// Mixin: đổi nền khi hover (dùng cho chip, tab)
+@mixin hover-bg($bg: var(--ant-orange-soft), $color: var(--ant-orange-deep)) {
+  @media (hover: hover) {
+    &:hover {
+      background: $bg;
+      color: $color;
+    }
+  }
+}
+
+// Mixin: đổi viền khi hover
+@mixin hover-border($color: var(--ant-orange)) {
+  @media (hover: hover) {
+    &:hover {
+      border-color: $color;
+    }
+  }
+}
+
+// Utility class: nâng nhẹ card
+.hover-lift {
+  transition:
+    transform var(--ant-transition),
+    box-shadow var(--ant-transition),
+    border-color var(--ant-transition);
+
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--ant-shadow-md);
+    }
+  }
+}
+
+// Utility class: phóng to nhỏ
+.hover-scale-sm {
+  transition: transform var(--ant-transition);
+
+  @media (hover: hover) {
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+// Utility class: phóng to vừa
+.hover-scale-md {
+  transition: transform var(--ant-transition);
+
+  @media (hover: hover) {
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+// Utility class: đổi màu chữ sang cam
+.hover-orange {
+  transition: color var(--ant-transition);
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--ant-orange-deep);
+    }
+  }
+}
+
+// Utility class: nền cam nhạt khi hover
+.hover-bg-orange {
+  transition: background var(--ant-transition), color var(--ant-transition);
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--ant-orange-soft);
+      color: var(--ant-orange-deep);
+    }
+  }
+}
+
+// Utility class: viền sáng cam khi hover
+.hover-border-orange {
+  transition: border-color var(--ant-transition);
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--ant-orange);
+    }
+  }
+}
+
+// Utility class: gạch chân trượt vào từ trái (dùng cho nav link)
+.hover-underline {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--ant-orange);
+    content: '';
+    transform: scaleX(0);
+    transition: transform var(--ant-transition);
+  }
+
+  @media (hover: hover) {
+    &:hover::after {
+      transform: scaleX(1);
+    }
+  }
+}
+
+// Utility class: nút đóng modal tròn
+.hover-close {
+  transition: background var(--ant-transition), color var(--ant-transition);
+
+  @media (hover: hover) {
+    &:hover {
+      background: var(--ant-border-strong);
+      color: var(--ant-ink);
+    }
+  }
+}
+
+// Utility class: icon xoay 90° khi hover (dùng cho nút "Đăng bài mới")
+.hover-rotate-icon {
+  i,
+  .bi {
+    display: inline-block;
+    transition: transform 0.2s ease;
+  }
+
+  @media (hover: hover) {
+    &:hover i,
+    &:hover .bi {
+      transform: rotate(90deg);
+    }
+  }
+}

@@ -7,7 +7,7 @@
       [attr.aria-label]="star + ' sao'"
       (click)="valueChange.emit(star)"
     >
-      ★
+      <i [class]="star <= value() ? 'bi bi-star-fill' : 'bi bi-star'" aria-hidden="true"></i>
     </button>
   }
 </span>

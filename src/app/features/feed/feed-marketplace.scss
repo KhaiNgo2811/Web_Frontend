@@ -34,7 +34,17 @@
   background: transparent;
   font-size: 10px;
   font-weight: 700;
+  cursor: pointer;
+  transition: all var(--ant-transition);
 }
+
+@media (hover: hover) {
+  .marketplace__type button:not(.active):hover {
+    color: var(--ant-orange-deep);
+    background: var(--ant-orange-soft);
+  }
+}
+
 .marketplace__type button.active {
   color: #fff;
   background: var(--ant-gradient);
@@ -66,6 +76,8 @@
   background: transparent;
   font-size: 9px;
   font-weight: 700;
+  cursor: pointer;
+  transition: all var(--ant-transition);
 }
 .marketplace__categories button:hover,
 .marketplace__categories button.active {
@@ -94,6 +106,12 @@
   background: transparent;
   font-size: 10px;
   font-weight: 700;
+  cursor: pointer;
+  transition: color var(--ant-transition);
+}
+
+.marketplace__sort select:hover {
+  color: var(--ant-orange-deep);
 }
 .marketplace__result-line {
   display: flex;
@@ -127,6 +145,7 @@
   display: flex;
   margin: 30px auto 0;
   font-size: 10px;
+  cursor: pointer;
 }
 :host ::ng-deep app-empty-state {
   display: block;
