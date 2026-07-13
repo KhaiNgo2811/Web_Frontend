@@ -200,17 +200,7 @@ export class LocalAdminUserRepository extends AdminUserRepository {
       );
       const currentCount = (dates: string[]) => countInRange(dates, start, now);
       const previousCount = (dates: string[]) => countInRange(dates, comparisonStart, start);
-      const complaintStages = COMPLAINT_STAGES.map((stage) => {
-        const stageComplaints = complaints.filter((complaint) => complaint.stage === stage);
-        return stageComplaints.reduce(
-          (summary, complaint) => {
-            summary.total += 1;
-            summary[classifySla(complaintDueAt(complaint), now)] += 1;
-            return summary;
-          },
-          { stage, total: 0, withinSla: 0, dueSoon: 0, overdue: 0 },
-        );
-      });
+      const complaintStages = buildComplaintPipeline(complaints, now);
       const complaintSla = complaintStages.reduce(
         (summary, stage) => ({
           withinSla: summary.withinSla + stage.withinSla,

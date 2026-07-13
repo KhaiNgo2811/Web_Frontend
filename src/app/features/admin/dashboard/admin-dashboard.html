@@ -1,314 +1,463 @@
-<section class="admin-page">
-  <div class="dashboard-heading">
+<section class="admin-dashboard">
+  <!-- Header -->
+  <div class="dashboard-header">
     <div>
-      <p class="ant-kicker">Vận hành toàn hệ thống</p>
-      <h2>Bảng điều phối</h2>
-      @if (dashboard.summary(); as summary) {
-        <p class="admin-note">{{ riskSummary(summary) }}</p>
-      }
+      <h1>Tổng quan hệ thống</h1>
+      <p class="update-time">Cập nhật lần cuối hôm nay, {{ currentTime() }} · Múi giờ GMT+7</p>
     </div>
-    <div class="dashboard-commands">
-      <div class="admin-segmented" role="group" aria-label="Khoảng thời gian">
-        @for (range of ranges; track range) {
-          <button
-            type="button"
-            [class.active]="dashboard.rangeDays() === range"
-            [attr.aria-pressed]="dashboard.rangeDays() === range"
-            (click)="setRange(range)"
-          >
-            {{ range }} ngày
-          </button>
-        }
-      </div>
-      <button
-        class="ant-btn ant-btn--secondary"
-        type="button"
-        [disabled]="dashboard.loading()"
-        (click)="refresh()"
-      >
-        Làm mới
+    <div class="header-actions">
+      <button class="ant-btn ant-btn--secondary export-btn" type="button">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Xuất báo cáo
       </button>
     </div>
   </div>
 
+  <!-- Time & Region Filter -->
+  <div class="filter-bar">
+    <div class="time-filter">
+      <button
+        type="button"
+        class="time-btn"
+        [class.active]="dashboard.rangeDays() === 7"
+        (click)="setRange(7)"
+      >
+        7 ngày
+      </button>
+      <button
+        type="button"
+        class="time-btn"
+        [class.active]="dashboard.rangeDays() === 30"
+        (click)="setRange(30)"
+      >
+        30 ngày
+      </button>
+      <button
+        type="button"
+        class="time-btn"
+        [class.active]="dashboard.rangeDays() === 90"
+        (click)="setRange(90)"
+      >
+        90 ngày
+      </button>
+    </div>
+    <div class="region-filter">
+      <span class="filter-label">Khu vực:</span>
+      <select class="ant-select" (change)="setRegion($any($event.target).value)">
+        <option value="all">Tất cả</option>
+        <option value="khu-a">Khu A</option>
+        <option value="khu-b">Khu B</option>
+        <option value="khu-c">Khu C</option>
+      </select>
+    </div>
+    <div class="display-badge">{{ selectedRegionLabel() }}</div>
+    <div class="filter-right">
+      <span class="filter-label">Toàn hệ thống</span>
+    </div>
+  </div>
+
   @if (dashboard.summary(); as summary) {
-    <div class="dashboard-kpis">
-      @for (kpi of summary.kpis; track kpi.key) {
-        <a
-          class="card admin-metric dashboard-kpi"
-          [routerLink]="kpiRoute(kpi)"
-          [queryParams]="kpiQuery(kpi)"
-          [attr.aria-label]="kpi.label + ': ' + kpi.value + '. Mở hàng đợi liên quan'"
-        >
-          <span>{{ kpi.label }}</span>
-          <strong>{{ kpi.value }}</strong>
-          <small [class.negative]="kpi.direction === 'down'">
-            {{ roundedChange(kpi) }}% so với kỳ trước
-          </small>
-          <svg viewBox="0 0 100 36" role="img">
-            <title>Xu hướng {{ kpi.label }}</title>
-            <polyline fill="none" [attr.points]="sparkline(kpi)" />
-          </svg>
-          <em>Mở hàng đợi</em>
-        </a>
-      } @empty {
-        <p class="admin-note">Không có chỉ số vận hành.</p>
-      }
+    <!-- KPI Cards Row 1 -->
+    <div class="kpi-grid">
+      <!-- Tổng người dùng -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Tổng người dùng</span>
+          <span class="kpi-icon blue">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </span>
+        </div>
+        <strong class="kpi-value">{{ summary.totals.users | number:'1.0-0':'vi' }}</strong>
+        <div class="kpi-trend" [class.up]="summary.kpis[0].direction === 'up'" [class.down]="summary.kpis[0].direction === 'down'">
+          @if (summary.kpis[0].direction === 'up') {
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+              <polyline points="17 6 23 6 23 12"/>
+            </svg>
+          } @else if (summary.kpis[0].direction === 'down') {
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+              <polyline points="17 18 23 18 23 12"/>
+            </svg>
+          }
+          <span>{{ roundedChange(summary.kpis[0]) }}%</span>
+          <small>so với kỳ trước</small>
+        </div>
+      </div>
+
+      <!-- Tổng xu nạp cấp -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Tổng xu nạp cấp</span>
+          <span class="kpi-icon teal">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </span>
+        </div>
+        <strong class="kpi-value">{{ summary.totals.activeOrders | number:'1.0-0':'vi' }}</strong>
+        <div class="kpi-trend" [class.up]="summary.kpis[1].direction === 'up'" [class.down]="summary.kpis[1].direction === 'down'">
+          @if (summary.kpis[1].direction === 'up') {
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+              <polyline points="17 6 23 6 23 12"/>
+            </svg>
+          } @else if (summary.kpis[1].direction === 'down') {
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+              <polyline points="17 18 23 18 23 12"/>
+            </svg>
+          }
+          <span>{{ roundedChange(summary.kpis[1]) }}%</span>
+          <small>so với kỳ trước</small>
+        </div>
+      </div>
+
+      <!-- Doanh thu Token -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Doanh thu Token</span>
+          <span class="kpi-icon orange">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </span>
+        </div>
+        <strong class="kpi-value">{{ tokenRevenue() }}tr đ</strong>
+        <div class="kpi-trend" [class.up]="summary.kpis[2].direction === 'up'" [class.down]="summary.kpis[2].direction === 'down'">
+          @if (summary.kpis[2].direction === 'up') {
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+              <polyline points="17 6 23 6 23 12"/>
+            </svg>
+          } @else if (summary.kpis[2].direction === 'down') {
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+              <polyline points="17 18 23 18 23 12"/>
+            </svg>
+          }
+          <span>{{ roundedChange(summary.kpis[2]) }}%</span>
+          <small>so với kỳ trước</small>
+        </div>
+      </div>
+
+      <!-- Bài đăng chờ duyệt -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span class="kpi-label">Bài đăng chờ duyệt</span>
+          <span class="kpi-icon purple">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </span>
+        </div>
+        <strong class="kpi-value">{{ summary.totals.pendingReports }}</strong>
+        <div class="kpi-trend" [class.up]="summary.kpis[3].direction === 'up'" [class.down]="summary.kpis[3].direction === 'down'">
+          @if (summary.kpis[3].direction === 'up') {
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+              <polyline points="17 6 23 6 23 12"/>
+            </svg>
+          } @else if (summary.kpis[3].direction === 'down') {
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/>
+              <polyline points="17 18 23 18 23 12"/>
+            </svg>
+          }
+          <span>{{ roundedChange(summary.kpis[3]) }}%</span>
+          <small>so với kỳ trước</small>
+        </div>
+      </div>
+
+      <!-- Phản hồi chưa xử lý -->
+      <div class="kpi-card kpi-card--alert">
+        <div class="kpi-header">
+          <span class="kpi-label">Phản hồi chưa xử lý</span>
+          <span class="kpi-icon red">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </span>
+        </div>
+        <strong class="kpi-value">{{ summary.totals.openComplaints }}</strong>
+        <div class="kpi-action">
+          <a routerLink="/admin/complaints">
+            Xem ngay
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </a>
+        </div>
+      </div>
     </div>
 
-    <div class="dashboard-cockpit">
-      <section class="card admin-panel dashboard-chart">
-        <div class="dashboard-panel-heading">
+    <!-- Charts Row 1: Line + Donut -->
+    <div class="charts-row">
+      <div class="chart-card chart-card--large">
+        <div class="chart-header">
           <div>
-            <h3>Nhịp hoạt động</h3>
-            <p class="admin-note">Tài khoản, bài đăng và đơn hoàn thành theo kỳ.</p>
+            <h3>Doanh thu Token</h3>
+            <p class="chart-subtitle">7 ngày gần nhất · 5/11 người dùng</p>
           </div>
-          <div class="admin-segmented" role="group" aria-label="Chỉ số biểu đồ">
-            @for (metric of metrics; track metric.key) {
-              <button
-                type="button"
-                [class.active]="selectedMetric() === metric.key"
-                [attr.aria-pressed]="selectedMetric() === metric.key"
-                (click)="selectedMetric.set(metric.key)"
-              >
-                {{ metric.label }}
-              </button>
+        </div>
+        <div class="chart-body">
+          <svg class="line-chart" viewBox="0 0 100 64" preserveAspectRatio="none">
+            <!-- Grid lines -->
+            <line x1="0" y1="16" x2="100" y2="16" stroke="#f0e6de" stroke-width="0.5"/>
+            <line x1="0" y1="32" x2="100" y2="32" stroke="#f0e6de" stroke-width="0.5"/>
+            <line x1="0" y1="48" x2="100" y2="48" stroke="#f0e6de" stroke-width="0.5"/>
+            <!-- Area fill -->
+            <path
+              [attr.d]="activityAreaPath(summary.activityTrend, 'completedOrders')"
+              fill="rgb(249, 115, 22)"
+              fill-opacity="0.08"
+            />
+            <!-- Line -->
+            <polyline
+              fill="none"
+              stroke="rgb(249, 115, 22)"
+              stroke-width="1"
+              [attr.points]="activitySeries(summary.activityTrend, 'completedOrders')"
+            />
+            <!-- Data points -->
+            @for (point of summary.activityTrend; track point.date; let i = $index) {
+              <circle
+                [attr.cx]="safeDiv(i, chartStep(summary.activityTrend.length)) * 100"
+                [attr.cy]="64 - (safeDiv(point.completedOrders, getMaxActivity(summary.activityTrend, 'completedOrders'))) * 58"
+                r="1.2"
+                fill="rgb(249, 115, 22)"
+              />
+            }
+          </svg>
+          <div class="chart-x-axis">
+            @for (point of summary.activityTrend; track point.date) {
+              <span>{{ point.date | slice:5:10 }}</span>
             }
           </div>
         </div>
-        @if (summary.activityTrend.length) {
-          <svg
-            viewBox="0 0 100 68"
-            preserveAspectRatio="none"
-            role="img"
-            [attr.aria-label]="selectedMetricSummary()"
-          >
-            <title>Hoạt động {{ summary.rangeDays }} ngày</title>
-            <polyline
-              [class]="selectedMetric()"
-              [attr.points]="activitySeries(summary.activityTrend, selectedMetric())"
-            />
-          </svg>
-          <p class="chart-summary" aria-live="polite">{{ selectedMetricSummary() }}</p>
-        } @else {
-          <p class="admin-note">Chưa có hoạt động trong khoảng thời gian này.</p>
-        }
-      </section>
+      </div>
 
-      <section class="card admin-panel">
-        <div class="dashboard-panel-heading">
-          <h3>Rủi ro SLA</h3>
-          <a routerLink="/admin/inbox" [queryParams]="{ view: 'breach_risk' }">Mở rủi ro</a>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Phân bổ nguồn thu</h3>
+          <p class="chart-subtitle">Theo loại xu</p>
         </div>
-        <div
-          class="progress stacked-meter"
-          role="img"
-          [attr.aria-label]="
-            'SLA: ' +
-            summary.complaintSla.withinSla +
-            ' trong hạn, ' +
-            summary.complaintSla.dueSoon +
-            ' sắp hạn, ' +
-            summary.complaintSla.overdue +
-            ' quá hạn'
-          "
-        >
-          <span class="progress-bar ok" [style.width.%]="slaPercent(summary, 'withinSla')"></span>
-          <span class="progress-bar warn" [style.width.%]="slaPercent(summary, 'dueSoon')"></span>
-          <span class="progress-bar bad" [style.width.%]="slaPercent(summary, 'overdue')"></span>
-        </div>
-        <div class="risk-grid">
-          <span
-            ><strong>{{ summary.complaintSla.withinSla }}</strong
-            >Trong hạn</span
-          >
-          <span
-            ><strong>{{ summary.complaintSla.dueSoon }}</strong
-            >Sắp hạn</span
-          >
-          <span
-            ><strong>{{ summary.complaintSla.overdue }}</strong
-            >Quá hạn</span
-          >
-        </div>
-      </section>
-
-      <section class="card admin-panel">
-        <h3>Sức khỏe chợ dịch vụ</h3>
-        <div class="mini-stat-grid">
-          @for (item of healthItems(summary); track item.label) {
-            <div>
-              <strong>{{ item.value }}</strong>
-              <span>{{ item.label }}</span>
+        <div class="chart-body">
+          <div class="donut-chart">
+            <svg viewBox="0 0 100 100" width="140" height="140">
+              <!-- Donut segments: 45% Nạp Xu, 30% Dịy tiền dồng, 25% Giới thiệu -->
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#f0e6de" stroke-width="14"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#f97316" stroke-width="14"
+                stroke-dasharray="113.1 138.2" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#8b5cf6" stroke-width="14"
+                stroke-dasharray="75.4 176.0" stroke-dashoffset="-113.1" transform="rotate(-90 50 50)"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#06b6d4" stroke-width="14"
+                stroke-dasharray="62.8 188.5" stroke-dashoffset="-188.5" transform="rotate(-90 50 50)"/>
+            </svg>
+            <div class="donut-legend">
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#f97316"></span>
+                <span class="legend-label">Nạp Xu</span>
+                <span class="legend-value">45%</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#8b5cf6"></span>
+                <span class="legend-label">Dịy tiền dồng</span>
+                <span class="legend-value">30%</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#06b6d4"></span>
+                <span class="legend-label">Giới thiệu</span>
+                <span class="legend-value">25%</span>
+              </div>
             </div>
-          }
+          </div>
         </div>
-      </section>
-
-      <section class="card admin-panel">
-        <h3>Phân công xử lý</h3>
-        <div class="mini-stat-grid">
-          @for (item of ownershipItems(summary); track item.label) {
-            <div>
-              <strong>{{ item.value }}</strong>
-              <span>{{ item.label }}</span>
-            </div>
-          }
-        </div>
-      </section>
+      </div>
     </div>
 
-    <div class="dashboard-workflows">
-      <section class="card admin-panel">
-        <div class="dashboard-panel-heading">
-          <h3>Luồng khiếu nại</h3>
-          <a routerLink="/admin/complaints">Mở hồ sơ</a>
+    <!-- Charts Row 2: Bar Chart + Region Table -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Người dùng mới</h3>
+          <p class="chart-subtitle">7 ngày gần nhất</p>
         </div>
-        @for (stage of summary.complaintPipeline; track stage.stage) {
-          <a
-            class="pipeline-row"
-            routerLink="/admin/complaints"
-            [queryParams]="{ stage: stage.stage }"
-          >
-            <span>{{ label(stage.stage) }}</span>
-            <strong>{{ stage.total }}</strong>
-            <div
-              class="progress progress-line"
-              role="progressbar"
-              [attr.aria-label]="'Tỉ lệ ' + label(stage.stage)"
-              [attr.aria-valuenow]="stage.percent"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              <i class="progress-bar" [style.width.%]="stage.percent"></i>
-            </div>
-            <small>{{ stage.overdue }} quá hạn</small>
-          </a>
-        }
-      </section>
+        <div class="chart-body">
+          <div class="bar-chart-container">
+            <svg class="bar-chart" viewBox="0 0 100 64" preserveAspectRatio="none">
+              @for (point of summary.activityTrend; track point.date; let i = $index) {
+                @let maxAccounts = getMaxActivity(summary.activityTrend, 'accounts');
+                @let barHeight = maxAccounts > 0 ? (point.accounts / maxAccounts) * 50 : 0;
+                <rect
+                  [attr.x]="i * (100 / summary.activityTrend.length) + 2"
+                  [attr.y]="64 - barHeight - 4"
+                  [attr.width]="(100 / summary.activityTrend.length) - 4"
+                  [attr.height]="barHeight"
+                  rx="2"
+                  fill="rgb(249, 115, 22)"
+                />
+              }
+            </svg>
+          </div>
+          <div class="chart-x-axis">
+            @for (point of summary.activityTrend; track point.date) {
+              <span>{{ point.date | slice:5:10 }}</span>
+            }
+          </div>
+          <div class="bar-legend">
+            <span class="bar-legend-dot" style="background:rgb(249, 115, 22)"></span>
+            <span>Người dùng mới</span>
+          </div>
+        </div>
+      </div>
 
-      <section class="card admin-panel">
-        <div class="dashboard-panel-heading">
-          <h3>Ma trận kiểm duyệt</h3>
-          <a routerLink="/admin/moderation" [queryParams]="{ status: 'pending' }">Mở báo cáo</a>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Thống kê theo khu vực</h3>
+          <p class="chart-subtitle">7 ngày gần nhất</p>
         </div>
-        @for (status of summary.moderationPipeline; track status.status) {
-          <a
-            class="moderation-matrix"
-            routerLink="/admin/moderation"
-            [queryParams]="{ status: status.status }"
-          >
-            <span>{{ label(status.status) }}</span>
-            <strong>{{ status.total }}</strong>
-            <div>
-              @for (target of status.targets; track target.targetType) {
-                <small>{{ label(target.targetType) }}: {{ target.count }}</small>
+        <div class="chart-body">
+          <table class="region-table">
+            <thead>
+              <tr>
+                <th>KHU VỰC</th>
+                <th>YÊU CẦU</th>
+                <th>KHIẾU NẠI</th>
+                <th>TÌNH TRẠNG</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (region of summary.regionalMix; track region.regionId) {
+                <tr>
+                  <td><strong>{{ region.name }}</strong></td>
+                  <td>{{ region.openPosts }}</td>
+                  <td>{{ region.complaints }}</td>
+                  <td>
+                    @if (region.status === 'active') {
+                      <span class="status-badge status-normal">Bình thường</span>
+                    } @else {
+                      <span class="status-badge status-warning">Tạm dừng</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tasks Section -->
+    <div class="tasks-section">
+      <div class="tasks-header">
+        <div>
+          <h3>Việc cần làm ngay</h3>
+          <p class="tasks-subtitle">Top việc khẩn cấp cần xử lý trên hệ thống</p>
+        </div>
+        <a routerLink="/admin/complaints" class="view-all">Xem tất cả →</a>
+      </div>
+      <div class="tasks-list">
+        @for (complaint of summary.priorityComplaints; track complaint.id) {
+          <div class="task-item" [class.task-urgent]="complaint.priority === 'high'">
+            <div class="task-avatar">
+              <span class="task-avatar-text">{{ complaint.code?.slice(-2) }}</span>
+            </div>
+            <div class="task-info">
+              <strong>{{ complaint.code }}</strong>
+              <span class="task-title">{{ complaint.subject }}</span>
+              <div class="task-tags">
+                <span class="tag" [class.tag-urgent]="complaint.priority === 'high'" [class.tag-processing]="complaint.priority === 'normal'">
+                  {{ complaint.priority === 'high' ? 'Khẩn cấp' : 'Bình thường' }}
+                </span>
+                <span class="tag tag-time">{{ label(complaint.stage) }}</span>
+              </div>
+            </div>
+            <a class="task-action-btn" [class.urgent]="complaint.priority === 'high'" [routerLink]="['/admin/complaints']" [queryParams]="{ complaint: complaint.id }">
+              {{ complaint.priority === 'high' ? 'Xử lý' : 'Xem' }}
+            </a>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Bottom Row: Top danh mục dịch vụ -->
+    <div class="bottom-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Top danh mục dịch vụ</h3>
+          <p class="chart-subtitle">Phân bố cầu trên Free man · 30 Ngày gần nhất</p>
+        </div>
+        <div class="chart-body">
+          <div class="categories-body">
+            <div class="category-chart">
+              <svg viewBox="0 0 100 100" width="120" height="120">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#f0e6de" stroke-width="12"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#f97316" stroke-width="12"
+                  stroke-dasharray="88 163" stroke-dashoffset="0" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" stroke-width="12"
+                  stroke-dasharray="63 188" stroke-dashoffset="-88" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#22c55e" stroke-width="12"
+                  stroke-dasharray="50 200" stroke-dashoffset="-151" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#eab308" stroke-width="12"
+                  stroke-dasharray="38 213" stroke-dashoffset="-201" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#a855f7" stroke-width="12"
+                  stroke-dasharray="25 226" stroke-dashoffset="-239" transform="rotate(-90 50 50)"/>
+                <text x="50" y="48" text-anchor="middle" font-size="18" font-weight="800" fill="#1c1008">433</text>
+                <text x="50" y="58" text-anchor="middle" font-size="8" fill="#8c7b6e">Tổng</text>
+              </svg>
+            </div>
+            <div class="category-bars">
+              @for (cat of categoryList(); track cat.name) {
+                <div class="category-bar-item">
+                  <div class="bar-label">
+                    <span class="bar-dot" [style.background]="cat.color"></span>
+                    <span>{{ cat.name }}</span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill" [style.width.%]="cat.percent" [style.background]="cat.color"></div>
+                  </div>
+                  <span class="bar-value">{{ cat.percent }}%</span>
+                </div>
               }
             </div>
-          </a>
-        }
-      </section>
-
-      <section class="card admin-panel">
-        <h3>Khu vực đang nóng</h3>
-        @for (region of summary.regionalMix; track region.regionId) {
-          <div class="mix-row">
-            <span>{{ region.name }}</span>
-            <strong>{{ region.activeRecords }}</strong>
-            <small>{{ label(region.status) }} · {{ region.city }}</small>
           </div>
-        } @empty {
-          <p class="admin-note">Chưa có dữ liệu khu vực.</p>
-        }
-      </section>
-
-      <section class="card admin-panel">
-        <h3>Loại khiếu nại</h3>
-        @for (category of summary.categoryMix; track category.category) {
-          <div class="category-row">
-            <span>{{ categoryLabel(category.category) }}</span>
-            <strong>{{ category.total }}</strong>
-            <div
-              class="progress progress-line"
-              role="progressbar"
-              [attr.aria-label]="'Tỉ lệ ' + categoryLabel(category.category)"
-              [attr.aria-valuenow]="category.percent"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              <i class="progress-bar" [style.width.%]="category.percent"></i>
-            </div>
-          </div>
-        } @empty {
-          <p class="admin-note">Chưa phân loại khiếu nại mở.</p>
-        }
-      </section>
+        </div>
+      </div>
     </div>
 
-    <div class="dashboard-lists">
-      <section class="card admin-panel">
-        <h3>Ưu tiên kiểm duyệt</h3>
-        @for (report of summary.priorityReports; track report.id) {
-          <a
-            class="dashboard-row"
-            routerLink="/admin/moderation"
-            [queryParams]="{ report: report.id }"
-          >
-            <span class="admin-pill">{{ label(report.targetType) }}</span>
-            <div>
-              <strong>{{ report.reason }}</strong>
-              <p>
-                {{ report.reporter?.displayName || report.reporterId }} · {{ label(report.status) }}
-              </p>
-            </div>
-          </a>
-        } @empty {
-          <p class="admin-note">Không có báo cáo chờ xử lý.</p>
-        }
-      </section>
-      <section class="card admin-panel">
-        <h3>Ưu tiên khiếu nại</h3>
-        @for (complaint of summary.priorityComplaints; track complaint.id) {
-          <a
-            class="dashboard-row"
-            routerLink="/admin/complaints"
-            [queryParams]="{ complaint: complaint.id }"
-          >
-            <span class="admin-pill admin-pill--warning">{{ label(complaint.stage) }}</span>
-            <div>
-              <strong>{{ complaint.code }} · {{ complaint.subject }}</strong>
-              <p>{{ complaint.complainant?.displayName || complaint.complainantId }}</p>
-            </div>
-          </a>
-        } @empty {
-          <p class="admin-note">Không có khiếu nại đang mở.</p>
-        }
-      </section>
-      <section class="card admin-panel">
-        <h3>Hoạt động gần đây</h3>
-        @for (activity of summary.recentActivity; track activity.id) {
-          <a
-            class="dashboard-row"
-            [routerLink]="activity.route || '/admin'"
-            [queryParams]="activityQuery(activity)"
-          >
-            <div>
-              <strong>{{ activityLabel(activity) }}</strong>
-              <p>
-                {{ activity.actor || 'Hệ thống' }} · {{ activity.target }} ·
-                {{ activity.createdAt }}
-              </p>
-            </div>
-          </a>
-        } @empty {
-          <p class="admin-note">Chưa có hoạt động vận hành.</p>
-        }
-        <a class="ant-btn ant-btn--secondary" routerLink="/admin/inbox">Mở hộp công việc</a>
-      </section>
-    </div>
   } @else if (dashboard.error()) {
-    <p class="ant-error">{{ dashboard.error() }}</p>
+    <div class="dashboard-error">
+      <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="rgb(239, 68, 68)" stroke-width="1.5">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <p>{{ dashboard.error() }}</p>
+      <button class="ant-btn ant-btn--primary" type="button" (click)="refresh()">Thử lại</button>
+    </div>
   } @else {
-    <p class="admin-note">Đang tải dữ liệu vận hành.</p>
+    <div class="dashboard-loading">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu tổng quan...</p>
+    </div>
   }
 </section>

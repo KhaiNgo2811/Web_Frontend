@@ -18,6 +18,8 @@ interface AdminNavItem {
   route: string;
   icon: string;
   permission?: AdminPermission;
+  isHeader?: boolean;
+  badge?: number;
 }
 
 @Component({
@@ -36,41 +38,67 @@ export class AdminLayout {
   protected readonly pageTitle = signal('Tổng quan vận hành');
   protected readonly navItems: AdminNavItem[] = [
     {
-      label: 'Hộp thư',
-      route: '/admin/inbox',
-      icon: 'M4 4h16v12H5.2L4 17.2V4Zm4 4h8v2H8V8Zm0 4h5v2H8v-2Z',
-    },
-    {
       label: 'Tổng quan',
       route: '/admin',
-      icon: 'M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-11h6V4h-6v5Z',
+      icon: 'M4 6h16M4 12h16M4 18h16',
     },
     {
-      label: 'Tài khoản',
+      label: 'QUẢN LÝ',
+      route: 'header',
+      icon: '',
+      isHeader: true,
+    },
+    {
+      label: 'Người dùng',
       route: '/admin/users',
-      icon: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-8 9a8 8 0 1 1 16 0H4Z',
+      icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm0 0c1.657 0 3-4 3-4s1.343 4 3 4',
+      badge: 2,
     },
     {
-      label: 'Kiểm duyệt',
+      label: 'Bài đăng',
       route: '/admin/moderation',
-      icon: 'M12 3 4 6v5c0 5 3.4 8.4 8 10 4.6-1.6 8-5 8-10V6l-8-3Zm-1 12.2-3-3 1.4-1.4 1.6 1.6 3.6-3.6L16 10.2l-5 5Z',
+      icon: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8',
+      badge: 8,
     },
     {
-      label: 'Khiếu nại',
+      label: 'Giao dịch & Token',
+      route: '/admin/audit',
+      icon: 'M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
+    },
+    {
+      label: 'Khiếu nại & Tranh chấp',
       route: '/admin/complaints',
-      icon: 'M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9Zm1 13h-2v-2h2v2Zm0-4h-2V7h2v5Z',
+      icon: 'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01',
+      badge: 3,
     },
     {
-      label: 'Cấu hình',
+      label: 'Đánh giá & Uy tín',
+      route: '/admin/inbox',
+      icon: 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z',
+    },
+    {
+      label: 'Báo cáo vi phạm',
+      route: '/admin/moderation',
+      icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+      badge: 5,
+    },
+    {
+      label: 'HỆ THỐNG',
+      route: 'header',
+      icon: '',
+      isHeader: true,
+    },
+    {
+      label: 'Cấu hình hệ thống',
       route: '/admin/config',
       permission: 'configuration.manage',
-      icon: 'M19.4 13.5c.1-.5.1-1 .1-1.5s0-1-.1-1.5l2-1.5-2-3.5-2.4 1a7.8 7.8 0 0 0-2.6-1.5L14 2h-4l-.4 3a7.8 7.8 0 0 0-2.6 1.5l-2.4-1-2 3.5 2 1.5A9.8 9.8 0 0 0 4.5 12c0 .5 0 1 .1 1.5l-2 1.5 2 3.5 2.4-1a7.8 7.8 0 0 0 2.6 1.5l.4 3h4l.4-3a7.8 7.8 0 0 0 2.6-1.5l2.4 1 2-3.5-2-1.5ZM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z',
+      icon: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5',
     },
     {
-      label: 'Nhật ký',
+      label: 'Nhật ký hoạt động',
       route: '/admin/audit',
       permission: 'audit.read',
-      icon: 'M6 2h9l3 3v17H6V2Zm8 1.5V6h2.5L14 3.5ZM8 9h8v2H8V9Zm0 4h8v2H8v-2Zm0 4h5v2H8v-2Z',
+      icon: 'M12 20h9 M12 4v16 M4 15h1 M4 10h1 M4 20h1 M4 5h1',
     },
   ];
 

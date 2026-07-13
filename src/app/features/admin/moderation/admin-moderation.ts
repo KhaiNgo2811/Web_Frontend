@@ -1,3 +1,4 @@
+import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -16,14 +17,16 @@ import {
 import { AdminModerationStore, SessionStore } from '../../../core/stores';
 import { AdminConfirmDialog } from '../shared/admin-confirm-dialog/admin-confirm-dialog';
 import { AdminDrawer } from '../shared/admin-drawer/admin-drawer';
+import { AdminExportDialog } from '../shared/admin-export-dialog/admin-export-dialog';
 
 type ModerationAction = 'hide' | 'restore' | 'dismiss';
 type SortColumn = 'createdAt' | 'reason' | 'status' | 'targetType';
 type SortDirection = 'asc' | 'desc';
+type TabFilter = 'all' | 'pending' | 'hidden';
 
 @Component({
   selector: 'app-admin-moderation',
-  imports: [AdminConfirmDialog, AdminDrawer],
+  imports: [AdminConfirmDialog, AdminDrawer, AdminExportDialog, DatePipe],
   templateUrl: './admin-moderation.html',
   styleUrl: './admin-moderation.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,20 +61,38 @@ export class AdminModeration {
       tone: action === 'hide' ? 'danger' : 'default',
     };
   });
+  protected readonly activeTab = signal<TabFilter>('all');
   protected readonly page = signal(1);
   protected readonly pageSize = signal(10);
   protected readonly sortColumn = signal<SortColumn>('createdAt');
   protected readonly sortDirection = signal<SortDirection>('desc');
   private readonly operationPending = signal(false);
   protected readonly selectedReport = computed(() => this.moderation.selectedReport());
-  protected readonly resultCount = computed(() => this.moderation.reports().length);
+
+  protected readonly filteredReports = computed(() => {
+    const tab = this.activeTab();
+    const reports = this.moderation.reports();
+    if (tab === 'all') return reports;
+    return reports.filter((r) => r.status === tab);
+  });
+
+  protected readonly resultCount = computed(() => this.filteredReports().length);
+  protected readonly tabCounts = computed(() => {
+    const reports = this.moderation.reports();
+    return {
+      all: reports.length,
+      pending: reports.filter((r) => r.status === 'pending').length,
+      hidden: reports.filter((r) => r.status === 'hidden').length,
+    };
+  });
+
   protected readonly pageCount = computed(() =>
     Math.max(1, Math.ceil(this.resultCount() / this.pageSize())),
   );
   protected readonly visibleReports = computed(() => {
     const direction = this.sortDirection() === 'asc' ? 1 : -1;
     const column = this.sortColumn();
-    const sorted = [...this.moderation.reports()].sort((left, right) => {
+    const sorted = [...this.filteredReports()].sort((left, right) => {
       const leftValue = column === 'createdAt' ? Date.parse(left.createdAt) : left[column];
       const rightValue = column === 'createdAt' ? Date.parse(right.createdAt) : right[column];
       return typeof leftValue === 'number' && typeof rightValue === 'number'
@@ -88,6 +109,7 @@ export class AdminModeration {
   protected readonly canAct = computed(() =>
     hasAdminPermission(this.session.currentUser()?.role ?? '', 'moderation.act'),
   );
+  protected readonly exportOpen = signal(false);
 
   constructor() {
     this.route.queryParamMap.subscribe((params) => {
@@ -119,6 +141,11 @@ export class AdminModeration {
       this.operationPending.set(false);
       this.announcement.set(error ? `Thao tác thất bại: ${error}` : 'Đã cập nhật báo cáo.');
     });
+  }
+
+  protected setTab(tab: TabFilter): void {
+    this.activeTab.set(tab);
+    this.page.set(1);
   }
 
   protected openReport(report: ModerationReport): void {
@@ -254,6 +281,32 @@ export class AdminModeration {
     return { hide: 'Ẩn nội dung', restore: 'Khôi phục nội dung', dismiss: 'Bỏ qua báo cáo' }[
       action
     ];
+  }
+
+  protected reportCountText(report: ModerationReport): string {
+    const count = (report.history?.length ?? 0) + 1;
+    return `${count} báo cáo`;
+  }
+
+  protected categoryTag(report: ModerationReport): { label: string; color: string } {
+    const type = report.targetType;
+    if (type === 'post') return { label: 'Cung cấp - Dịch vụ', color: '#a855f7' };
+    if (type === 'review') return { label: 'Cần giúp - Hỗ trợ', color: '#eab308' };
+    return { label: 'Tin nhắn', color: '#3b82f6' };
+  }
+
+  protected priorityTagColor(priority?: ModerationReport['priority']): string {
+    return priority === 'high' ? '#f43f5e' : '#f97316';
+  }
+
+  protected timeAgo(date: string): string {
+    const diff = Date.now() - Date.parse(date);
+    const hours = Math.floor(diff / 3600000);
+    if (hours < 1) return 'Vừa xong';
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} ngày trước`;
+    return '1 tháng trước';
   }
 
   private wasRestored(report: ModerationReport): boolean {

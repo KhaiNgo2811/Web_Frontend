@@ -104,7 +104,7 @@ export interface AdminDashboardSummary {
   };
   kpis: AdminKpi[];
   activityTrend: AdminActivityTrendPoint[];
-  complaintStages: ({ stage: Complaint['stage']; total: number } & AdminSlaSummary)[];
+  complaintStages: AdminComplaintPipelineItem[];
   complaintPipeline: AdminComplaintPipelineItem[];
   complaintSla: AdminSlaSummary;
   moderationWorkload: {

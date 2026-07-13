@@ -22,6 +22,7 @@ import { AdminConfirmDialog } from '../shared/admin-confirm-dialog/admin-confirm
 import { AdminDrawer } from '../shared/admin-drawer/admin-drawer';
 
 type ComplaintTab = 'overview' | 'evidence' | 'timeline' | 'decision';
+type ListTab = 'new' | 'processing' | 'resolved';
 type SortColumn = 'code' | 'subject' | 'priority' | 'stage' | 'updatedAt';
 type NotificationChannel = 'in_app' | 'email' | 'sms';
 interface PendingComplaintAction {
@@ -100,15 +101,37 @@ export class AdminComplaints {
   protected readonly sortDirection = signal<'asc' | 'desc'>('desc');
   private readonly operationPending = signal(false);
   private draftKey = '';
+  protected readonly activeListTab = signal<ListTab>('new');
   protected readonly selected = computed(() => this.complaints.selectedComplaint());
-  protected readonly resultCount = computed(() => this.complaints.complaints().length);
+  protected readonly tabCounts = computed(() => {
+    const rows = this.complaints.complaints();
+    return {
+      new: rows.filter((r) => r.stage === 'received').length,
+      processing: rows.filter((r) =>
+        ['verifying', 'collecting_evidence', 'evaluating', 'resolving', 'notified'].includes(r.stage),
+      ).length,
+      resolved: rows.filter((r) => r.stage === 'resolved').length,
+    };
+  });
+  protected readonly filteredByTab = computed(() => {
+    const tab = this.activeListTab();
+    const rows = this.complaints.complaints();
+    if (tab === 'new') return rows.filter((r) => r.stage === 'received');
+    if (tab === 'processing')
+      return rows.filter((r) =>
+        ['verifying', 'collecting_evidence', 'evaluating', 'resolving', 'notified'].includes(r.stage),
+      );
+    if (tab === 'resolved') return rows.filter((r) => r.stage === 'resolved');
+    return rows;
+  });
+  protected readonly resultCount = computed(() => this.filteredByTab().length);
   protected readonly pageCount = computed(() =>
     Math.max(1, Math.ceil(this.resultCount() / this.pageSize())),
   );
   protected readonly visibleComplaints = computed(() => {
     const column = this.sortColumn();
     const direction = this.sortDirection() === 'asc' ? 1 : -1;
-    const rows = [...this.complaints.complaints()].sort((left, right) => {
+    const rows = [...this.filteredByTab()].sort((left, right) => {
       const a = column === 'updatedAt' ? Date.parse(left.updatedAt) : left[column];
       const b = column === 'updatedAt' ? Date.parse(right.updatedAt) : right[column];
       return typeof a === 'number' && typeof b === 'number'
@@ -203,6 +226,11 @@ export class AdminComplaints {
   protected setTab(tab: ComplaintTab, focus = false): void {
     this.activeTab.set(tab);
     if (focus) queueMicrotask(() => document.getElementById(`complaint-tab-${tab}`)?.focus());
+  }
+
+  protected setListTab(tab: ListTab): void {
+    this.activeListTab.set(tab);
+    this.page.set(1);
   }
 
   protected moveTab(event: KeyboardEvent, current: ComplaintTab): void {
@@ -554,6 +582,78 @@ export class AdminComplaints {
   }
   protected checkedOf(event: Event): boolean {
     return event.target instanceof HTMLInputElement && event.target.checked;
+  }
+
+  protected getInitials(name: string): string {
+    return (
+      name
+        ?.split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase() || '??'
+    );
+  }
+
+  protected avatarColor(id: string): string {
+    const colors = ['#f97316', '#3b82f6', '#a855f7', '#ef4444', '#10b981', '#eab308'];
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+  }
+
+  protected timeAgo(date: string): string {
+    const diff = Date.now() - Date.parse(date);
+    const hours = Math.floor(diff / 3600000);
+    if (hours < 1) return 'Vừa xong';
+    if (hours < 24) return `${hours} giờ trước`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days} ngày trước`;
+    return '1 tháng trước';
+  }
+
+  protected categoryBadge(category?: string): { label: string; color: string; bg: string } {
+    const map: Record<string, { label: string; color: string; bg: string }> = {
+      quality: { label: 'Dịch vụ kém chất lượng', color: '#a855f7', bg: '#f3e8ff' },
+      payment: { label: 'Tranh chấp đặt cọc', color: '#f43f5e', bg: '#ffe4e6' },
+      schedule: { label: 'Tiến độ', color: '#3b82f6', bg: '#dbeafe' },
+      conduct: { label: 'Quấy rối', color: '#eab308', bg: '#fef9c3' },
+      other: { label: 'Khác', color: '#8c7b6e', bg: '#f5ebe3' },
+    };
+    return map[category || 'other'] || map['other'];
+  }
+
+  protected priorityBadge(priority: string): { label: string; color: string; bg: string } {
+    if (priority === 'high') return { label: 'Khẩn cấp', color: '#f43f5e', bg: '#ffe4e6' };
+    return { label: 'Trung bình', color: '#8c7b6e', bg: '#f5ebe3' };
+  }
+
+  protected stageBadge(stage: string): { label: string; color: string; bg: string } {
+    if (stage === 'received') return { label: 'Mới', color: '#3b82f6', bg: '#dbeafe' };
+    return { label: this.stageLabel(stage as ComplaintStage), color: '#8c7b6e', bg: '#f5ebe3' };
+  }
+
+  protected actionButtonLabel(stage: string): string {
+    if (stage === 'received') return 'Xử lý';
+    if (stage === 'resolved') return 'Xem';
+    return 'Tiếp tục';
+  }
+
+  protected resolvedLabel(complaint: Complaint): string {
+    return complaint.remedy?.conclusion || complaint.resolution || 'Đã đóng';
+  }
+
+  protected resolvedAdmin(complaint: Complaint): string {
+    return complaint.assignedAdmin?.displayName || complaint.assignedAdminId || 'Hệ thống';
+  }
+
+  protected resolvedDate(complaint: Complaint): string {
+    return complaint.remedy?.decidedAt || complaint.updatedAt;
+  }
+
+  protected formatOrderId(id?: string): string {
+    if (!id) return '—';
+    return '#YC-' + id.slice(-4).toUpperCase();
   }
 
   private resetDrafts(): void {
