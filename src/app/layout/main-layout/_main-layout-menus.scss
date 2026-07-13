@@ -98,6 +98,12 @@
   font-size: 11px;
 }
 
+.menu-logout {
+  border-top: 1px solid var(--ant-border);
+  color: var(--ant-danger) !important;
+  font-weight: 700;
+}
+
 .site-main {
   min-height: calc(100vh - 197px);
 }

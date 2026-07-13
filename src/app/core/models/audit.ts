@@ -1,11 +1,19 @@
 import type { IsoDateString } from './common';
 
 export type AuditTargetType =
-  'user' | 'moderation_report' | 'complaint' | 'configuration' | 'export';
+  | 'user'
+  | 'moderation_report'
+  | 'complaint'
+  | 'configuration'
+  | 'export'
+  | 'region'
+  | 'service_category'
+  | 'admin_account';
 
 export interface AuditEvent {
   readonly id: string;
   readonly actorId: string;
+  readonly actorName?: string;
   readonly action: string;
   readonly targetType: AuditTargetType;
   readonly targetId: string;
@@ -30,4 +38,5 @@ export interface ExportJob {
   format: 'csv';
   redaction: 'default';
   retentionUntil: IsoDateString;
+  scope: 'audit' | 'dashboard_report';
 }

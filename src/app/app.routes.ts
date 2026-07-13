@@ -109,6 +109,22 @@ export const routes: Routes = [
           import('./features/admin/config/admin-config').then((m) => m.AdminConfig),
       },
       {
+        path: 'token-transactions',
+        title: 'Giao dịch & Token | AntGo',
+        data: { adminTitle: 'Giao dịch & Token' },
+        loadComponent: () =>
+          import('./features/admin/token-transactions/admin-token-transactions').then(
+            (m) => m.AdminTokenTransactions,
+          ),
+      },
+      {
+        path: 'reports',
+        title: 'Báo cáo vi phạm | AntGo',
+        data: { adminTitle: 'Báo cáo vi phạm' },
+        loadComponent: () =>
+          import('./features/admin/reports/admin-reports').then((m) => m.AdminReports),
+      },
+      {
         path: 'audit',
         canActivate: [adminGuard],
         title: 'Nhật ký kiểm toán | AntGo',

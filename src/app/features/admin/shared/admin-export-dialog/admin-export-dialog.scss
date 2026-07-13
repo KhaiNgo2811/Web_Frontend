@@ -1,0 +1,172 @@
+:host {
+  display: contents;
+}
+
+.export-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgb(28 16 8 / 52%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.export-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(28, 16, 8, 0.15);
+  overflow: hidden;
+}
+
+.export-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px 20px 0;
+}
+
+.export-dialog__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #f0fdf4;
+  color: #22c55e;
+  flex-shrink: 0;
+
+  svg {
+    stroke: #22c55e;
+  }
+}
+
+.export-dialog__title {
+  flex: 1;
+  min-width: 0;
+
+  h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1c1008;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: #8c7b6e;
+  }
+}
+
+.export-dialog__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #8c7b6e;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+  margin-top: 2px;
+
+  &:hover {
+    background: #f5ebe3;
+    color: #5f4636;
+  }
+}
+
+.export-dialog__body {
+  padding: 20px;
+}
+
+.export-field {
+  display: grid;
+  gap: 8px;
+}
+
+.export-field__label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #8c7b6e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.export-select {
+  min-height: 44px;
+  padding: 10px 14px;
+  padding-right: 36px;
+  border: 1px solid #ddd5ce;
+  border-radius: 10px;
+  background: #fff;
+  color: #1c1008;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238c7b6e' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  width: 100%;
+
+  &:focus {
+    outline: 2px solid rgb(249, 115, 22);
+    outline-offset: 0;
+  }
+}
+
+.export-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid #f0e6de;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.btn-ghost {
+  background: #fff;
+  color: #5f4636;
+  border-color: #ddd5ce;
+
+  &:hover {
+    background: #f5ebe3;
+  }
+}
+
+.btn-success {
+  background: #22c55e;
+  color: #fff;
+  border-color: #22c55e;
+
+  &:hover {
+    background: #16a34a;
+    border-color: #16a34a;
+  }
+}

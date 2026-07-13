@@ -2,8 +2,8 @@
   <div class="dashboard-heading">
     <div>
       <p class="ant-kicker">Truy vết vận hành</p>
-      <h2>Nhật ký kiểm toán</h2>
-      <p class="admin-note">{{ audit.events().length }} sự kiện phù hợp</p>
+      <h2>Nhật ký hoạt động</h2>
+      <p class="admin-note">{{ rangedEvents().length }} sự kiện phù hợp</p>
     </div>
     <div class="admin-actions">
       <button class="ant-btn ant-btn--secondary" type="button" (click)="audit.load()">
@@ -12,16 +12,19 @@
     </div>
   </div>
 
-  <div class="admin-toolbar" aria-label="Bộ lọc nhật ký">
-    <label>
-      <span>Tìm kiếm</span>
-      <input
-        class="ant-field"
-        type="search"
-        placeholder="Hành động, mục tiêu, lý do"
-        [value]="audit.filter().search || ''"
-        (input)="search($event)"
-      />
+  <div class="admin-toolbar audit-toolbar" aria-label="Bộ lọc nhật ký">
+    <label class="audit-toolbar__search">
+      <span class="visually-hidden">Tìm kiếm</span>
+      <span class="audit-search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input
+          class="ant-field"
+          type="search"
+          placeholder="Tìm người dùng, bài đăng, mã giao dịch..."
+          [value]="audit.filter().search || ''"
+          (input)="search($event)"
+        />
+      </span>
     </label>
     <label>
       <span>ID người thực hiện</span>
@@ -33,7 +36,7 @@
       />
     </label>
     <label>
-      <span>Hành động</span>
+      <span>Loại hành động</span>
       <select
         class="ant-field"
         [value]="audit.filter().action || ''"
@@ -55,6 +58,19 @@
         @for (target of targets; track target.value) {
           <option [value]="target.value">{{ target.label }}</option>
         }
+      </select>
+    </label>
+    <label>
+      <span>Thời gian</span>
+      <select
+        class="ant-field"
+        [value]="timeRangeFilter()"
+        (change)="updateTimeRangeFilter($event)"
+      >
+        <option value="7d">7 ngày qua</option>
+        <option value="30d">30 ngày qua</option>
+        <option value="90d">90 ngày qua</option>
+        <option value="all">Toàn bộ thời gian</option>
       </select>
     </label>
     <button
@@ -141,13 +157,13 @@
     }
   </div>
 
-  @if (audit.loading() && !audit.events().length) {
+  @if (audit.loading() && !rangedEvents().length) {
     <div class="admin-table-skeleton" aria-label="Đang tải nhật ký" aria-busy="true">
       @for (row of [1, 2, 3, 4, 5]; track row) {
         <span></span>
       }
     </div>
-  } @else if (!audit.events().length) {
+  } @else if (!rangedEvents().length) {
     <section class="admin-empty-state">
       <h3>{{ activeFilterCount() ? 'Không có kết quả phù hợp' : 'Chưa có sự kiện kiểm toán' }}</h3>
       <p>
@@ -196,9 +212,28 @@
           @for (event of pagedEvents(); track event.id) {
             <tr>
               <td>{{ event.createdAt | date: 'short' }}</td>
-              <td>{{ event.actorId }}</td>
-              <td>{{ label(event.action) }}</td>
-              <td>{{ label(event.targetType) }} · {{ event.targetId }}</td>
+              <td>
+                <span class="audit-actor">
+                  <span
+                    class="audit-actor__avatar"
+                    [style.background]="actorColor(event.actorName || event.actorId)"
+                  >
+                    {{ actorInitials(event.actorName || event.actorId) }}
+                  </span>
+                  {{ event.actorName || event.actorId }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [class]="actionBadgeClass(event.action)">{{
+                  label(event.action)
+                }}</span>
+              </td>
+              <td>
+                <span class="badge" [class]="targetBadgeClass(event.targetType)">{{
+                  label(event.targetType)
+                }}</span>
+                {{ event.targetId }}
+              </td>
               <td>{{ reasonLabel(event.reason) }}</td>
               <td>
                 <button
@@ -248,7 +283,7 @@
     <app-admin-pagination
       [page]="page()"
       [pageSize]="pageSize()"
-      [total]="audit.events().length"
+      [total]="rangedEvents().length"
       (pageChange)="setPage($event)"
       (pageSizeChange)="setPageSize($event)"
     />

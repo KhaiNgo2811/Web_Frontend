@@ -1,0 +1,520 @@
+<section class="admin-reports" aria-labelledby="reports-heading">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/admin">Tổng quan</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Báo cáo vi phạm</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="reports-header">
+    <div>
+      <h1 id="reports-heading">Báo cáo vi phạm</h1>
+    </div>
+    <button class="btn btn-export" type="button" (click)="exportOpen.set(true)">
+      <svg
+        viewBox="0 0 24 24"
+        width="14"
+        height="14"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+      Xuất báo cáo
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card__content">
+        <span class="stat-card__label">Tổng báo cáo</span>
+        <strong class="stat-card__value">{{ totalReports() }}</strong>
+        <span class="stat-card__trend trend-up">
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+          +6 <small>tuần này</small>
+        </span>
+      </div>
+      <div class="stat-card__icon stat-icon--blue">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+          />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__content">
+        <span class="stat-card__label">Chờ xử lý</span>
+        <strong class="stat-card__value">{{ pendingReports() }}</strong>
+        <span class="stat-card__trend trend-warning">
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path
+              d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+            />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          @if (urgentReports() > 0) {
+            {{ urgentReports() }} khẩn cấp — cần xử lý ngay
+          } @else {
+            Không có khẩn cấp
+          }
+        </span>
+      </div>
+      <div class="stat-card__icon stat-icon--red">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__content">
+        <span class="stat-card__label">Đang xem xét</span>
+        <strong class="stat-card__value">{{ hiddenReports() }}</strong>
+        <span class="stat-card__trend trend-info">
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          Đang xử lý
+        </span>
+      </div>
+      <div class="stat-card__icon stat-icon--yellow">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__content">
+        <span class="stat-card__label">Đã giải quyết</span>
+        <strong class="stat-card__value">{{ dismissedReports() }}</strong>
+        <span class="stat-card__trend trend-up">
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+          +8 <small>tháng này</small>
+        </span>
+      </div>
+      <div class="stat-card__icon stat-icon--green">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="reports-toolbar">
+    <div class="search-box">
+      <svg
+        viewBox="0 0 24 24"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="search"
+        placeholder="Tìm báo cáo, người dùng..."
+        [value]="moderation.filter().search || ''"
+        (input)="updateSearch($event)"
+      />
+    </div>
+    <div class="filter-group">
+      <select class="filter-select" [value]="typeFilter()" (change)="updateTypeFilter($event)">
+        <option value="all">Loại vi phạm</option>
+        <option value="post">Bài đăng</option>
+        <option value="review">Đánh giá</option>
+        <option value="message">Tin nhắn</option>
+      </select>
+      <select class="filter-select" [value]="statusFilter()" (change)="updateStatusFilter($event)">
+        <option value="all">Trạng thái</option>
+        <option value="pending">Chờ xử lý</option>
+        <option value="hidden">Đang xem xét</option>
+        <option value="dismissed">Đã giải quyết</option>
+      </select>
+      <select
+        class="filter-select"
+        [value]="timeRangeFilter()"
+        (change)="updateTimeRangeFilter($event)"
+      >
+        <option value="30d">30 ngày qua</option>
+        <option value="7d">7 ngày qua</option>
+        <option value="90d">90 ngày qua</option>
+        <option value="all">Tất cả</option>
+      </select>
+    </div>
+  </div>
+
+  @if (moderation.loading() && !resultCount()) {
+    <div class="state-message" role="status">Đang tải danh sách báo cáo...</div>
+  } @else if (moderation.error() && !resultCount()) {
+    <div class="state-message state-message--error" role="alert">
+      <strong>Không thể tải báo cáo</strong>
+      <span>{{ moderation.error() }}</span>
+      <button class="btn btn-secondary" type="button" (click)="refresh()">Thử lại</button>
+    </div>
+  } @else {
+    <div class="reports-table-wrap">
+      <table class="reports-table">
+        <thead>
+          <tr>
+            <th class="col-code">MÃ BC</th>
+            <th class="col-content">NỘI DUNG BỊ BÁO CÁO</th>
+            <th class="col-reporter">NGƯỜI BÁO CÁO</th>
+            <th class="col-type">LOẠI VI PHẠM</th>
+            <th class="col-count">LƯỢT BC</th>
+            <th class="col-status">TRẠNG THÁI</th>
+            <th class="col-date">NGÀY</th>
+            <th class="col-actions">HÀNH ĐỘNG</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (report of visibleReports(); track report.id) {
+            <tr>
+              <td class="col-code">BC-{{ report.id | slice: 7 : 14 | uppercase }}</td>
+              <td class="col-content">
+                <strong>{{ report.reason }}</strong>
+                <span>{{ report.details || 'Không có mô tả thêm' }}</span>
+              </td>
+              <td class="col-reporter">
+                <div class="user-cell">
+                  <span
+                    class="user-avatar"
+                    [style.background]="priorityTagColor(report.priority) + '20'"
+                    [style.color]="priorityTagColor(report.priority)"
+                  >
+                    {{
+                      (report.reporter?.displayName || report.reporterId).slice(0, 1).toUpperCase()
+                    }}
+                  </span>
+                  <span>{{ report.reporter?.displayName || report.reporterId }}</span>
+                </div>
+              </td>
+              <td class="col-type">
+                <span
+                  class="type-badge"
+                  [style.background]="categoryTag(report).color + '20'"
+                  [style.color]="categoryTag(report).color"
+                >
+                  {{ categoryTag(report).label }}
+                </span>
+              </td>
+              <td class="col-count">{{ reportCountText(report) }}</td>
+              <td class="col-status">
+                <span class="status-badge" [class]="'status-' + report.status">
+                  {{ statusLabel(report.status) }}
+                </span>
+              </td>
+              <td class="col-date">{{ report.createdAt | date: 'dd/MM/yyyy' }}</td>
+              <td class="col-actions">
+                <button
+                  class="action-btn"
+                  type="button"
+                  (click)="openReport(report)"
+                  title="Xem chi tiết"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty-cell">
+                <strong>{{ hasFilters() ? 'Không có kết quả phù hợp' : 'Chưa có báo cáo' }}</strong>
+                <span>{{
+                  hasFilters()
+                    ? 'Điều chỉnh hoặc xóa bộ lọc để xem thêm.'
+                    : 'Báo cáo mới sẽ xuất hiện tại đây.'
+                }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (resultCount()) {
+      <div class="table-footer">
+        <span class="table-summary"
+          >Hiển thị {{ visibleReports().length }} trong tổng số {{ resultCount() }} báo cáo</span
+        >
+        <nav class="table-pagination" aria-label="Phân trang báo cáo">
+          <button
+            class="page-btn"
+            type="button"
+            [disabled]="page() === 1"
+            (click)="page.set(page() - 1)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <span class="page-info">Trang {{ page() }} / {{ pageCount() }}</span>
+          <button
+            class="page-btn"
+            type="button"
+            [disabled]="page() === pageCount()"
+            (click)="page.set(page() + 1)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </nav>
+      </div>
+    }
+  }
+</section>
+
+<app-admin-drawer
+  [open]="!!selectedReport()"
+  width="moderation"
+  title="Chi tiết báo cáo"
+  [description]="selectedReport()?.reason || ''"
+  (closed)="closeDrawer()"
+>
+  <div drawer-body class="moderation-detail">
+    @if (selectedReport(); as report) {
+      <section class="moderation-progress" aria-label="Tiến độ xử lý báo cáo">
+        <div class="moderation-progress__summary">
+          <div>
+            <strong>Bước {{ moderationStepIndex(report) + 1 }} / 4</strong>
+            <span>{{ moderationStatusNote(report) }}</span>
+          </div>
+          <span class="admin-pill">{{ statusLabel(report.status) }}</span>
+        </div>
+        <div
+          class="progress moderation-meter"
+          role="progressbar"
+          [attr.aria-label]="'Tiến độ báo cáo ' + report.id"
+          [attr.aria-valuenow]="moderationProgress(report)"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <span class="progress-bar" [style.width.%]="moderationProgress(report)"></span>
+        </div>
+        <ol class="moderation-steps">
+          @for (step of [0, 1, 2, 3]; track step) {
+            <li
+              [class.done]="step < moderationStepIndex(report)"
+              [class.current]="step === moderationStepIndex(report)"
+              [attr.aria-current]="step === moderationStepIndex(report) ? 'step' : null"
+            >
+              {{ moderationStepLabel(step) }}
+            </li>
+          }
+        </ol>
+        <p class="admin-note">{{ lastHistoryLabel(report) }}</p>
+      </section>
+      <dl>
+        <dt>Mã</dt>
+        <dd>{{ report.id }}</dd>
+        <dt>Lý do</dt>
+        <dd>{{ report.reason }}</dd>
+        <dt>Trạng thái</dt>
+        <dd>{{ statusLabel(report.status) }}</dd>
+        <dt>Ưu tiên</dt>
+        <dd>{{ priorityLabel(report.priority) }}</dd>
+        <dt>Tạo lúc</dt>
+        <dd>{{ report.createdAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+        <dt>Xử lý lúc</dt>
+        <dd>
+          {{ report.resolvedAt ? (report.resolvedAt | date: 'dd/MM/yyyy HH:mm') : 'Chưa xử lý' }}
+        </dd>
+        <dt>Ghi chú cuối</dt>
+        <dd>{{ report.resolutionNote || 'Chưa có' }}</dd>
+        <dt>Người báo cáo</dt>
+        <dd>{{ report.reporter?.displayName || report.reporterId }}</dd>
+        <dt>Loại nội dung</dt>
+        <dd>{{ typeLabel(report.targetType) }}</dd>
+        <dt>Nội dung</dt>
+        <dd>{{ report.details || report.reason }}</dd>
+      </dl>
+      <p class="admin-note">{{ report.details || report.reason }}</p>
+      @if (validActions(report).length) {
+        <label class="note-field">
+          <span
+            >Ghi chú xử lý
+            @if (report.status === 'pending') {
+              (bắt buộc)
+            }
+          </span>
+          <textarea
+            class="ant-field"
+            [value]="note()"
+            [attr.aria-invalid]="!!localError()"
+            aria-describedby="reports-note-error"
+            (input)="note.set(valueOf($event))"
+          ></textarea>
+        </label>
+      }
+      @if (localError() || moderation.error()) {
+        <p id="reports-note-error" class="ant-error" role="alert">
+          {{ localError() || moderation.error() }}
+        </p>
+      }
+    }
+  </div>
+  <div drawer-footer class="admin-actions">
+    @if (selectedReport(); as report) {
+      @if (canAct()) {
+        @if (report.status === 'pending') {
+          <button
+            class="ant-btn ant-btn--danger"
+            type="button"
+            [disabled]="moderation.loading()"
+            (click)="act(report, 'hide')"
+          >
+            Ẩn nội dung
+          </button>
+          <button
+            class="ant-btn ant-btn--ghost"
+            type="button"
+            [disabled]="moderation.loading()"
+            (click)="act(report, 'dismiss')"
+          >
+            Bỏ qua
+          </button>
+        }
+        @if (report.status === 'hidden') {
+          <button
+            class="ant-btn ant-btn--secondary"
+            type="button"
+            [disabled]="moderation.loading()"
+            (click)="act(report, 'restore')"
+          >
+            Khôi phục
+          </button>
+        }
+        @if (!validActions(report).length) {
+          <span class="admin-note">Báo cáo này không còn thao tác xử lý.</span>
+        }
+      }
+    }
+  </div>
+</app-admin-drawer>
+
+<app-admin-confirm-dialog
+  [open]="!!pendingAction()"
+  [request]="confirmationRequest()"
+  (confirmed)="confirmAction()"
+  (cancelled)="pendingAction.set(null)"
+/>
+
+<app-admin-export-dialog
+  [open]="exportOpen()"
+  [options]="{
+    title: 'Xuất báo cáo vi phạm',
+    subtitle: 'Xuất bảng dữ liệu: Báo cáo vi phạm',
+    timeRanges: [
+      { value: 'all', label: 'Tất cả thời gian' },
+      { value: '7d', label: '7 ngày gần nhất' },
+      { value: '30d', label: '30 ngày gần nhất' },
+    ],
+  }"
+  (cancelled)="exportOpen.set(false)"
+  (confirmed)="exportOpen.set(false)"
+/>

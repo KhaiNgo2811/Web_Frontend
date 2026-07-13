@@ -1,3 +1,4 @@
+import { DecimalPipe, SlicePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,13 +18,18 @@ import type {
   AdminSlaSummary,
 } from '../../../core/models';
 import { AdminDashboardStore } from '../../../core/stores';
+import { AdminConfirmDialog } from '../shared/admin-confirm-dialog/admin-confirm-dialog';
 import { adminLabel } from '../shared/admin-labels';
 
 type ActivityMetric = 'accounts' | 'posts' | 'completedOrders';
 
+const CHART_PALETTE = ['#f97316', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#06b6d4'];
+const DONUT_RADIUS = 40;
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_RADIUS;
+
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink],
+  imports: [RouterLink, SlicePipe, DecimalPipe, AdminConfirmDialog],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -44,7 +50,64 @@ export class AdminDashboard implements OnInit {
     const latest = points.at(-1)?.[this.selectedMetric()] ?? 0;
     return `${metric.label}: ${total} trong kỳ, ${latest} ở mốc gần nhất.`;
   });
+  protected readonly selectedRegion = signal<string>('all');
+  protected readonly selectedRegionLabel = computed(() => {
+    const labels: Record<string, string> = {
+      all: 'Tất cả khu vực',
+      'khu-a': 'Khu A',
+      'khu-b': 'Khu B',
+      'khu-c': 'Khu C',
+    };
+    return labels[this.selectedRegion()] || 'Tất cả khu vực';
+  });
   protected readonly label = adminLabel;
+  protected readonly exportConfirmationOpen = signal(false);
+  protected readonly exportRequest = {
+    title: 'Xuất báo cáo tổng quan?',
+    message: 'CSV sẽ tổng hợp các chỉ số vận hành đang hiển thị và được ghi vào nhật ký kiểm toán.',
+    confirmLabel: 'Xuất báo cáo',
+    cancelLabel: 'Hủy',
+  };
+
+  protected readonly currentTime = computed(() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  });
+
+  protected readonly tokenRevenue = computed(() => {
+    const summary = this.dashboard.summary();
+    if (!summary) return '48,5';
+    // Tính doanh thu từ completed orders, ước tính ~50k mỗi đơn
+    const revenue = summary.marketplaceHealth.completedOrdersInRange * 0.05;
+    return revenue.toFixed(1).replace('.', ',');
+  });
+
+  protected readonly categoryList = computed(() => {
+    const mix = this.dashboard.summary()?.serviceCategoryMix ?? [];
+    return mix.map((item, index) => ({
+      name: adminLabel(item.category),
+      percent: item.percent,
+      color: CHART_PALETTE[index % CHART_PALETTE.length],
+    }));
+  });
+
+  protected readonly categoryTotal = computed(() =>
+    (this.dashboard.summary()?.serviceCategoryMix ?? []).reduce((sum, item) => sum + item.total, 0),
+  );
+
+  protected readonly categoryDonutSegments = computed(() => {
+    let offset = 0;
+    return this.categoryList().map((item) => {
+      const length = (item.percent / 100) * DONUT_CIRCUMFERENCE;
+      const segment = {
+        color: item.color,
+        dasharray: `${length} ${DONUT_CIRCUMFERENCE - length}`,
+        dashoffset: -offset,
+      };
+      offset += length;
+      return segment;
+    });
+  });
 
   ngOnInit(): void {
     this.dashboard.load();
@@ -54,8 +117,25 @@ export class AdminDashboard implements OnInit {
     this.dashboard.setRange(range);
   }
 
+  protected setRegion(region: string): void {
+    this.selectedRegion.set(region);
+  }
+
   protected refresh(): void {
     this.dashboard.load();
+  }
+
+  protected confirmExportReport(): void {
+    this.exportConfirmationOpen.set(false);
+    this.dashboard.requestReportExport();
+  }
+
+  protected exportStatusText(): string {
+    const state = this.dashboard.exportState();
+    if (state === 'pending') return 'Đang gửi yêu cầu xuất báo cáo...';
+    if (state === 'success') return 'Đã tạo yêu cầu xuất báo cáo tổng quan.';
+    if (state === 'error') return 'Không thể tạo yêu cầu xuất báo cáo.';
+    return '';
   }
 
   protected sparkline(kpi: AdminKpi): string {
@@ -85,6 +165,47 @@ export class AdminDashboard implements OnInit {
     key: 'accounts' | 'posts' | 'completedOrders',
   ): string {
     return this.activityPoints(points.map((point) => point[key]));
+  }
+
+  protected activityAreaPath(
+    points: AdminActivityTrendPoint[],
+    key: 'accounts' | 'posts' | 'completedOrders',
+  ): string {
+    const series = points.map((point) => point[key]);
+    if (!series.length) return 'M0,64 L100,64 Z';
+    const max = Math.max(...series, 1);
+    const coordinates = series.map((value, index) => {
+      const x = (index / Math.max(series.length - 1, 1)) * 100;
+      const y = 64 - (value / max) * 58;
+      return `${x},${y}`;
+    });
+    return `M0,64 L${coordinates.join(' L')} L100,64 Z`;
+  }
+
+  protected getMaxActivity(
+    points: AdminActivityTrendPoint[],
+    key: 'accounts' | 'posts' | 'completedOrders',
+  ): number {
+    return Math.max(...points.map((p) => p[key]), 1);
+  }
+
+  protected safeDiv(a: number, b: number): number {
+    return b === 0 ? 0 : a / b;
+  }
+
+  protected chartStep(count: number): number {
+    return Math.max(count - 1, 1);
+  }
+
+  protected categoryColor(category: string): string {
+    const colors: Record<string, string> = {
+      quality: 'rgb(239, 68, 68)',
+      payment: 'rgb(249, 115, 22)',
+      schedule: 'rgb(59, 130, 246)',
+      conduct: 'rgb(16, 185, 129)',
+      other: 'rgb(107, 114, 128)',
+    };
+    return colors[category] || colors['other'];
   }
 
   protected kpiRoute(kpi: AdminKpi): string {

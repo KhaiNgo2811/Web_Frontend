@@ -113,3 +113,46 @@
   margin: 0;
   white-space: pre-wrap;
 }
+
+.audit-toolbar__search {
+  min-width: 240px;
+  flex: 1;
+}
+
+.audit-search {
+  position: relative;
+  display: block;
+}
+
+.audit-search i {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  color: var(--ant-subtle);
+}
+
+.audit-search .ant-field {
+  width: 100%;
+  padding-left: 32px;
+}
+
+.audit-actor {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.audit-actor__avatar {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}

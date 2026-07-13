@@ -68,3 +68,56 @@
   color: var(--ant-red);
   font-size: 20px;
 }
+
+.ant-icon-btn--neutral {
+  color: var(--ant-ink-soft);
+  font-size: 15px;
+}
+
+.config-panel-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.config-panel-head h2 {
+  margin: 0 0 4px;
+}
+
+.config-row-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.config-panel--narrow {
+  max-width: 560px;
+}
+
+.field-grid--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.config-callout {
+  margin: 12px 0;
+  border: 1px solid var(--ant-yellow-soft);
+  border-radius: var(--ant-radius-sm);
+  background: var(--ant-yellow-soft);
+  padding: 10px 12px;
+  color: var(--ant-yellow);
+  font-size: 13px;
+}
+
+.config-form {
+  display: grid;
+  gap: 14px;
+}
+
+.config-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--ant-muted);
+  font-size: 12px;
+  font-weight: 700;
+}

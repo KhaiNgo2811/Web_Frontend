@@ -8,12 +8,14 @@ import type {
   AdminModerationPipelineItem,
   AdminOwnershipSummary,
   AdminRegionalMixItem,
+  AdminServiceCategoryMixItem,
   AdminSlaSummary,
   Complaint,
   ModerationReport,
   Order,
   Post,
   Region,
+  ServiceCategory,
   User,
 } from '../models';
 
@@ -281,6 +283,19 @@ export function summarizeCategoryMix(complaints: Complaint[]): AdminCategoryMixI
     })
     .filter((item) => item.total > 0)
     .sort((left, right) => right.total - left.total || left.category.localeCompare(right.category));
+}
+
+export function summarizeServiceCategoryMix(posts: Post[]): AdminServiceCategoryMixItem[] {
+  const openPosts = posts.filter((post) => post.status === 'open' && !post.hidden);
+  const total = openPosts.length;
+  const categories: ServiceCategory[] = ['food', 'laundry', 'repair', 'goods', 'support', 'other'];
+  return categories
+    .map((category) => {
+      const count = openPosts.filter((post) => post.category === category).length;
+      return { category, total: count, percent: percentage(count, total) };
+    })
+    .filter((item) => item.total > 0)
+    .sort((left, right) => right.total - left.total);
 }
 
 export function complaintDueAt(complaint: Complaint): string | undefined {

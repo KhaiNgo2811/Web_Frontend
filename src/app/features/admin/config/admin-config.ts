@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -8,21 +9,58 @@ import {
   signal,
 } from '@angular/core';
 
-import type { BusinessConfigInput, TokenPackage } from '../../../core/models';
+import type {
+  AdminAccountInput,
+  AdminRole,
+  BusinessConfigInput,
+  RegionInput,
+  ServiceCategoryInput,
+  TokenPackage,
+  User,
+} from '../../../core/models';
 import { AdminConfigStore } from '../../../core/stores';
+import { adminLabel } from '../shared/admin-labels';
 import { AdminConfirmDialog } from '../shared/admin-confirm-dialog/admin-confirm-dialog';
+import { AdminDrawer } from '../shared/admin-drawer/admin-drawer';
+import { AdminTabs, type AdminTabItem } from '../shared/admin-tabs/admin-tabs';
 
+type ConfigTab = 'pricing' | 'categories' | 'regions' | 'admins' | 'thresholds';
 type ConfirmAction = 'discard' | 'restore' | null;
+
+interface ItemConfirm {
+  kind: 'remove-category' | 'toggle-region' | 'toggle-admin';
+  id: string;
+  label: string;
+  nextStatus?: 'active' | 'paused' | 'locked';
+}
 
 @Component({
   selector: 'app-admin-config',
-  imports: [AdminConfirmDialog],
+  imports: [AdminConfirmDialog, AdminDrawer, AdminTabs, DecimalPipe],
   templateUrl: './admin-config.html',
   styleUrl: './admin-config.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminConfig implements OnInit {
   protected readonly configStore = inject(AdminConfigStore);
+  protected readonly label = adminLabel;
+
+  protected readonly tabs: readonly AdminTabItem[] = [
+    { value: 'pricing', label: 'Gói & Giá' },
+    { value: 'categories', label: 'Danh mục dịch vụ' },
+    { value: 'regions', label: 'Khu vực' },
+    { value: 'admins', label: 'Tài khoản quản trị' },
+    { value: 'thresholds', label: 'Ngưỡng cảnh báo' },
+  ];
+  protected readonly activeTab = signal<ConfigTab>('pricing');
+
+  protected readonly adminRoles: AdminRole[] = [
+    'support_agent',
+    'moderator',
+    'complaint_reviewer',
+    'super_admin',
+  ];
+
   protected readonly form = signal<BusinessConfigInput | null>(null);
   private readonly baseline = signal<BusinessConfigInput | null>(null);
   protected readonly confirmAction = signal<ConfirmAction>(null);
@@ -47,17 +85,57 @@ export class AdminConfig implements OnInit {
         },
   );
 
+  // Danh mục dịch vụ
+  protected readonly categoryDrawerOpen = signal(false);
+  protected readonly editingCategoryId = signal<string | null>(null);
+  protected readonly categoryDraft = signal<ServiceCategoryInput>(this.emptyCategory());
+
+  // Khu vực
+  protected readonly regionDrawerOpen = signal(false);
+  protected readonly editingRegionId = signal<string | null>(null);
+  protected readonly regionDraft = signal<RegionInput>(this.emptyRegion());
+
+  // Tài khoản quản trị
+  protected readonly adminDrawerOpen = signal(false);
+  protected readonly editingAdminId = signal<string | null>(null);
+  protected readonly adminDraft = signal<AdminAccountInput>(this.emptyAdminAccount());
+
+  protected readonly itemConfirm = signal<ItemConfirm | null>(null);
+  protected readonly itemConfirmRequest = computed(() => {
+    const pending = this.itemConfirm();
+    if (!pending) return null;
+    if (pending.kind === 'remove-category') {
+      return {
+        title: 'Xóa danh mục dịch vụ?',
+        message: `Danh mục "${pending.label}" sẽ bị xóa khỏi hệ thống.`,
+        confirmLabel: 'Xóa danh mục',
+        cancelLabel: 'Hủy',
+        tone: 'danger' as const,
+      };
+    }
+    const activating = pending.nextStatus === 'active';
+    return {
+      title: activating ? 'Kích hoạt lại?' : 'Tạm dừng?',
+      message: `Xác nhận ${activating ? 'kích hoạt' : 'tạm dừng'} "${pending.label}".`,
+      confirmLabel: activating ? 'Kích hoạt' : 'Tạm dừng',
+      cancelLabel: 'Hủy',
+      tone: activating ? ('default' as const) : ('danger' as const),
+    };
+  });
+
   constructor() {
     effect(() => {
       const config = this.configStore.config();
       if (config) {
-        const value = {
+        const value: BusinessConfigInput = {
           platformFeePct: config.platformFeePct,
           escrowFeePct: config.escrowFeePct,
           postDurationHours: config.postDurationHours,
           priorityDurationHours: config.priorityDurationHours,
           autoCompleteHours: config.autoCompleteHours,
           minWithdrawalAmount: config.minWithdrawalAmount,
+          minRatingThreshold: config.minRatingThreshold,
+          minComplaintsThreshold: config.minComplaintsThreshold,
           tokenPackages: config.tokenPackages.map((pack) => ({ ...pack })),
         };
         this.baseline.set(value);
@@ -68,6 +146,10 @@ export class AdminConfig implements OnInit {
 
   ngOnInit(): void {
     this.configStore.load();
+  }
+
+  setTab(tab: string): void {
+    this.activeTab.set(tab as ConfigTab);
   }
 
   updateNumber(key: keyof Omit<BusinessConfigInput, 'tokenPackages'>, value: number): void {
@@ -144,11 +226,157 @@ export class AdminConfig implements OnInit {
   }
 
   textValue(event: Event): string {
-    return event.target instanceof HTMLInputElement ? event.target.value : '';
+    return event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement
+      ? event.target.value
+      : '';
   }
 
   checkedValue(event: Event): boolean {
     return event.target instanceof HTMLInputElement ? event.target.checked : false;
+  }
+
+  // --- Danh mục dịch vụ ---
+  protected openCategoryDrawer(category?: { id: string } & ServiceCategoryInput): void {
+    this.configStore.clearItemState();
+    this.editingCategoryId.set(category?.id ?? null);
+    this.categoryDraft.set(
+      category
+        ? {
+            key: category.key,
+            name: category.name,
+            attributesCount: category.attributesCount,
+            active: category.active,
+          }
+        : this.emptyCategory(),
+    );
+    this.categoryDrawerOpen.set(true);
+  }
+
+  protected closeCategoryDrawer(): void {
+    this.categoryDrawerOpen.set(false);
+  }
+
+  protected updateCategoryDraft(patch: Partial<ServiceCategoryInput>): void {
+    this.categoryDraft.update((draft) => ({ ...draft, ...patch }));
+  }
+
+  protected saveCategory(): void {
+    this.configStore.saveServiceCategory(
+      this.categoryDraft(),
+      this.editingCategoryId() ?? undefined,
+    );
+    this.categoryDrawerOpen.set(false);
+  }
+
+  protected requestRemoveCategory(id: string, name: string): void {
+    this.itemConfirm.set({ kind: 'remove-category', id, label: name });
+  }
+
+  // --- Khu vực ---
+  protected openRegionDrawer(region?: { id: string } & RegionInput): void {
+    this.configStore.clearItemState();
+    this.editingRegionId.set(region?.id ?? null);
+    this.regionDraft.set(
+      region ? { name: region.name, city: region.city, status: region.status } : this.emptyRegion(),
+    );
+    this.regionDrawerOpen.set(true);
+  }
+
+  protected closeRegionDrawer(): void {
+    this.regionDrawerOpen.set(false);
+  }
+
+  protected updateRegionDraft(patch: Partial<RegionInput>): void {
+    this.regionDraft.update((draft) => ({ ...draft, ...patch }));
+  }
+
+  protected saveRegion(): void {
+    this.configStore.saveRegion(this.regionDraft(), this.editingRegionId() ?? undefined);
+    this.regionDrawerOpen.set(false);
+  }
+
+  protected requestToggleRegion(
+    id: string,
+    name: string,
+    currentStatus: 'active' | 'paused',
+  ): void {
+    this.itemConfirm.set({
+      kind: 'toggle-region',
+      id,
+      label: name,
+      nextStatus: currentStatus === 'active' ? 'paused' : 'active',
+    });
+  }
+
+  // --- Tài khoản quản trị ---
+  protected openAdminDrawer(account?: User): void {
+    this.configStore.clearItemState();
+    this.editingAdminId.set(account?.id ?? null);
+    this.adminDraft.set(
+      account
+        ? {
+            displayName: account.displayName,
+            email: account.email ?? '',
+            role: account.role as AdminRole,
+          }
+        : this.emptyAdminAccount(),
+    );
+    this.adminDrawerOpen.set(true);
+  }
+
+  protected closeAdminDrawer(): void {
+    this.adminDrawerOpen.set(false);
+  }
+
+  protected updateAdminDraft(patch: Partial<AdminAccountInput>): void {
+    this.adminDraft.update((draft) => ({ ...draft, ...patch }));
+  }
+
+  protected updateAdminRole(event: Event): void {
+    this.updateAdminDraft({ role: this.textValue(event) as AdminRole });
+  }
+
+  protected saveAdminAccount(): void {
+    this.configStore.saveAdminAccount(this.adminDraft(), this.editingAdminId() ?? undefined);
+    this.adminDrawerOpen.set(false);
+  }
+
+  protected requestToggleAdmin(id: string, name: string, currentStatus: User['status']): void {
+    this.itemConfirm.set({
+      kind: 'toggle-admin',
+      id,
+      label: name,
+      nextStatus: currentStatus === 'active' ? 'locked' : 'active',
+    });
+  }
+
+  protected confirmItemAction(): void {
+    const pending = this.itemConfirm();
+    this.itemConfirm.set(null);
+    if (!pending) return;
+    if (pending.kind === 'remove-category') this.configStore.removeServiceCategory(pending.id);
+    if (pending.kind === 'toggle-region' && pending.nextStatus) {
+      this.configStore.setRegionStatus(pending.id, pending.nextStatus as 'active' | 'paused');
+    }
+    if (pending.kind === 'toggle-admin' && pending.nextStatus) {
+      this.configStore.setAdminAccountStatus(pending.id, pending.nextStatus as User['status']);
+    }
+  }
+
+  protected roleLabel(role: string): string {
+    return adminLabel(role);
+  }
+
+  private emptyCategory(): ServiceCategoryInput {
+    return { key: 'other', name: '', attributesCount: 0, active: true };
+  }
+
+  private emptyRegion(): RegionInput {
+    return { name: '', city: '', status: 'active' };
+  }
+
+  private emptyAdminAccount(): AdminAccountInput {
+    return { displayName: '', email: '', role: 'support_agent' };
   }
 
   private clone(value: BusinessConfigInput | null): BusinessConfigInput | null {
