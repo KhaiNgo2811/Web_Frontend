@@ -1,0 +1,199 @@
+<main class="history-page">
+  <div class="ant-container history-shell">
+    @if (wallet.summary(); as summary) {
+      <section class="history-band">
+        <a routerLink="/wallet" class="history-back"
+          ><i class="bi bi-arrow-left" aria-hidden="true"></i> Quay lại Ví Token</a
+        >
+        <div class="history-band__main">
+          <div>
+            <h1>Lịch sử giao dịch</h1>
+            <p>Toàn bộ hoạt động cộng và trừ Xu trong ví của bạn.</p>
+          </div>
+          <dl class="history-band__stats">
+            <div>
+              <dt>Tổng nhận</dt>
+              <dd class="earned">+{{ totals().earned | number }} Xu</dd>
+            </div>
+            <div>
+              <dt>Tổng dùng</dt>
+              <dd class="spent">-{{ totals().spent | number }} Xu</dd>
+            </div>
+            <div>
+              <dt>Số dư hiện tại</dt>
+              <dd>{{ summary.balance | number }} Xu</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
+      <div class="history-layout">
+        <aside class="history-sidebar">
+          <div class="sidebar-block">
+            <h2>Loại giao dịch</h2>
+            <button
+              type="button"
+              class="filter-row"
+              [class.active]="typeFilter() === 'all'"
+              (click)="setTypeFilter('all')"
+            >
+              <span>Tất cả</span><strong>{{ counts().all }}</strong>
+            </button>
+            <button
+              type="button"
+              class="filter-row"
+              [class.active]="typeFilter() === 'earn'"
+              (click)="setTypeFilter('earn')"
+            >
+              <span>Kiếm Xu</span><strong>{{ counts().earn }}</strong>
+            </button>
+            <button
+              type="button"
+              class="filter-row"
+              [class.active]="typeFilter() === 'topup'"
+              (click)="setTypeFilter('topup')"
+            >
+              <span>Nạp Xu</span><strong>{{ counts().topup }}</strong>
+            </button>
+            <button
+              type="button"
+              class="filter-row"
+              [class.active]="typeFilter() === 'spend'"
+              (click)="setTypeFilter('spend')"
+            >
+              <span>Sử dụng Xu</span><strong>{{ counts().spend }}</strong>
+            </button>
+          </div>
+
+          <div class="sidebar-block">
+            <h2>Khoảng thời gian</h2>
+            <button
+              type="button"
+              class="filter-row filter-row--plain"
+              [class.active]="rangeFilter() === 'all'"
+              (click)="setRangeFilter('all')"
+            >
+              Tất cả thời gian
+            </button>
+            <button
+              type="button"
+              class="filter-row filter-row--plain"
+              [class.active]="rangeFilter() === 'today'"
+              (click)="setRangeFilter('today')"
+            >
+              Hôm nay
+            </button>
+            <button
+              type="button"
+              class="filter-row filter-row--plain"
+              [class.active]="rangeFilter() === '7d'"
+              (click)="setRangeFilter('7d')"
+            >
+              7 ngày qua
+            </button>
+            <button
+              type="button"
+              class="filter-row filter-row--plain"
+              [class.active]="rangeFilter() === '30d'"
+              (click)="setRangeFilter('30d')"
+            >
+              30 ngày qua
+            </button>
+            <button
+              type="button"
+              class="filter-row filter-row--plain"
+              [class.active]="rangeFilter() === 'month'"
+              (click)="setRangeFilter('month')"
+            >
+              Tháng này
+            </button>
+          </div>
+
+          <div class="sidebar-block">
+            <h2>Nhanh tay nạp thêm</h2>
+            <a routerLink="/wallet" fragment="packages-title" class="ant-btn ant-btn--primary sidebar-cta">
+              <i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> Nạp thêm Xu
+            </a>
+          </div>
+        </aside>
+
+        <section class="history-main">
+          <div class="history-toolbar">
+            <label class="history-search">
+              <i class="bi bi-search" aria-hidden="true"></i>
+              <input
+                type="search"
+                placeholder="Tìm kiếm giao dịch..."
+                [value]="search()"
+                (input)="setSearch($any($event.target).value)"
+              />
+            </label>
+            <button type="button" class="ant-btn ant-btn--secondary" (click)="toggleSort()">
+              {{ sort() === 'newest' ? 'Mới nhất trước' : 'Cũ nhất trước' }}
+              <i class="bi bi-chevron-down" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          @if (!groups().length) {
+            <div class="history-empty">
+              <i class="bi bi-inbox" aria-hidden="true"></i>
+              <p>Không có giao dịch phù hợp với bộ lọc hiện tại.</p>
+            </div>
+          }
+
+          @for (group of groups(); track group.label) {
+            <div class="history-group">
+              <h3>{{ group.label }} · {{ group.rows.length }} giao dịch</h3>
+              @for (row of group.rows; track row.id) {
+                <article class="history-row">
+                  <span class="history-row__icon" [class]="'history-row__icon--' + row.category">
+                    <i class="bi {{ categoryIcon(row.category) }}" aria-hidden="true"></i>
+                  </span>
+                  <div class="history-row__copy">
+                    <strong>{{ row.description }}</strong>
+                    <div class="history-row__meta">
+                      <span class="history-badge" [class]="'history-badge--' + row.category">{{
+                        categoryLabel(row.category)
+                      }}</span>
+                      <span>{{ group.label }}, {{ formatTime(row.createdAt) }}</span>
+                    </div>
+                  </div>
+                  <div class="history-row__amount">
+                    <strong [class.earned]="row.direction === 'earned'" [class.spent]="row.direction === 'spent'">
+                      {{ row.direction === 'earned' ? '+' : '-' }}{{ row.amount | number }} Xu
+                    </strong>
+                    <span>Số dư: {{ row.balanceAfter | number }} Xu</span>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+
+          @if (totalPages() > 1) {
+            <nav class="history-pagination" aria-label="Phân trang lịch sử giao dịch">
+              <button type="button" [disabled]="page() === 1" (click)="goToPage(page() - 1)">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>
+              </button>
+              @for (number of pageNumbers(); track number) {
+                <button
+                  type="button"
+                  [class.active]="page() === number"
+                  (click)="goToPage(number)"
+                >
+                  {{ number }}
+                </button>
+              }
+              <button
+                type="button"
+                [disabled]="page() === totalPages()"
+                (click)="goToPage(page() + 1)"
+              >
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+              </button>
+            </nav>
+          }
+        </section>
+      </div>
+    }
+  </div>
+</main>

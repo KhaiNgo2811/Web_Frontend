@@ -39,14 +39,7 @@
       </div>
     } @else if (wallet.summary(); as summary) {
       <section class="balance-band" aria-labelledby="balance-title">
-        <div class="balance-band__main">
-          <div class="coin-mark" aria-hidden="true">A</div>
-          <div>
-            <span id="balance-title">Số dư khả dụng</span>
-            <strong>{{ summary.balance | number }} <small>Xu</small></strong>
-          </div>
-        </div>
-        <dl class="balance-band__stats">
+        <div class="balance-band__stats">
           <div>
             <dt>Kiếm hôm nay</dt>
             <dd>+{{ summary.todayEarnings | number }} Xu</dd>
@@ -55,11 +48,25 @@
             <dt>Chuỗi điểm danh</dt>
             <dd>{{ summary.checkInStreak }} ngày</dd>
           </div>
+        </div>
+        <span class="balance-kicker"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> Xu khả dụng</span>
+        <div class="balance-band__main">
+          <div class="coin-mark" aria-hidden="true">A</div>
           <div>
-            <dt>Video hôm nay</dt>
-            <dd>{{ summary.adsWatchedToday }}/{{ summary.adDailyLimit }}</dd>
+            <span id="balance-title">Số dư hiện tại</span>
+            <strong>{{ summary.balance | number }} <small>Xu</small></strong>
+            <p>
+              Tương đương khoảng {{ summary.balance * 1000 | number }}đ · Dùng để đẩy bài và ưu
+              tiên hồ sơ
+            </p>
           </div>
-        </dl>
+        </div>
+        <div class="balance-band__actions">
+          <a href="#packages-title" class="ant-btn ant-btn--light">Nạp thêm Xu</a>
+          <a routerLink="/wallet/history" class="ant-btn ant-btn--ghost-light"
+            >Xem lịch sử giao dịch</a
+          >
+        </div>
       </section>
 
       <section class="wallet-section" aria-labelledby="earn-title">
@@ -174,24 +181,18 @@
         </div>
       </section>
 
-      <section class="promotion-workspace" aria-labelledby="promotion-title">
-        <div class="section-heading section-heading--light">
+      <section class="wallet-section" aria-labelledby="boost-title">
+        <div class="section-heading">
           <div>
-            <h2 id="promotion-title">Quảng bá hiệu quả</h2>
+            <h2 id="boost-title">Đẩy bài đăng lên đầu</h2>
           </div>
-          <p>Chọn đúng công cụ cho bài đăng hoặc hồ sơ dịch vụ.</p>
+          <p>Đưa bài lên vị trí ưu tiên trong thời gian đã chọn.</p>
         </div>
-        <div class="promotion-grid">
-          <div class="boost-builder">
-            <div class="workspace-title">
-              <span class="feature-icon"
-                ><i class="bi bi-rocket-takeoff" aria-hidden="true"></i
-              ></span>
-              <div>
-                <h3>Đẩy bài đăng</h3>
-                <p>Đưa bài lên vị trí ưu tiên trong thời gian đã chọn.</p>
-              </div>
-            </div>
+        <div class="boost-grid">
+          <div class="boost-preview">
+            <span class="boost-preview__badge">
+              <i class="bi bi-rocket-takeoff" aria-hidden="true"></i> Đang chọn · Ưu tiên
+            </span>
             <label class="ant-label" for="boost-post">Bài đăng của bạn</label>
             <select
               id="boost-post"
@@ -204,7 +205,10 @@
                 <option [value]="post.id">{{ post.title }}</option>
               }
             </select>
-            <span class="ant-label duration-label">Thời gian ưu tiên</span>
+          </div>
+
+          <div class="boost-builder">
+            <span class="ant-label duration-label">Chọn thời gian đẩy bài</span>
             <div class="duration-options" role="group" aria-label="Chọn thời gian đẩy bài">
               @for (option of boostOptions; track option.days) {
                 <button
@@ -218,7 +222,7 @@
               }
             </div>
             <div class="boost-total">
-              <span>Chi phí kích hoạt</span><strong>{{ selectedBoost().cost }} Xu</strong>
+              <span>Số Xu sẽ dùng</span><strong>{{ selectedBoost().cost }} Xu</strong>
             </div>
             <button
               type="button"
@@ -230,7 +234,7 @@
               "
               (click)="openBoost()"
             >
-              <i class="bi bi-rocket-takeoff" aria-hidden="true"></i> Đẩy bài ngay
+              <i class="bi bi-rocket-takeoff" aria-hidden="true"></i> Đẩy bài đăng ngay
             </button>
             @if (summary.balance < selectedBoost().cost) {
               <p class="inline-warning">
@@ -239,42 +243,50 @@
               </p>
             }
           </div>
+        </div>
+      </section>
 
-          <div class="plan-list">
-            <div class="workspace-title">
-              <span class="feature-icon"><i class="bi bi-megaphone" aria-hidden="true"></i></span>
-              <div>
-                <h3>Quảng bá nhà cung cấp</h3>
-                <p>Tăng độ tin cậy và phạm vi xuất hiện của hồ sơ.</p>
-              </div>
-            </div>
-            @for (plan of summary.providerPlans; track plan.id) {
-              <article class="plan-row" [class.plan-row--active]="currentPlanId() === plan.id">
-                <div>
-                  <span>{{ plan.name }}</span>
-                  <h4>{{ plan.priceTokens | number }} Xu</h4>
-                  <p>{{ plan.description }}</p>
-                </div>
-                <ul>
-                  @for (feature of plan.features; track feature) {
-                    <li><i class="bi bi-check2" aria-hidden="true"></i>{{ feature }}</li>
-                  }
-                </ul>
-                <button
-                  type="button"
-                  class="ant-btn ant-btn--secondary"
-                  [disabled]="
-                    currentPlanId() === plan.id ||
-                    !!wallet.pendingAction() ||
-                    summary.balance < plan.priceTokens
-                  "
-                  (click)="openPlan(plan)"
-                >
-                  {{ currentPlanId() === plan.id ? 'Đang sử dụng' : 'Chọn gói' }}
-                </button>
-              </article>
-            }
+      <section class="wallet-section" aria-labelledby="plans-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="plans-title">Gói quảng bá hồ sơ nhà cung cấp</h2>
           </div>
+          <p>Nổi bật hồ sơ bạn trên tin đăng chờ khách hàng xem chọn dịch vụ.</p>
+        </div>
+        <div class="plan-grid">
+          @for (plan of summary.providerPlans; track plan.id; let index = $index) {
+            <article
+              class="plan-card"
+              [class.plan-card--featured]="index === 1"
+              [class.plan-card--active]="currentPlanId() === plan.id"
+            >
+              @if (index === 1) {
+                <span class="plan-card__badge">Được chọn nhiều nhất</span>
+              }
+              <h3>{{ plan.name }}</h3>
+              <strong>{{ plan.priceTokens | number }} Xu<small>/tháng</small></strong>
+              <p>{{ plan.description }}</p>
+              <ul>
+                @for (feature of plan.features; track feature) {
+                  <li><i class="bi bi-check2" aria-hidden="true"></i>{{ feature }}</li>
+                }
+              </ul>
+              <button
+                type="button"
+                class="ant-btn"
+                [class.ant-btn--primary]="index === 1"
+                [class.ant-btn--secondary]="index !== 1"
+                [disabled]="
+                  currentPlanId() === plan.id ||
+                  !!wallet.pendingAction() ||
+                  summary.balance < plan.priceTokens
+                "
+                (click)="openPlan(plan)"
+              >
+                {{ currentPlanId() === plan.id ? 'Đang sử dụng' : 'Chọn gói' }}
+              </button>
+            </article>
+          }
         </div>
       </section>
     }

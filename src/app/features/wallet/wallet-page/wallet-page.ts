@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, ElementRef, HostListener, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import type {
   BoostDuration,
@@ -34,7 +34,7 @@ const BOOST_OPTIONS: readonly { days: BoostDuration; cost: number; label: string
 
 @Component({
   selector: 'app-wallet-page',
-  imports: [DecimalPipe, UiDialog],
+  imports: [DecimalPipe, RouterLink, UiDialog],
   templateUrl: './wallet-page.html',
   styleUrl: './wallet-page.scss',
 })
