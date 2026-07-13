@@ -108,7 +108,27 @@ nav a:hover::after {
   font-weight: 800;
 }
 
+.login-button {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  border-radius: 18px;
+  padding: 0 18px;
+  border: 1px solid var(--ant-orange);
+  color: var(--ant-orange-deep);
+  background: var(--ant-orange-soft);
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all var(--ant-transition);
+}
+
 @media (hover: hover) {
+  .login-button:hover {
+    background: var(--ant-orange);
+    color: #fff;
+  }
+
   .location-button:hover {
     border-color: var(--ant-orange);
     color: var(--ant-orange-deep);
