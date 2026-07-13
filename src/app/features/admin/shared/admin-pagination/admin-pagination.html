@@ -8,7 +8,6 @@
       }
     </select>
   </label>
-  <span>Trang {{ page }} / {{ totalPages }}</span>
   <button
     type="button"
     [disabled]="page <= 1"
@@ -17,6 +16,26 @@
   >
     ‹
   </button>
+  <ul class="admin-pagination__pages">
+    @for (item of pageNumbers; track $index) {
+      @if (item === 'ellipsis') {
+        <li class="admin-pagination__ellipsis" aria-hidden="true">…</li>
+      } @else {
+        <li>
+          <button
+            type="button"
+            class="admin-pagination__page"
+            [class.is-active]="item === page"
+            [attr.aria-current]="item === page ? 'page' : null"
+            [attr.aria-label]="'Đến trang ' + item"
+            (click)="goTo(item)"
+          >
+            {{ item }}
+          </button>
+        </li>
+      }
+    }
+  </ul>
   <button
     type="button"
     [disabled]="page >= totalPages"

@@ -41,3 +41,33 @@
 .admin-pagination button:disabled {
   opacity: 0.45;
 }
+
+.admin-pagination__pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-pagination__ellipsis {
+  padding: 0 4px;
+  color: var(--ant-muted);
+}
+
+.admin-pagination__page {
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ant-ink-soft);
+}
+
+.admin-pagination__page.is-active {
+  border-color: var(--ant-orange);
+  background: var(--ant-orange);
+  color: #fff;
+}

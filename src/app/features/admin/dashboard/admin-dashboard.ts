@@ -18,13 +18,18 @@ import type {
   AdminSlaSummary,
 } from '../../../core/models';
 import { AdminDashboardStore } from '../../../core/stores';
+import { AdminConfirmDialog } from '../shared/admin-confirm-dialog/admin-confirm-dialog';
 import { adminLabel } from '../shared/admin-labels';
 
 type ActivityMetric = 'accounts' | 'posts' | 'completedOrders';
 
+const CHART_PALETTE = ['#f97316', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#06b6d4'];
+const DONUT_RADIUS = 40;
+const DONUT_CIRCUMFERENCE = 2 * Math.PI * DONUT_RADIUS;
+
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink, SlicePipe, DecimalPipe],
+  imports: [RouterLink, SlicePipe, DecimalPipe, AdminConfirmDialog],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,6 +61,13 @@ export class AdminDashboard implements OnInit {
     return labels[this.selectedRegion()] || 'Tất cả khu vực';
   });
   protected readonly label = adminLabel;
+  protected readonly exportConfirmationOpen = signal(false);
+  protected readonly exportRequest = {
+    title: 'Xuất báo cáo tổng quan?',
+    message: 'CSV sẽ tổng hợp các chỉ số vận hành đang hiển thị và được ghi vào nhật ký kiểm toán.',
+    confirmLabel: 'Xuất báo cáo',
+    cancelLabel: 'Hủy',
+  };
 
   protected readonly currentTime = computed(() => {
     const now = new Date();
@@ -70,13 +82,32 @@ export class AdminDashboard implements OnInit {
     return revenue.toFixed(1).replace('.', ',');
   });
 
-  protected readonly categoryList = computed(() => [
-    { name: 'Sửa chữa & điện nước', percent: 32, color: '#f97316' },
-    { name: 'Dọn dẹp vệ sinh', percent: 28, color: '#ef4444' },
-    { name: 'Gia sư & luyện thi', percent: 15, color: '#3b82f6' },
-    { name: 'Vận chuyển/ nhận trả', percent: 15, color: '#eab308' },
-    { name: 'Khác', percent: 10, color: '#a855f7' },
-  ]);
+  protected readonly categoryList = computed(() => {
+    const mix = this.dashboard.summary()?.serviceCategoryMix ?? [];
+    return mix.map((item, index) => ({
+      name: adminLabel(item.category),
+      percent: item.percent,
+      color: CHART_PALETTE[index % CHART_PALETTE.length],
+    }));
+  });
+
+  protected readonly categoryTotal = computed(() =>
+    (this.dashboard.summary()?.serviceCategoryMix ?? []).reduce((sum, item) => sum + item.total, 0),
+  );
+
+  protected readonly categoryDonutSegments = computed(() => {
+    let offset = 0;
+    return this.categoryList().map((item) => {
+      const length = (item.percent / 100) * DONUT_CIRCUMFERENCE;
+      const segment = {
+        color: item.color,
+        dasharray: `${length} ${DONUT_CIRCUMFERENCE - length}`,
+        dashoffset: -offset,
+      };
+      offset += length;
+      return segment;
+    });
+  });
 
   ngOnInit(): void {
     this.dashboard.load();
@@ -92,6 +123,19 @@ export class AdminDashboard implements OnInit {
 
   protected refresh(): void {
     this.dashboard.load();
+  }
+
+  protected confirmExportReport(): void {
+    this.exportConfirmationOpen.set(false);
+    this.dashboard.requestReportExport();
+  }
+
+  protected exportStatusText(): string {
+    const state = this.dashboard.exportState();
+    if (state === 'pending') return 'Đang gửi yêu cầu xuất báo cáo...';
+    if (state === 'success') return 'Đã tạo yêu cầu xuất báo cáo tổng quan.';
+    if (state === 'error') return 'Không thể tạo yêu cầu xuất báo cáo.';
+    return '';
   }
 
   protected sparkline(kpi: AdminKpi): string {

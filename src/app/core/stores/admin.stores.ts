@@ -2,6 +2,7 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import type {
+  AdminAccountInput,
   AdminDashboardSummary,
   AdminOperationState,
   AdminUserDetail,
@@ -23,10 +24,14 @@ import type {
   ModerationFilter,
   ModerationReport,
   Region,
+  RegionInput,
+  ServiceCategoryConfig,
+  ServiceCategoryInput,
   User,
 } from '../models';
 import {
   AdminUserRepository,
+  AuditRepository,
   ComplaintRepository,
   ConfigRepository,
   ModerationRepository,
@@ -36,12 +41,14 @@ import { SessionStore } from './session.store';
 @Injectable({ providedIn: 'root' })
 export class AdminDashboardStore {
   private readonly repository = inject(AdminUserRepository);
+  private readonly auditRepository = inject(AuditRepository);
   private readonly session = inject(SessionStore);
   private readonly summaryState = signal<AdminDashboardSummary | null>(null);
   private readonly rangeDaysState = signal<7 | 30 | 90>(30);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
   private readonly operationState = signal<AdminOperationState>({ status: 'idle' });
+  private readonly exportStateSignal = signal<'idle' | 'pending' | 'success' | 'error'>('idle');
   private pendingOperations = 0;
 
   readonly summary = this.summaryState.asReadonly();
@@ -49,6 +56,7 @@ export class AdminDashboardStore {
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly operation = this.operationState.asReadonly();
+  readonly exportState = this.exportStateSignal.asReadonly();
 
   load(rangeDays = this.rangeDaysState()): void {
     this.rangeDaysState.set(this.asRangeDays(rangeDays));
@@ -60,6 +68,18 @@ export class AdminDashboardStore {
 
   setRange(rangeDays: 7 | 30 | 90): void {
     this.load(rangeDays);
+  }
+
+  requestReportExport(): void {
+    this.exportStateSignal.set('pending');
+    this.auditRepository.requestExport(this.actorId(), 'dashboard_report').subscribe({
+      next: () => this.exportStateSignal.set('success'),
+      error: () => this.exportStateSignal.set('error'),
+    });
+  }
+
+  clearExportState(): void {
+    this.exportStateSignal.set('idle');
   }
 
   private asRangeDays(value: unknown): 7 | 30 | 90 {
@@ -454,26 +474,137 @@ export class AdminConfigStore {
   private readonly repository = inject(ConfigRepository);
   private readonly session = inject(SessionStore);
   private readonly regionsState = signal<Region[]>([]);
+  private readonly serviceCategoriesState = signal<ServiceCategoryConfig[]>([]);
+  private readonly adminAccountsState = signal<User[]>([]);
   private readonly configState = signal<BusinessConfig | null>(null);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
   private readonly validationErrorsState = signal<BusinessConfigValidationErrors>({});
   private readonly saveStateSignal = signal<'idle' | 'pending' | 'success' | 'error'>('idle');
   private readonly restoreStateSignal = signal<'idle' | 'pending' | 'success' | 'error'>('idle');
+  private readonly itemStateSignal = signal<'idle' | 'pending' | 'success' | 'error'>('idle');
   private pendingOperations = 0;
 
   readonly regions = this.regionsState.asReadonly();
+  readonly serviceCategories = this.serviceCategoriesState.asReadonly();
+  readonly adminAccounts = this.adminAccountsState.asReadonly();
   readonly config = this.configState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
   readonly validationErrors = this.validationErrorsState.asReadonly();
   readonly saveState = this.saveStateSignal.asReadonly();
   readonly restoreState = this.restoreStateSignal.asReadonly();
+  readonly itemState = this.itemStateSignal.asReadonly();
 
   load(): void {
     const actorId = this.session.currentUser()?.id ?? '';
     this.run(this.repository.listRegions(actorId), (regions) => this.regionsState.set(regions));
     this.run(this.repository.getBusinessConfig(actorId), (config) => this.configState.set(config));
+    this.run(this.repository.listServiceCategories(actorId), (categories) =>
+      this.serviceCategoriesState.set(categories),
+    );
+    this.run(this.repository.listAdminAccounts(actorId), (accounts) =>
+      this.adminAccountsState.set(accounts),
+    );
+  }
+
+  saveRegion(input: RegionInput, id?: string): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    const source = id
+      ? this.repository.updateRegion(actorId, id, input)
+      : this.repository.createRegion(actorId, input);
+    this.run(
+      source,
+      (region) =>
+        this.regionsState.update((regions) =>
+          id ? regions.map((item) => (item.id === id ? region : item)) : [...regions, region],
+        ),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
+    );
+  }
+
+  setRegionStatus(id: string, status: Region['status']): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    this.run(
+      this.repository.setRegionStatus(actorId, id, status),
+      (region) =>
+        this.regionsState.update((regions) =>
+          regions.map((item) => (item.id === id ? region : item)),
+        ),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
+    );
+  }
+
+  saveServiceCategory(input: ServiceCategoryInput, id?: string): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    const source = id
+      ? this.repository.updateServiceCategory(actorId, id, input)
+      : this.repository.createServiceCategory(actorId, input);
+    this.run(
+      source,
+      (category) =>
+        this.serviceCategoriesState.update((categories) =>
+          id
+            ? categories.map((item) => (item.id === id ? category : item))
+            : [...categories, category],
+        ),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
+    );
+  }
+
+  removeServiceCategory(id: string): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    this.run(
+      this.repository.removeServiceCategory(actorId, id),
+      () =>
+        this.serviceCategoriesState.update((categories) =>
+          categories.filter((item) => item.id !== id),
+        ),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
+    );
+  }
+
+  saveAdminAccount(input: AdminAccountInput, id?: string): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    const source = id
+      ? this.repository.updateAdminAccountRole(actorId, id, input.role)
+      : this.repository.createAdminAccount(actorId, input);
+    this.run(
+      source,
+      (account) =>
+        this.adminAccountsState.update((accounts) =>
+          id ? accounts.map((item) => (item.id === id ? account : item)) : [...accounts, account],
+        ),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
+    );
+  }
+
+  setAdminAccountStatus(id: string, status: User['status']): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    this.run(
+      this.repository.setAdminAccountStatus(actorId, id, status),
+      (account) =>
+        this.adminAccountsState.update((accounts) =>
+          accounts.map((item) => (item.id === id ? account : item)),
+        ),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
+    );
+  }
+
+  clearItemState(): void {
+    this.itemStateSignal.set('idle');
   }
 
   save(input: BusinessConfigInput): boolean {

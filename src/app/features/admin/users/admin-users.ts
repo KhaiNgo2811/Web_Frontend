@@ -10,9 +10,13 @@ import {
   type UserRole,
 } from '../../../core/models';
 import { AdminUsersStore, SessionStore } from '../../../core/stores';
+import { adminAvatarColor, adminInitials } from '../shared/admin-avatar.utils';
 import { AdminConfirmDialog } from '../shared/admin-confirm-dialog/admin-confirm-dialog';
 import { AdminDrawer } from '../shared/admin-drawer/admin-drawer';
-import { AdminExportDialog, type ExportDialogOptions } from '../shared/admin-export-dialog/admin-export-dialog';
+import {
+  AdminExportDialog,
+  type ExportDialogOptions,
+} from '../shared/admin-export-dialog/admin-export-dialog';
 
 @Component({
   selector: 'app-admin-users',
@@ -89,7 +93,10 @@ export class AdminUsers {
   protected readonly activeFilterCount = computed(() => {
     const filter = this.usersStore.filter();
     return (
-      Number(!!filter.search) + Number(filter.status !== 'all') + Number(filter.role !== 'all') + Number(filter.regionId !== 'all')
+      Number(!!filter.search) +
+      Number(filter.status !== 'all') +
+      Number(filter.role !== 'all') +
+      Number(filter.regionId !== 'all')
     );
   });
   protected readonly canRestrict = computed(() =>
@@ -195,19 +202,11 @@ export class AdminUsers {
   }
 
   protected getInitials(name: string): string {
-    return name
-      .split(' ')
-      .map((w) => w[0])
-      .join('')
-      .slice(0, 2)
-      .toUpperCase();
+    return adminInitials(name);
   }
 
   protected avatarColor(name: string): string {
-    const colors = ['#f97316', '#3b82f6', '#22c55e', '#ef4444', '#8b5cf6', '#06b6d4', '#eab308'];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return colors[Math.abs(hash) % colors.length];
+    return adminAvatarColor(name);
   }
 
   protected statusLabel(status: User['status'], isVerified: boolean): string {

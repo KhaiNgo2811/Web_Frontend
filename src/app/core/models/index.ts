@@ -1,6 +1,7 @@
 export * from './admin';
 export * from './admin-ui';
 export * from './admin-authorization';
+export * from './admin-token-transaction';
 export * from './audit';
 export * from './admin-inbox';
 export * from './complaint-policy';

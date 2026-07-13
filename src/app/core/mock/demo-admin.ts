@@ -22,10 +22,33 @@ export const DEMO_BUSINESS_CONFIG: BusinessConfig = {
   priorityDurationHours: 72,
   autoCompleteHours: 24,
   minWithdrawalAmount: 100000,
+  minRatingThreshold: 3,
+  minComplaintsThreshold: 2,
   tokenPackages: [
-    { id: 'token-starter', name: 'Gói bắt đầu', tokens: 50, price: 49000, bonusPct: 0, active: true },
-    { id: 'token-plus', name: 'Gói cộng đồng', tokens: 120, price: 99000, bonusPct: 10, active: true },
-    { id: 'token-pro', name: 'Gói ưu tiên', tokens: 300, price: 229000, bonusPct: 18, active: true },
+    {
+      id: 'token-starter',
+      name: 'Gói bắt đầu',
+      tokens: 50,
+      price: 49000,
+      bonusPct: 0,
+      active: true,
+    },
+    {
+      id: 'token-plus',
+      name: 'Gói cộng đồng',
+      tokens: 120,
+      price: 99000,
+      bonusPct: 10,
+      active: true,
+    },
+    {
+      id: 'token-pro',
+      name: 'Gói ưu tiên',
+      tokens: 300,
+      price: 229000,
+      bonusPct: 18,
+      active: true,
+    },
   ],
   updatedAt: '2026-07-10T02:00:00.000Z',
   updatedBy: 'admin-seed',
@@ -237,8 +260,16 @@ export const DEMO_COMPLAINTS: Complaint[] = [
       responseDueAt: '2026-07-12T01:00:00.000Z',
     },
     partyResponses: {
-      complainant: { accepted: true, respondedAt: '2026-07-09T03:00:00.000Z', respondedBy: 'user-lan' },
-      respondent: { accepted: true, respondedAt: '2026-07-09T03:10:00.000Z', respondedBy: 'user-demo' },
+      complainant: {
+        accepted: true,
+        respondedAt: '2026-07-09T03:00:00.000Z',
+        respondedBy: 'user-lan',
+      },
+      respondent: {
+        accepted: true,
+        respondedAt: '2026-07-09T03:10:00.000Z',
+        respondedBy: 'user-demo',
+      },
     },
     timeline: [
       {
@@ -615,6 +646,7 @@ export const DEMO_EXPORT_JOBS: ExportJob[] = [
     format: 'csv',
     redaction: 'default',
     retentionUntil: '2026-08-10T01:00:00.000Z',
+    scope: 'audit',
   },
   {
     id: 'export-2',
@@ -624,5 +656,6 @@ export const DEMO_EXPORT_JOBS: ExportJob[] = [
     format: 'csv',
     redaction: 'default',
     retentionUntil: '2026-08-10T05:00:00.000Z',
+    scope: 'audit',
   },
 ];

@@ -34,6 +34,16 @@
   }
 }
 
+.export-status {
+  margin: -8px 0 0;
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+.export-status--error {
+  color: var(--ant-red);
+}
+
 .header-actions {
   display: flex;
   align-items: center;
@@ -106,9 +116,9 @@
   }
 
   &.active {
-    background: rgb(249, 115, 22);
+    background: var(--ant-orange);
     color: #fff;
-    border-color: rgb(249, 115, 22);
+    border-color: var(--ant-orange);
   }
 }
 
@@ -137,7 +147,7 @@
   cursor: pointer;
 
   &:focus {
-    outline: 2px solid rgb(249, 115, 22);
+    outline: 2px solid var(--ant-orange);
     outline-offset: 0;
   }
 }
@@ -228,7 +238,7 @@
 
   &.orange {
     background: rgb(255, 247, 237);
-    color: rgb(249, 115, 22);
+    color: var(--ant-orange);
   }
 
   &.red {
@@ -371,7 +381,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgb(249, 115, 22);
+  background: var(--ant-orange);
 }
 
 /* Donut Chart */
@@ -492,7 +502,7 @@
   }
 
   .view-all {
-    color: rgb(249, 115, 22);
+    color: var(--ant-orange);
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
@@ -712,7 +722,7 @@
     width: 40px;
     height: 40px;
     border: 3px solid #f0e6de;
-    border-top-color: rgb(249, 115, 22);
+    border-top-color: var(--ant-orange);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }

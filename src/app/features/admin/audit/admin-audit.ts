@@ -15,6 +15,8 @@ import {
   type ExportJob,
 } from '../../../core/models';
 import { AdminAuditStore, SessionStore } from '../../../core/stores';
+import { adminAvatarColor, adminInitials } from '../shared/admin-avatar.utils';
+import { auditActionBadgeClass, auditTargetBadgeClass } from '../shared/admin-badge.utils';
 import { AdminConfirmDialog } from '../shared/admin-confirm-dialog/admin-confirm-dialog';
 import { adminLabel } from '../shared/admin-labels';
 import { AdminPagination } from '../shared/admin-pagination/admin-pagination';
@@ -48,6 +50,7 @@ export class AdminAudit implements OnInit {
     key: 'createdAt',
     direction: 'desc',
   });
+  protected readonly timeRangeFilter = signal<'7d' | '30d' | '90d' | 'all'>('7d');
   protected readonly label = adminLabel;
   protected readonly targets: { value: AuditTargetType | 'all'; label: string }[] = [
     { value: 'all', label: 'Tất cả mục tiêu' },
@@ -75,9 +78,17 @@ export class AdminAudit implements OnInit {
     'configuration.restore',
     'audit.export_requested',
   ];
+  protected readonly rangedEvents = computed(() => {
+    const range = this.timeRangeFilter();
+    if (range === 'all') return this.audit.events();
+    const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
+    const cutoff = new Date('2026-07-13T00:00:00.000Z');
+    cutoff.setDate(cutoff.getDate() - days);
+    return this.audit.events().filter((event) => new Date(event.createdAt) >= cutoff);
+  });
   protected readonly sortedEvents = computed(() => {
     const sort = this.sort();
-    return stableAdminSort(this.audit.events(), (event) => event[sort.key], sort.direction);
+    return stableAdminSort(this.rangedEvents(), (event) => event[sort.key], sort.direction);
   });
   protected readonly pagedEvents = computed(() =>
     paginateAdminRows(this.sortedEvents(), this.page(), this.pageSize()),
@@ -89,6 +100,7 @@ export class AdminAudit implements OnInit {
       filter.actorId,
       filter.action,
       filter.targetType !== 'all' && filter.targetType,
+      this.timeRangeFilter() !== '7d' && this.timeRangeFilter(),
     ].filter(Boolean).length;
   });
   protected readonly exportScopeItems = computed(() => {
@@ -126,6 +138,7 @@ export class AdminAudit implements OnInit {
 
   protected clearFilters(): void {
     this.page.set(1);
+    this.timeRangeFilter.set('7d');
     this.audit.setFilter({
       search: undefined,
       actorId: undefined,
@@ -135,13 +148,35 @@ export class AdminAudit implements OnInit {
   }
 
   protected setPage(page: number): void {
-    const totalPages = Math.max(1, Math.ceil(this.audit.events().length / this.pageSize()));
+    const totalPages = Math.max(1, Math.ceil(this.rangedEvents().length / this.pageSize()));
     this.page.set(Math.min(Math.max(1, page), totalPages));
   }
 
   protected setPageSize(size: number): void {
     this.pageSize.set(size);
     this.page.set(1);
+  }
+
+  protected updateTimeRangeFilter(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value as '7d' | '30d' | '90d' | 'all';
+    this.timeRangeFilter.set(value);
+    this.page.set(1);
+  }
+
+  protected actorInitials(name: string): string {
+    return adminInitials(name);
+  }
+
+  protected actorColor(name: string): string {
+    return adminAvatarColor(name);
+  }
+
+  protected targetBadgeClass(targetType: AuditTargetType): string {
+    return auditTargetBadgeClass(targetType);
+  }
+
+  protected actionBadgeClass(action: string): string {
+    return auditActionBadgeClass(action);
   }
 
   protected toggleDisclosure(id: string): void {

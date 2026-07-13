@@ -47,7 +47,12 @@ import type {
   UpdatePostInput,
   UpdateUserInput,
   User,
+  UserStatus,
   Region,
+  RegionInput,
+  ServiceCategoryConfig,
+  ServiceCategoryInput,
+  AdminAccountInput,
   ExportJob,
   InboxAssignmentInput,
   InboxFilter,
@@ -150,6 +155,36 @@ export abstract class ComplaintRepository {
 
 export abstract class ConfigRepository {
   abstract listRegions(actorId: string): Observable<Region[]>;
+  abstract createRegion(actorId: string, input: RegionInput): Observable<Region>;
+  abstract updateRegion(actorId: string, id: string, input: RegionInput): Observable<Region>;
+  abstract setRegionStatus(
+    actorId: string,
+    id: string,
+    status: Region['status'],
+  ): Observable<Region>;
+  abstract listServiceCategories(actorId: string): Observable<ServiceCategoryConfig[]>;
+  abstract createServiceCategory(
+    actorId: string,
+    input: ServiceCategoryInput,
+  ): Observable<ServiceCategoryConfig>;
+  abstract updateServiceCategory(
+    actorId: string,
+    id: string,
+    input: ServiceCategoryInput,
+  ): Observable<ServiceCategoryConfig>;
+  abstract removeServiceCategory(actorId: string, id: string): Observable<void>;
+  abstract listAdminAccounts(actorId: string): Observable<User[]>;
+  abstract createAdminAccount(actorId: string, input: AdminAccountInput): Observable<User>;
+  abstract updateAdminAccountRole(
+    actorId: string,
+    userId: string,
+    role: AdminAccountInput['role'],
+  ): Observable<User>;
+  abstract setAdminAccountStatus(
+    actorId: string,
+    userId: string,
+    status: UserStatus,
+  ): Observable<User>;
   abstract getBusinessConfig(actorId: string): Observable<BusinessConfig>;
   abstract saveBusinessConfig(
     adminId: string,
@@ -161,7 +196,7 @@ export abstract class ConfigRepository {
 
 export abstract class AuditRepository {
   abstract list(actorId: string, filter?: AuditFilter): Observable<AuditEvent[]>;
-  abstract requestExport(actorId: string): Observable<ExportJob>;
+  abstract requestExport(actorId: string, scope?: ExportJob['scope']): Observable<ExportJob>;
   abstract listExports(actorId: string): Observable<ExportJob[]>;
 }
 

@@ -15,6 +15,8 @@ const CONFIG: BusinessConfig = {
   priorityDurationHours: 24,
   autoCompleteHours: 48,
   minWithdrawalAmount: 10000,
+  minRatingThreshold: 3,
+  minComplaintsThreshold: 2,
   tokenPackages: [],
   updatedAt: '2026-07-11T00:00:00.000Z',
   updatedBy: 'admin-a',
@@ -112,6 +114,8 @@ function asInput(config: BusinessConfig): BusinessConfigInput {
     priorityDurationHours: config.priorityDurationHours,
     autoCompleteHours: config.autoCompleteHours,
     minWithdrawalAmount: config.minWithdrawalAmount,
+    minRatingThreshold: config.minRatingThreshold,
+    minComplaintsThreshold: config.minComplaintsThreshold,
     tokenPackages: config.tokenPackages,
   };
 }
@@ -125,5 +129,6 @@ function exportFixture(): ExportJob {
     format: 'csv',
     redaction: 'default',
     retentionUntil: '2026-07-18T00:00:00.000Z',
+    scope: 'audit',
   };
 }

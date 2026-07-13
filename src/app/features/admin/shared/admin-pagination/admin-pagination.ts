@@ -27,6 +27,24 @@ export class AdminPagination {
     return Math.min(this.page * this.pageSize, this.total);
   }
 
+  protected get pageNumbers(): (number | 'ellipsis')[] {
+    const total = this.totalPages;
+    const current = this.page;
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, index) => index + 1);
+    }
+    const pages = new Set<number>([1, 2, total - 1, total, current - 1, current, current + 1]);
+    const sorted = [...pages].filter((page) => page >= 1 && page <= total).sort((a, b) => a - b);
+    const result: (number | 'ellipsis')[] = [];
+    let previous = 0;
+    for (const page of sorted) {
+      if (previous && page - previous > 1) result.push('ellipsis');
+      result.push(page);
+      previous = page;
+    }
+    return result;
+  }
+
   protected goTo(page: number): void {
     this.pageChange.emit(Math.min(Math.max(1, page), this.totalPages));
   }

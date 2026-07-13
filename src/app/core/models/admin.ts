@@ -1,4 +1,5 @@
-import type { IsoDateString } from './common';
+import type { IsoDateString, ServiceCategory } from './common';
+import type { AdminRole } from './admin-authorization';
 import type { Message } from './messaging';
 import type { Review } from './order';
 import type { Post } from './post';
@@ -12,6 +13,36 @@ export interface Region {
   name: string;
   city: string;
   status: 'active' | 'paused';
+  userCount?: number;
+  providerCount?: number;
+}
+
+export interface RegionInput {
+  name: string;
+  city: string;
+  status: 'active' | 'paused';
+}
+
+export interface ServiceCategoryConfig {
+  id: string;
+  key: ServiceCategory;
+  name: string;
+  attributesCount: number;
+  postCount: number;
+  active: boolean;
+}
+
+export interface ServiceCategoryInput {
+  key: ServiceCategory;
+  name: string;
+  attributesCount: number;
+  active: boolean;
+}
+
+export interface AdminAccountInput {
+  displayName: string;
+  email: string;
+  role: AdminRole;
 }
 
 export interface TokenPackage {
@@ -30,6 +61,8 @@ export interface BusinessConfig {
   priorityDurationHours: number;
   autoCompleteHours: number;
   minWithdrawalAmount: number;
+  minRatingThreshold: number;
+  minComplaintsThreshold: number;
   tokenPackages: TokenPackage[];
   updatedAt: IsoDateString;
   updatedBy: string;
@@ -42,6 +75,8 @@ export interface BusinessConfigInput {
   priorityDurationHours: number;
   autoCompleteHours: number;
   minWithdrawalAmount: number;
+  minRatingThreshold: number;
+  minComplaintsThreshold: number;
   tokenPackages: TokenPackage[];
 }
 

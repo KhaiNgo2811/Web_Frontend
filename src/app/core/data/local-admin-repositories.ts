@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 
 import type {
   AdminAccountActivity,
+  AdminAccountInput,
   AdminAccountStatusInput,
   AdminActivityFilter,
   AdminDashboardSummary,
@@ -26,7 +27,11 @@ import type {
   ModerationFilter,
   ModerationReport,
   Region,
+  RegionInput,
+  ServiceCategoryConfig,
+  ServiceCategoryInput,
   User,
+  UserStatus,
 } from '../models';
 import type { MockDatabaseData } from '../mock';
 import { DEMO_BUSINESS_CONFIG } from '../mock/demo-admin';
@@ -61,6 +66,7 @@ import {
   summarizeMarketplaceHealth,
   summarizeOwnership,
   summarizeRegionMix,
+  summarizeServiceCategoryMix,
 } from './admin-dashboard.utils';
 
 @Injectable()
@@ -311,6 +317,7 @@ export class LocalAdminUserRepository extends AdminUserRepository {
         ownership: summarizeOwnership(complaints, reports, actorId),
         regionalMix: summarizeRegionMix(data.regions, complaints, reports, posts),
         categoryMix: summarizeCategoryMix(complaints),
+        serviceCategoryMix: summarizeServiceCategoryMix(posts),
         recentActivity: recentActivity.slice(0, 8),
         priorityComplaints: complaints
           .filter((complaint) => complaint.stage !== 'resolved')
@@ -763,8 +770,253 @@ export class LocalConfigRepository extends ConfigRepository {
     return asObservable(() => {
       const data = this.db.snapshot();
       requireAdminPermission(data.users, actorId, 'configuration.manage');
-      return data.regions;
+      return data.regions.map((region) => this.enrichRegion(region, data));
     });
+  }
+
+  createRegion(actorId: string, input: RegionInput): Observable<Region> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const now = nowIso();
+        const region: Region = { id: createEntityId('region'), ...input };
+        data.regions.push(region);
+        appendAuditEvent(
+          data.auditEvents,
+          auditTarget(actorId, 'region.create', 'region', region.id, now),
+        );
+        return this.enrichRegion(region, data);
+      }),
+    );
+  }
+
+  updateRegion(actorId: string, id: string, input: RegionInput): Observable<Region> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const region = requireValue(
+          data.regions.find((candidate) => candidate.id === id),
+          'Không tìm thấy khu vực.',
+        );
+        const before = { name: region.name, city: region.city, status: region.status };
+        Object.assign(region, input);
+        const now = nowIso();
+        appendAuditEvent(data.auditEvents, {
+          ...auditTarget(actorId, 'region.update', 'region', region.id, now),
+          before,
+          after: { name: region.name, city: region.city, status: region.status },
+        });
+        return this.enrichRegion(region, data);
+      }),
+    );
+  }
+
+  setRegionStatus(actorId: string, id: string, status: Region['status']): Observable<Region> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const region = requireValue(
+          data.regions.find((candidate) => candidate.id === id),
+          'Không tìm thấy khu vực.',
+        );
+        const before = region.status;
+        region.status = status;
+        const now = nowIso();
+        appendAuditEvent(data.auditEvents, {
+          ...auditTarget(actorId, 'region.update', 'region', region.id, now),
+          before: { status: before },
+          after: { status: region.status },
+        });
+        return this.enrichRegion(region, data);
+      }),
+    );
+  }
+
+  listServiceCategories(actorId: string): Observable<ServiceCategoryConfig[]> {
+    return asObservable(() => {
+      const data = this.db.snapshot();
+      requireAdminPermission(data.users, actorId, 'configuration.manage');
+      return data.serviceCategories.map((category) => this.enrichCategory(category, data));
+    });
+  }
+
+  createServiceCategory(
+    actorId: string,
+    input: ServiceCategoryInput,
+  ): Observable<ServiceCategoryConfig> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const now = nowIso();
+        const category: ServiceCategoryConfig = {
+          id: createEntityId('category'),
+          postCount: 0,
+          ...input,
+        };
+        data.serviceCategories.push(category);
+        appendAuditEvent(
+          data.auditEvents,
+          auditTarget(actorId, 'service_category.create', 'service_category', category.id, now),
+        );
+        return this.enrichCategory(category, data);
+      }),
+    );
+  }
+
+  updateServiceCategory(
+    actorId: string,
+    id: string,
+    input: ServiceCategoryInput,
+  ): Observable<ServiceCategoryConfig> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const category = requireValue(
+          data.serviceCategories.find((candidate) => candidate.id === id),
+          'Không tìm thấy danh mục.',
+        );
+        const before = {
+          name: category.name,
+          attributesCount: category.attributesCount,
+          active: category.active,
+        };
+        Object.assign(category, input);
+        const now = nowIso();
+        appendAuditEvent(data.auditEvents, {
+          ...auditTarget(actorId, 'service_category.update', 'service_category', category.id, now),
+          before,
+          after: {
+            name: category.name,
+            attributesCount: category.attributesCount,
+            active: category.active,
+          },
+        });
+        return this.enrichCategory(category, data);
+      }),
+    );
+  }
+
+  removeServiceCategory(actorId: string, id: string): Observable<void> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const index = data.serviceCategories.findIndex((candidate) => candidate.id === id);
+        if (index === -1) throw new RepositoryError('Không tìm thấy danh mục.');
+        const [removed] = data.serviceCategories.splice(index, 1);
+        appendAuditEvent(
+          data.auditEvents,
+          auditTarget(actorId, 'service_category.remove', 'service_category', removed.id, nowIso()),
+        );
+      }),
+    );
+  }
+
+  listAdminAccounts(actorId: string): Observable<User[]> {
+    return asObservable(() => {
+      const data = this.db.snapshot();
+      requireAdminPermission(data.users, actorId, 'configuration.manage');
+      return data.users.filter((user) => user.role !== 'user');
+    });
+  }
+
+  createAdminAccount(actorId: string, input: AdminAccountInput): Observable<User> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const now = nowIso();
+        const account: User = {
+          id: createEntityId('admin'),
+          phone: '',
+          email: input.email,
+          displayName: input.displayName,
+          location: { building: 'Văn phòng AntGo', regionId: 'all' },
+          role: input.role,
+          status: 'active',
+          isVerified: true,
+          reputationScore: null,
+          completedCount: 0,
+          completionRate: 0,
+          reviewParticipationRate: 0,
+          tokenBalance: 0,
+          createdAt: now,
+        };
+        data.users.push(account);
+        appendAuditEvent(
+          data.auditEvents,
+          auditTarget(actorId, 'admin_account.create', 'admin_account', account.id, now),
+        );
+        return account;
+      }),
+    );
+  }
+
+  updateAdminAccountRole(
+    actorId: string,
+    userId: string,
+    role: AdminAccountInput['role'],
+  ): Observable<User> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const account = requireValue(
+          data.users.find((candidate) => candidate.id === userId && candidate.role !== 'user'),
+          'Không tìm thấy tài khoản quản trị.',
+        );
+        const before = account.role;
+        account.role = role;
+        const now = nowIso();
+        appendAuditEvent(data.auditEvents, {
+          ...auditTarget(actorId, 'admin_account.update', 'admin_account', account.id, now),
+          before: { role: before },
+          after: { role: account.role },
+        });
+        return account;
+      }),
+    );
+  }
+
+  setAdminAccountStatus(actorId: string, userId: string, status: UserStatus): Observable<User> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        if (actorId === userId) {
+          throw new RepositoryError('Không thể khóa chính tài khoản quản trị đang đăng nhập.');
+        }
+        const account = requireValue(
+          data.users.find((candidate) => candidate.id === userId && candidate.role !== 'user'),
+          'Không tìm thấy tài khoản quản trị.',
+        );
+        const before = account.status;
+        account.status = status;
+        const now = nowIso();
+        appendAuditEvent(data.auditEvents, {
+          ...auditTarget(actorId, 'admin_account.update', 'admin_account', account.id, now),
+          before: { status: before },
+          after: { status: account.status },
+        });
+        return account;
+      }),
+    );
+  }
+
+  private enrichRegion(region: Region, data: MockDatabaseData): Region {
+    return {
+      ...region,
+      userCount: data.users.filter((user) => user.location.regionId === region.id).length,
+      providerCount: data.users.filter(
+        (user) => user.location.regionId === region.id && user.completedCount > 0,
+      ).length,
+    };
+  }
+
+  private enrichCategory(
+    category: ServiceCategoryConfig,
+    data: MockDatabaseData,
+  ): ServiceCategoryConfig {
+    return {
+      ...category,
+      postCount: data.posts.filter((post) => post.category === category.key).length,
+    };
   }
 
   getBusinessConfig(actorId: string): Observable<BusinessConfig> {
@@ -830,6 +1082,12 @@ export class LocalConfigRepository extends ConfigRepository {
     if (input.autoCompleteHours < 1) errors.autoCompleteHours = 'Tự hoàn tất tối thiểu 1 giờ.';
     if (input.minWithdrawalAmount < 0)
       errors.minWithdrawalAmount = 'Số tiền rút tối thiểu không âm.';
+    if (input.minRatingThreshold < 0 || input.minRatingThreshold > 5) {
+      errors.minRatingThreshold = 'Điểm đánh giá tối thiểu phải từ 0 đến 5.';
+    }
+    if (input.minComplaintsThreshold < 0) {
+      errors.minComplaintsThreshold = 'Số khiếu nại tối thiểu không âm.';
+    }
     if (
       !input.tokenPackages.length ||
       input.tokenPackages.some((pack) => !pack.name.trim() || pack.tokens <= 0 || pack.price < 0)

@@ -1,0 +1,311 @@
+<section class="admin-token-transactions" aria-labelledby="token-transactions-heading">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/admin">Tổng quan</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Giao dịch & Token</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="transactions-header">
+    <div>
+      <h1 id="token-transactions-heading">Giao dịch & Token</h1>
+    </div>
+    <button class="btn btn-export" type="button" (click)="exportOpen.set(true)">
+      <svg
+        viewBox="0 0 24 24"
+        width="14"
+        height="14"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        <polyline points="7 10 12 15 17 10" />
+        <line x1="12" y1="15" x2="12" y2="3" />
+      </svg>
+      Xuất báo cáo
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-card__content">
+        <span class="stat-card__label">Tổng Xu đang lưu thông</span>
+        <strong class="stat-card__value">{{ totalTokens() | number: '1.0-0' : 'vi' }}</strong>
+        <span class="stat-card__trend trend-up">
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+          +6,1% <small>30 ngày qua</small>
+        </span>
+      </div>
+      <div class="stat-card__icon stat-icon--orange">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 6v6l4 2" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__content">
+        <span class="stat-card__label">Tổng nạp Xu (tháng này)</span>
+        <strong class="stat-card__value"
+          >{{ totalDepositMoney() | number: '1.0-0' : 'vi' }} triệu</strong
+        >
+        <span class="stat-card__trend trend-up">
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+          +9,8% <small>30 ngày qua</small>
+        </span>
+      </div>
+      <div class="stat-card__icon stat-icon--green">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__content">
+        <span class="stat-card__label">Chi cho đẩy bài & gói hồ sơ</span>
+        <strong class="stat-card__value"
+          >{{ totalSpendMoney() | number: '1.0-0' : 'vi' }} triệu</strong
+        >
+        <span class="stat-card__trend trend-up">
+          <svg
+            viewBox="0 0 24 24"
+            width="14"
+            height="14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+          +14,2% <small>30 ngày qua</small>
+        </span>
+      </div>
+      <div class="stat-card__icon stat-icon--purple">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="transactions-toolbar">
+    <div class="search-box">
+      <svg
+        viewBox="0 0 24 24"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+      <input
+        type="search"
+        placeholder="Tìm theo mã giao dịch hoặc người dùng..."
+        [value]="filter().search || ''"
+        (input)="updateSearch($event)"
+      />
+    </div>
+    <div class="filter-group">
+      <select class="filter-select" [value]="filter().type || 'all'" (change)="updateType($event)">
+        <option value="all">Loại giao dịch</option>
+        <option value="nap_xu">Nạp Xu</option>
+        <option value="day_bai">Đẩy bài đăng</option>
+        <option value="goi_ho_so">Gói hồ sơ</option>
+        <option value="hoan_xu">Hoàn Xu</option>
+      </select>
+      <select
+        class="filter-select"
+        [value]="filter().timeRange || '30d'"
+        (change)="updateTimeRange($event)"
+      >
+        <option value="7d">7 ngày qua</option>
+        <option value="30d">30 ngày qua</option>
+        <option value="90d">90 ngày qua</option>
+        <option value="all">Tất cả</option>
+      </select>
+    </div>
+  </div>
+
+  @if (error() && !transactions().length) {
+    <div class="state-message state-message--error" role="alert">
+      <strong>Không thể tải danh sách giao dịch.</strong>
+      <span>{{ error() }}</span>
+      <button class="btn btn-secondary" type="button" (click)="refresh()">Thử lại</button>
+    </div>
+  } @else if (loading() && !transactions().length) {
+    <div class="state-message" role="status" aria-live="polite">
+      Đang tải danh sách giao dịch...
+    </div>
+  } @else {
+    <div class="transactions-table-wrap">
+      <table class="transactions-table">
+        <thead>
+          <tr>
+            <th class="col-code">MÃ GD</th>
+            <th class="col-user">NGƯỜI DÙNG</th>
+            <th class="col-type">LOẠI GIAO DỊCH</th>
+            <th class="col-tokens">SỐ XU</th>
+            <th class="col-money">SỐ TIỀN</th>
+            <th class="col-status">TRẠNG THÁI</th>
+            <th class="col-time">THỜI GIAN</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (tx of pagedTransactions(); track tx.id) {
+            <tr>
+              <td class="col-code">{{ tx.code }}</td>
+              <td class="col-user">
+                <div class="user-cell">
+                  <span class="user-avatar" [style.background]="tx.userColor">
+                    {{ tx.userInitials }}
+                  </span>
+                  <div class="user-info">
+                    <strong>{{ tx.userName }}</strong>
+                  </div>
+                </div>
+              </td>
+              <td class="col-type">
+                <span class="type-badge" [class]="typeBadgeClass(tx.type)">{{ tx.typeLabel }}</span>
+              </td>
+              <td class="col-tokens" [class]="tx.direction === 'in' ? 'token-in' : 'token-out'">
+                {{ formatToken(tx.tokenAmount, tx.direction) }}
+              </td>
+              <td class="col-money">{{ formatMoney(tx.moneyAmount) }}</td>
+              <td class="col-status">
+                <span class="status-badge" [class]="statusBadgeClass(tx.status)">{{
+                  tx.statusLabel
+                }}</span>
+              </td>
+              <td class="col-time">{{ tx.timeLabel }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                <strong>Không tìm thấy giao dịch</strong>
+                <span>Hãy thay đổi hoặc xóa bộ lọc để xem thêm kết quả.</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (filteredTransactions().length) {
+      <div class="table-footer">
+        <span class="table-summary"
+          >Hiển thị {{ paginationStart() }}-{{ paginationEnd() }} trong tổng số
+          {{ totalCount() }} giao dịch</span
+        >
+        <nav class="table-pagination" aria-label="Phân trang danh sách giao dịch">
+          <button
+            class="page-btn"
+            type="button"
+            [disabled]="page() === 1"
+            (click)="goToPage(page() - 1)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          @for (p of pageNumbers(); track p) {
+            @if (p === -1) {
+              <span class="page-ellipsis">…</span>
+            } @else {
+              <button
+                class="page-btn"
+                [class.active]="p === page()"
+                type="button"
+                (click)="goToPage(p)"
+              >
+                {{ p }}
+              </button>
+            }
+          }
+          <button
+            class="page-btn"
+            type="button"
+            [disabled]="page() === pageCount()"
+            (click)="goToPage(page() + 1)"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <polyline points="9 18 15 12 9 6" />
+            </svg>
+          </button>
+        </nav>
+      </div>
+    }
+  }
+</section>
+
+<app-admin-export-dialog
+  [open]="exportOpen()"
+  [options]="exportOptions"
+  (cancelled)="exportOpen.set(false)"
+  (confirmed)="exportOpen.set(false)"
+/>

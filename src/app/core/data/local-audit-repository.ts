@@ -17,23 +17,28 @@ export class LocalAuditRepository extends AuditRepository {
       const data = this.db.snapshot();
       requireAdminPermission(data.users, actorId, 'audit.read');
       const query = filter.search?.trim().toLocaleLowerCase('vi');
-      return data.auditEvents.filter((event) => {
-        const text = `${event.action} ${event.targetId} ${event.reason ?? ''}`.toLocaleLowerCase(
-          'vi',
-        );
-        return (
-          (!query || text.includes(query)) &&
-          (!filter.actorId || event.actorId === filter.actorId) &&
-          (!filter.action || event.action === filter.action) &&
-          (!filter.targetType ||
-            filter.targetType === 'all' ||
-            event.targetType === filter.targetType)
-        );
-      });
+      return data.auditEvents
+        .filter((event) => {
+          const text = `${event.action} ${event.targetId} ${event.reason ?? ''}`.toLocaleLowerCase(
+            'vi',
+          );
+          return (
+            (!query || text.includes(query)) &&
+            (!filter.actorId || event.actorId === filter.actorId) &&
+            (!filter.action || event.action === filter.action) &&
+            (!filter.targetType ||
+              filter.targetType === 'all' ||
+              event.targetType === filter.targetType)
+          );
+        })
+        .map((event) => ({
+          ...event,
+          actorName: data.users.find((user) => user.id === event.actorId)?.displayName,
+        }));
     });
   }
 
-  requestExport(actorId: string): Observable<ExportJob> {
+  requestExport(actorId: string, scope: ExportJob['scope'] = 'audit'): Observable<ExportJob> {
     return asObservable(() =>
       this.db.transaction((data) => {
         requireAdminPermission(data.users, actorId, 'audit.export');
@@ -46,6 +51,7 @@ export class LocalAuditRepository extends AuditRepository {
           format: 'csv',
           redaction: 'default',
           retentionUntil: new Date(Date.parse(createdAt) + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          scope,
         };
         data.exportJobs.unshift(job);
         appendAuditEvent(

@@ -1,5 +1,5 @@
 import type { Complaint } from './complaint-policy';
-import type { IsoDateString } from './common';
+import type { IsoDateString, ServiceCategory } from './common';
 import type { AdminAccountActivity, ModerationReport, Region } from './admin';
 
 export type AdminDashboardRange = 7 | 30 | 90;
@@ -92,6 +92,12 @@ export interface AdminCategoryMixItem {
   percent: number;
 }
 
+export interface AdminServiceCategoryMixItem {
+  category: ServiceCategory;
+  total: number;
+  percent: number;
+}
+
 export interface AdminDashboardSummary {
   rangeDays: AdminDashboardRange;
   totals: {
@@ -117,6 +123,7 @@ export interface AdminDashboardSummary {
   ownership: AdminOwnershipSummary;
   regionalMix: AdminRegionalMixItem[];
   categoryMix: AdminCategoryMixItem[];
+  serviceCategoryMix: AdminServiceCategoryMixItem[];
   recentActivity: AdminOperationalActivity[];
   priorityComplaints: Complaint[];
   priorityReports: ModerationReport[];

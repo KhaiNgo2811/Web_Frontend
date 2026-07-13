@@ -62,7 +62,7 @@ export class AdminLayout {
     },
     {
       label: 'Giao dịch & Token',
-      route: '/admin/audit',
+      route: '/admin/token-transactions',
       icon: 'M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6',
     },
     {
@@ -78,7 +78,7 @@ export class AdminLayout {
     },
     {
       label: 'Báo cáo vi phạm',
-      route: '/admin/moderation',
+      route: '/admin/reports',
       icon: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
       badge: 5,
     },
