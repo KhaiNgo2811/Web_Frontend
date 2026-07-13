@@ -12,6 +12,8 @@ import type {
   Notification,
   Order,
   Post,
+  PostBoostTier,
+  ProviderPromotionPlan,
   Region,
   Review,
   ServiceCategoryConfig,
@@ -29,6 +31,8 @@ import {
   DEMO_COMPLAINTS,
   DEMO_EXPORT_JOBS,
   DEMO_MODERATION_REPORTS,
+  DEMO_POST_BOOST_TIERS,
+  DEMO_PROVIDER_PROMOTION_PLANS,
   DEMO_REGIONS,
 } from './demo-admin';
 import { DEMO_CONVERSATIONS, DEMO_MESSAGES, DEMO_NOTIFICATIONS } from './demo-communications';
@@ -66,6 +70,8 @@ export interface MockDatabaseData {
   walletRewardClaims: WalletRewardClaim[];
   walletBoosts: WalletBoost[];
   walletSubscriptions: WalletSubscription[];
+  postBoostTiers: PostBoostTier[];
+  providerPromotionPlans: ProviderPromotionPlan[];
 }
 
 export const DEMO_DATABASE: MockDatabaseData = {
@@ -91,4 +97,6 @@ export const DEMO_DATABASE: MockDatabaseData = {
   walletRewardClaims: DEMO_WALLET_REWARD_CLAIMS,
   walletBoosts: DEMO_WALLET_BOOSTS,
   walletSubscriptions: DEMO_WALLET_SUBSCRIPTIONS,
+  postBoostTiers: DEMO_POST_BOOST_TIERS,
+  providerPromotionPlans: DEMO_PROVIDER_PROMOTION_PLANS,
 };

@@ -5,6 +5,7 @@ import type {
   AdminAccountInput,
   AdminDashboardSummary,
   AdminOperationState,
+  AdminReviewSummary,
   AdminUserDetail,
   AdminUserFilter,
   BusinessConfig,
@@ -20,9 +21,15 @@ import type {
   ComplaintPartyResponseInput,
   ComplaintResolutionInput,
   ComplaintVerificationInput,
+  FlaggedAccount,
   ModerationAction,
   ModerationFilter,
   ModerationReport,
+  PostBoostTier,
+  PostBoostTierInput,
+  ProviderPromotionPlan,
+  ProviderPromotionPlanInput,
+  ProviderPromotionPlanStatus,
   Region,
   RegionInput,
   ServiceCategoryConfig,
@@ -318,6 +325,76 @@ export class AdminModerationStore {
 }
 
 @Injectable({ providedIn: 'root' })
+export class AdminReviewStore {
+  private readonly repository = inject(ModerationRepository);
+  private readonly session = inject(SessionStore);
+  private readonly reviewsState = signal<AdminReviewSummary[]>([]);
+  private readonly flaggedAccountsState = signal<FlaggedAccount[]>([]);
+  private readonly loadingState = signal(false);
+  private readonly errorState = signal<string | null>(null);
+  private readonly operationState = signal<AdminOperationState>({ status: 'idle' });
+  private pendingOperations = 0;
+
+  readonly reviews = this.reviewsState.asReadonly();
+  readonly flaggedAccounts = this.flaggedAccountsState.asReadonly();
+  readonly loading = this.loadingState.asReadonly();
+  readonly error = this.errorState.asReadonly();
+  readonly operation = this.operationState.asReadonly();
+
+  load(): void {
+    this.run(this.repository.listReviewsForAdmin(this.adminId()), (reviews) =>
+      this.reviewsState.set(reviews),
+    );
+    this.run(this.repository.listLowReputationAccounts(this.adminId()), (accounts) =>
+      this.flaggedAccountsState.set(accounts),
+    );
+  }
+
+  setVisibility(id: string, hidden: boolean, note?: string): void {
+    this.operationState.set({
+      status: 'loading',
+      message: hidden ? 'Đang ẩn đánh giá.' : 'Đang khôi phục đánh giá.',
+    });
+    this.run(this.repository.setReviewVisibility(this.adminId(), id, hidden, note), (review) => {
+      this.reviewsState.update((reviews) =>
+        reviews.map((item) => (item.id === id ? review : item)),
+      );
+      this.operationState.set({
+        status: 'success',
+        message: hidden ? 'Đã ẩn đánh giá.' : 'Đã khôi phục đánh giá.',
+      });
+    });
+  }
+
+  private run<T>(source: Observable<T>, next: (value: T) => void): void {
+    this.pendingOperations += 1;
+    this.loadingState.set(true);
+    this.errorState.set(null);
+    source.subscribe({
+      next,
+      error: (error: unknown) => this.fail(error),
+      complete: () => this.finish(),
+    });
+  }
+
+  private fail(error: unknown): void {
+    const message = error instanceof Error ? error.message : 'Đã có lỗi xảy ra.';
+    this.errorState.set(message);
+    this.operationState.set({ status: 'error', message });
+    this.finish();
+  }
+
+  private finish(): void {
+    this.pendingOperations = Math.max(0, this.pendingOperations - 1);
+    this.loadingState.set(this.pendingOperations > 0);
+  }
+
+  private adminId(): string {
+    return this.session.currentUser()?.id ?? '';
+  }
+}
+
+@Injectable({ providedIn: 'root' })
 export class AdminComplaintsStore {
   private readonly repository = inject(ComplaintRepository);
   private readonly session = inject(SessionStore);
@@ -476,6 +553,8 @@ export class AdminConfigStore {
   private readonly regionsState = signal<Region[]>([]);
   private readonly serviceCategoriesState = signal<ServiceCategoryConfig[]>([]);
   private readonly adminAccountsState = signal<User[]>([]);
+  private readonly postBoostTiersState = signal<PostBoostTier[]>([]);
+  private readonly providerPromotionPlansState = signal<ProviderPromotionPlan[]>([]);
   private readonly configState = signal<BusinessConfig | null>(null);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
@@ -488,6 +567,8 @@ export class AdminConfigStore {
   readonly regions = this.regionsState.asReadonly();
   readonly serviceCategories = this.serviceCategoriesState.asReadonly();
   readonly adminAccounts = this.adminAccountsState.asReadonly();
+  readonly postBoostTiers = this.postBoostTiersState.asReadonly();
+  readonly providerPromotionPlans = this.providerPromotionPlansState.asReadonly();
   readonly config = this.configState.asReadonly();
   readonly loading = this.loadingState.asReadonly();
   readonly error = this.errorState.asReadonly();
@@ -505,6 +586,71 @@ export class AdminConfigStore {
     );
     this.run(this.repository.listAdminAccounts(actorId), (accounts) =>
       this.adminAccountsState.set(accounts),
+    );
+    this.run(this.repository.listPostBoostTiers(actorId), (tiers) =>
+      this.postBoostTiersState.set(tiers),
+    );
+    this.run(this.repository.listProviderPromotionPlans(actorId), (plans) =>
+      this.providerPromotionPlansState.set(plans),
+    );
+  }
+
+  savePostBoostTier(input: PostBoostTierInput, id?: string): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    const source = id
+      ? this.repository.updatePostBoostTier(actorId, id, input)
+      : this.repository.createPostBoostTier(actorId, input);
+    this.run(
+      source,
+      (tier) =>
+        this.postBoostTiersState.update((tiers) =>
+          id ? tiers.map((item) => (item.id === id ? tier : item)) : [...tiers, tier],
+        ),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
+    );
+  }
+
+  removePostBoostTier(id: string): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    this.run(
+      this.repository.removePostBoostTier(actorId, id),
+      () => this.postBoostTiersState.update((tiers) => tiers.filter((item) => item.id !== id)),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
+    );
+  }
+
+  saveProviderPromotionPlan(input: ProviderPromotionPlanInput, id?: string): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    const source = id
+      ? this.repository.updateProviderPromotionPlan(actorId, id, input)
+      : this.repository.createProviderPromotionPlan(actorId, input);
+    this.run(
+      source,
+      (plan) =>
+        this.providerPromotionPlansState.update((plans) =>
+          id ? plans.map((item) => (item.id === id ? plan : item)) : [...plans, plan],
+        ),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
+    );
+  }
+
+  setProviderPromotionPlanStatus(id: string, status: ProviderPromotionPlanStatus): void {
+    const actorId = this.session.currentUser()?.id ?? '';
+    this.itemStateSignal.set('pending');
+    this.run(
+      this.repository.setProviderPromotionPlanStatus(actorId, id, status),
+      (plan) =>
+        this.providerPromotionPlansState.update((plans) =>
+          plans.map((item) => (item.id === id ? plan : item)),
+        ),
+      () => this.itemStateSignal.set('error'),
+      () => this.itemStateSignal.set('success'),
     );
   }
 

@@ -1,0 +1,253 @@
+<section class="admin-reviews" aria-labelledby="reviews-heading">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/admin">Tổng quan</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Đánh giá & Uy tín · {{ store.reviews().length }} đánh giá</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="reviews-header">
+    <h1 id="reviews-heading" class="visually-hidden">Đánh giá & Uy tín</h1>
+    <button class="btn btn-toggle-stats" type="button" (click)="toggleStats()">
+      <i [class]="statsHidden() ? 'bi bi-eye' : 'bi bi-eye-slash'" aria-hidden="true"></i>
+      {{ statsHidden() ? 'Hiện thống kê' : 'Ẩn thống kê' }}
+    </button>
+  </div>
+
+  <!-- Stats Cards -->
+  @if (!statsHidden()) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <span class="stat-card__label">Trung bình điểm HT</span>
+          <strong class="stat-card__value">{{ averageRating() | number: '1.1-1' }} <i class="bi bi-star-fill" aria-hidden="true"></i></strong>
+        </div>
+        <div class="stat-card__icon stat-icon--yellow">
+          <i class="bi bi-star-fill" aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <span class="stat-card__label">Tổng lượt đánh giá</span>
+          <strong class="stat-card__value">{{ store.reviews().length | number }}</strong>
+        </div>
+        <div class="stat-card__icon stat-icon--blue">
+          <i class="bi bi-chat-square-text" aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <span class="stat-card__label">Đánh giá bị báo cáo</span>
+          <strong class="stat-card__value">{{ tabCounts().reported }}</strong>
+          <span class="stat-card__trend trend-down">Cần xét duyệt trong tuần này</span>
+        </div>
+        <div class="stat-card__icon stat-icon--red">
+          <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-card__content">
+          <span class="stat-card__label">Tài khoản uy tín thấp</span>
+          <strong class="stat-card__value">{{ store.flaggedAccounts().length }}</strong>
+          <span class="stat-card__trend trend-down">Cần chú ý</span>
+        </div>
+        <div class="stat-card__icon stat-icon--purple">
+          <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Panel: Review list -->
+  <section class="reviews-panel">
+    <div class="reviews-panel__head">
+      <h2>Danh sách đánh giá</h2>
+      <p class="admin-note">Quản lý toàn bộ đánh giá trong hệ thống</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="reviews-tabs">
+      <button class="tab-btn" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
+        Tất cả <span class="tab-badge">{{ tabCounts().all | number }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === 'reported'"
+        (click)="setTab('reported')"
+      >
+        Bị báo cáo <span class="tab-badge tab-badge--alert">{{ tabCounts().reported }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'hidden'" (click)="setTab('hidden')">
+        Đã ẩn <span class="tab-badge">{{ tabCounts().hidden }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === 'lowReputation'"
+        (click)="setTab('lowReputation')"
+      >
+        Uy tín thấp <span class="tab-badge tab-badge--warning">{{ tabCounts().lowReputation }}</span>
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeTab() === 'watching'"
+        (click)="setTab('watching')"
+      >
+        Đang theo dõi <span class="tab-badge">{{ tabCounts().watching }}</span>
+      </button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="reviews-toolbar">
+      <div class="search-box">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input
+          type="search"
+          placeholder="Tìm tên người đánh giá, nội dung..."
+          [value]="search()"
+          (input)="updateSearch($event)"
+        />
+      </div>
+      <div class="filter-group">
+        <select class="filter-select" [value]="starsFilter()" (change)="updateStars($event)">
+          <option value="all">Số sao</option>
+          <option value="5">5 sao</option>
+          <option value="4">4 sao</option>
+          <option value="3">3 sao</option>
+          <option value="2">2 sao</option>
+          <option value="1">1 sao</option>
+        </select>
+        <select
+          class="filter-select"
+          [value]="timeRangeFilter()"
+          (change)="updateTimeRange($event)"
+        >
+          <option value="7d">7 ngày qua</option>
+          <option value="30d">30 ngày qua</option>
+          <option value="90d">90 ngày qua</option>
+          <option value="all">Tất cả</option>
+        </select>
+      </div>
+    </div>
+
+    @if (store.loading() && !store.reviews().length) {
+      <div class="state-message" role="status">Đang tải danh sách đánh giá...</div>
+    } @else if (store.error() && !store.reviews().length) {
+      <div class="state-message state-message--error" role="alert">
+        <strong>Không thể tải đánh giá</strong>
+        <span>{{ store.error() }}</span>
+        <button class="btn btn-secondary" type="button" (click)="refresh()">Thử lại</button>
+      </div>
+    } @else {
+      <div class="reviews-table-wrap">
+        <table class="reviews-table">
+          <thead>
+            <tr>
+              <th class="col-rater">NGƯỜI ĐÁNH GIÁ</th>
+              <th class="col-ratee">NGƯỜI ĐƯỢC ĐÁNH GIÁ</th>
+              <th class="col-stars">ĐIỂM</th>
+              <th class="col-comment">NỘI DUNG</th>
+              <th class="col-date">NGÀY</th>
+              <th class="col-status">TRẠNG THÁI</th>
+              <th class="col-actions"><span class="visually-hidden">Hành động</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (review of visibleReviews(); track review.id) {
+              <tr>
+                <td class="col-rater">
+                  <div class="user-cell">
+                    <span class="user-avatar" [style.background]="avatarColor(review.rater?.displayName || review.raterId)">
+                      {{ getInitials(review.rater?.displayName || review.raterId) }}
+                    </span>
+                    <span class="user-cell__text">
+                      <strong>{{ review.rater?.displayName || review.raterId }}</strong>
+                      <small>{{ review.rater?.location?.building }}</small>
+                    </span>
+                  </div>
+                </td>
+                <td class="col-ratee">
+                  <div class="user-cell">
+                    <span class="user-avatar" [style.background]="avatarColor(review.ratee?.displayName || review.rateeId)">
+                      {{ getInitials(review.ratee?.displayName || review.rateeId) }}
+                    </span>
+                    <span class="user-cell__text">
+                      <strong>{{ review.ratee?.displayName || review.rateeId }}</strong>
+                      <small>{{ review.serviceCategory ? label(review.serviceCategory) : '' }}</small>
+                    </span>
+                  </div>
+                </td>
+                <td class="col-stars">
+                  <span class="stars" [attr.aria-label]="review.stars + ' trên 5 sao'">
+                    @for (star of starsArray(review.stars); track $index) {
+                      <i
+                        class="bi"
+                        [class.bi-star-fill]="star === 1"
+                        [class.bi-star]="star === 0"
+                        aria-hidden="true"
+                      ></i>
+                    }
+                  </span>
+                </td>
+                <td class="col-comment">{{ review.comment || 'Không có nhận xét' }}</td>
+                <td class="col-date">{{ review.createdAt | date: 'dd/MM' }}</td>
+                <td class="col-status">
+                  <span class="status-badge" [class]="'status-' + review.status">
+                    {{ statusLabel(review.status) }}
+                  </span>
+                </td>
+                <td class="col-actions">
+                  @if (review.status === 'hidden') {
+                    <button
+                      class="action-btn"
+                      type="button"
+                      title="Khôi phục đánh giá"
+                      (click)="requestVisibility(review, false)"
+                    >
+                      <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+                    </button>
+                  } @else {
+                    <button
+                      class="action-btn action-btn--danger"
+                      type="button"
+                      title="Ẩn đánh giá"
+                      (click)="requestVisibility(review, true)"
+                    >
+                      <i class="bi bi-eye-slash" aria-hidden="true"></i>
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="empty-cell">
+                  <strong>Không có kết quả phù hợp</strong>
+                  <span>Điều chỉnh bộ lọc hoặc tab để xem thêm.</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <app-admin-pagination
+        [page]="page()"
+        [pageSize]="pageSize()"
+        [total]="filteredReviews().length"
+        [pageSizes]="[4, 8, 20, 50]"
+        (pageChange)="onPageChange($event)"
+        (pageSizeChange)="onPageSizeChange($event)"
+      />
+    }
+  </section>
+</section>
+
+<app-admin-confirm-dialog
+  [open]="!!pendingReview()"
+  [request]="confirmationRequest()"
+  (confirmed)="confirmVisibility()"
+  (cancelled)="pendingReview.set(null)"
+/>

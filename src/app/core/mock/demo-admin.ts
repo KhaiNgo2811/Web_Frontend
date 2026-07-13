@@ -5,6 +5,8 @@ import type {
   Complaint,
   ExportJob,
   ModerationReport,
+  PostBoostTier,
+  ProviderPromotionPlan,
   Region,
 } from '../models';
 
@@ -16,12 +18,6 @@ export const DEMO_REGIONS: Region[] = [
 ];
 
 export const DEMO_BUSINESS_CONFIG: BusinessConfig = {
-  platformFeePct: 5,
-  escrowFeePct: 1,
-  postDurationHours: 24,
-  priorityDurationHours: 72,
-  autoCompleteHours: 24,
-  minWithdrawalAmount: 100000,
   minRatingThreshold: 3,
   minComplaintsThreshold: 2,
   tokenPackages: [
@@ -50,9 +46,26 @@ export const DEMO_BUSINESS_CONFIG: BusinessConfig = {
       active: true,
     },
   ],
+  tokenConversion: {
+    xuPer1000Vnd: 10,
+    maxAdViewsPerDay: 20,
+    tokensPerAdView: 1,
+  },
   updatedAt: '2026-07-10T02:00:00.000Z',
   updatedBy: 'admin-seed',
 };
+
+export const DEMO_POST_BOOST_TIERS: PostBoostTier[] = [
+  { id: 'boost-1d', durationDays: 1, tokenCost: 50, vndValue: 5000 },
+  { id: 'boost-3d', durationDays: 3, tokenCost: 120, vndValue: 12000 },
+  { id: 'boost-7d', durationDays: 7, tokenCost: 200, vndValue: 20000 },
+];
+
+export const DEMO_PROVIDER_PROMOTION_PLANS: ProviderPromotionPlan[] = [
+  { id: 'basic', name: 'Cơ bản', pricePerMonth: 50000, status: 'selling' },
+  { id: 'professional', name: 'Chuyên nghiệp', pricePerMonth: 120000, status: 'selling' },
+  { id: 'featured', name: 'Nổi bật', pricePerMonth: 200000, status: 'selling' },
+];
 
 export const DEMO_MODERATION_REPORTS: ModerationReport[] = [
   {

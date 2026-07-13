@@ -109,13 +109,27 @@
 }
 
 .site-footer {
-  border-top: 1px solid var(--ant-border);
-  background: #fff;
+  background: var(--ant-ink);
+  color: rgb(255 255 255 / 72%);
 }
 
 .site-footer__top {
   height: 88px;
   gap: 18px;
+}
+
+.site-footer__brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.site-footer__tagline {
+  color: rgb(255 255 255 / 58%);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .site-footer__top nav {
@@ -124,17 +138,22 @@
 }
 
 .site-footer__top nav a {
+  color: rgb(255 255 255 / 72%);
   transition: color var(--ant-transition);
 }
 
+.site-footer__top nav a::after {
+  display: none;
+}
+
 .site-footer__top nav a:hover {
-  color: var(--ant-orange-deep);
+  color: #fff;
 }
 
 .site-footer__bottom {
-  border-top: 1px solid var(--ant-border);
+  border-top: 1px solid rgb(255 255 255 / 10%);
   padding: 14px;
-  color: var(--ant-subtle);
-  font-size: 11px;
+  color: rgb(255 255 255 / 45%);
+  font-size: 12px;
   text-align: center;
 }

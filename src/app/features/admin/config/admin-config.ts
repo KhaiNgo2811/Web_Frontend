@@ -13,8 +13,12 @@ import type {
   AdminAccountInput,
   AdminRole,
   BusinessConfigInput,
+  PostBoostTierInput,
+  ProviderPromotionPlanInput,
+  ProviderPromotionPlanStatus,
   RegionInput,
   ServiceCategoryInput,
+  TokenConversionConfig,
   TokenPackage,
   User,
 } from '../../../core/models';
@@ -28,7 +32,7 @@ type ConfigTab = 'pricing' | 'categories' | 'regions' | 'admins' | 'thresholds';
 type ConfirmAction = 'discard' | 'restore' | null;
 
 interface ItemConfirm {
-  kind: 'remove-category' | 'toggle-region' | 'toggle-admin';
+  kind: 'remove-category' | 'toggle-region' | 'toggle-admin' | 'remove-boost-tier';
   id: string;
   label: string;
   nextStatus?: 'active' | 'paused' | 'locked';
@@ -100,6 +104,18 @@ export class AdminConfig implements OnInit {
   protected readonly editingAdminId = signal<string | null>(null);
   protected readonly adminDraft = signal<AdminAccountInput>(this.emptyAdminAccount());
 
+  // Giá đẩy bài đăng
+  protected readonly boostTierDrawerOpen = signal(false);
+  protected readonly editingBoostTierId = signal<string | null>(null);
+  protected readonly boostTierDraft = signal<PostBoostTierInput>(this.emptyBoostTier());
+
+  // Gói quảng bá hồ sơ nhà cung cấp
+  protected readonly promotionPlanDrawerOpen = signal(false);
+  protected readonly editingPromotionPlanId = signal<string | null>(null);
+  protected readonly promotionPlanDraft = signal<ProviderPromotionPlanInput>(
+    this.emptyPromotionPlan(),
+  );
+
   protected readonly itemConfirm = signal<ItemConfirm | null>(null);
   protected readonly itemConfirmRequest = computed(() => {
     const pending = this.itemConfirm();
@@ -109,6 +125,15 @@ export class AdminConfig implements OnInit {
         title: 'Xóa danh mục dịch vụ?',
         message: `Danh mục "${pending.label}" sẽ bị xóa khỏi hệ thống.`,
         confirmLabel: 'Xóa danh mục',
+        cancelLabel: 'Hủy',
+        tone: 'danger' as const,
+      };
+    }
+    if (pending.kind === 'remove-boost-tier') {
+      return {
+        title: 'Xóa mức giá đẩy bài?',
+        message: `Mức giá "${pending.label}" sẽ bị xóa khỏi hệ thống.`,
+        confirmLabel: 'Xóa mức giá',
         cancelLabel: 'Hủy',
         tone: 'danger' as const,
       };
@@ -128,15 +153,10 @@ export class AdminConfig implements OnInit {
       const config = this.configStore.config();
       if (config) {
         const value: BusinessConfigInput = {
-          platformFeePct: config.platformFeePct,
-          escrowFeePct: config.escrowFeePct,
-          postDurationHours: config.postDurationHours,
-          priorityDurationHours: config.priorityDurationHours,
-          autoCompleteHours: config.autoCompleteHours,
-          minWithdrawalAmount: config.minWithdrawalAmount,
           minRatingThreshold: config.minRatingThreshold,
           minComplaintsThreshold: config.minComplaintsThreshold,
           tokenPackages: config.tokenPackages.map((pack) => ({ ...pack })),
+          tokenConversion: { ...config.tokenConversion },
         };
         this.baseline.set(value);
         this.form.set(this.clone(value));
@@ -152,9 +172,19 @@ export class AdminConfig implements OnInit {
     this.activeTab.set(tab as ConfigTab);
   }
 
-  updateNumber(key: keyof Omit<BusinessConfigInput, 'tokenPackages'>, value: number): void {
+  updateNumber(
+    key: keyof Omit<BusinessConfigInput, 'tokenPackages' | 'tokenConversion'>,
+    value: number,
+  ): void {
     this.configStore.clearOperationState();
     this.form.update((form) => (form ? { ...form, [key]: value } : form));
+  }
+
+  updateTokenConversion(key: keyof TokenConversionConfig, value: number): void {
+    this.configStore.clearOperationState();
+    this.form.update((form) =>
+      form ? { ...form, tokenConversion: { ...form.tokenConversion, [key]: value } } : form,
+    );
   }
 
   updatePackage(id: string, patch: Partial<TokenPackage>): void {
@@ -355,12 +385,83 @@ export class AdminConfig implements OnInit {
     this.itemConfirm.set(null);
     if (!pending) return;
     if (pending.kind === 'remove-category') this.configStore.removeServiceCategory(pending.id);
+    if (pending.kind === 'remove-boost-tier') this.configStore.removePostBoostTier(pending.id);
     if (pending.kind === 'toggle-region' && pending.nextStatus) {
       this.configStore.setRegionStatus(pending.id, pending.nextStatus as 'active' | 'paused');
     }
     if (pending.kind === 'toggle-admin' && pending.nextStatus) {
       this.configStore.setAdminAccountStatus(pending.id, pending.nextStatus as User['status']);
     }
+  }
+
+  // --- Giá đẩy bài đăng ---
+  protected openBoostTierDrawer(tier?: { id: string } & PostBoostTierInput): void {
+    this.configStore.clearItemState();
+    this.editingBoostTierId.set(tier?.id ?? null);
+    this.boostTierDraft.set(
+      tier
+        ? {
+            durationDays: tier.durationDays,
+            tokenCost: tier.tokenCost,
+            vndValue: tier.vndValue,
+          }
+        : this.emptyBoostTier(),
+    );
+    this.boostTierDrawerOpen.set(true);
+  }
+
+  protected closeBoostTierDrawer(): void {
+    this.boostTierDrawerOpen.set(false);
+  }
+
+  protected updateBoostTierDraft(patch: Partial<PostBoostTierInput>): void {
+    this.boostTierDraft.update((draft) => ({ ...draft, ...patch }));
+  }
+
+  protected saveBoostTier(): void {
+    this.configStore.savePostBoostTier(this.boostTierDraft(), this.editingBoostTierId() ?? undefined);
+    this.boostTierDrawerOpen.set(false);
+  }
+
+  protected requestRemoveBoostTier(id: string, label: string): void {
+    this.itemConfirm.set({ kind: 'remove-boost-tier', id, label });
+  }
+
+  // --- Gói quảng bá hồ sơ nhà cung cấp ---
+  protected openPromotionPlanDrawer(
+    plan?: { id: string } & ProviderPromotionPlanInput,
+  ): void {
+    this.configStore.clearItemState();
+    this.editingPromotionPlanId.set(plan?.id ?? null);
+    this.promotionPlanDraft.set(
+      plan
+        ? { name: plan.name, pricePerMonth: plan.pricePerMonth, status: plan.status }
+        : this.emptyPromotionPlan(),
+    );
+    this.promotionPlanDrawerOpen.set(true);
+  }
+
+  protected closePromotionPlanDrawer(): void {
+    this.promotionPlanDrawerOpen.set(false);
+  }
+
+  protected updatePromotionPlanDraft(patch: Partial<ProviderPromotionPlanInput>): void {
+    this.promotionPlanDraft.update((draft) => ({ ...draft, ...patch }));
+  }
+
+  protected savePromotionPlan(): void {
+    this.configStore.saveProviderPromotionPlan(
+      this.promotionPlanDraft(),
+      this.editingPromotionPlanId() ?? undefined,
+    );
+    this.promotionPlanDrawerOpen.set(false);
+  }
+
+  protected togglePromotionPlanStatus(id: string, currentStatus: ProviderPromotionPlanStatus): void {
+    this.configStore.setProviderPromotionPlanStatus(
+      id,
+      currentStatus === 'selling' ? 'stopped' : 'selling',
+    );
   }
 
   protected roleLabel(role: string): string {
@@ -379,9 +480,21 @@ export class AdminConfig implements OnInit {
     return { displayName: '', email: '', role: 'support_agent' };
   }
 
+  private emptyBoostTier(): PostBoostTierInput {
+    return { durationDays: 1, tokenCost: 0, vndValue: 0 };
+  }
+
+  private emptyPromotionPlan(): ProviderPromotionPlanInput {
+    return { name: '', pricePerMonth: 0, status: 'selling' };
+  }
+
   private clone(value: BusinessConfigInput | null): BusinessConfigInput | null {
     return value
-      ? { ...value, tokenPackages: value.tokenPackages.map((pack) => ({ ...pack })) }
+      ? {
+          ...value,
+          tokenPackages: value.tokenPackages.map((pack) => ({ ...pack })),
+          tokenConversion: { ...value.tokenConversion },
+        }
       : null;
   }
 }

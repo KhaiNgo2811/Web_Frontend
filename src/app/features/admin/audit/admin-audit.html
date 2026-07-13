@@ -1,256 +1,177 @@
-<section class="admin-page">
-  <div class="dashboard-heading">
-    <div>
-      <p class="ant-kicker">Truy vết vận hành</p>
-      <h2>Nhật ký hoạt động</h2>
-      <p class="admin-note">{{ rangedEvents().length }} sự kiện phù hợp</p>
-    </div>
-    <div class="admin-actions">
-      <button class="ant-btn ant-btn--secondary" type="button" (click)="audit.load()">
-        Làm mới
+<section class="admin-audit" aria-labelledby="audit-heading">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/admin">Tổng quan</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Nhật ký hoạt động</span>
+    <span class="breadcrumb-sep">·</span>
+    <span class="breadcrumb-readonly">Chỉ đọc — không thể sửa/xóa</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="audit-header">
+    <h1 id="audit-heading">Nhật ký hoạt động</h1>
+    @if (canExport()) {
+      <button
+        class="btn btn-export"
+        type="button"
+        [disabled]="audit.exportState() === 'pending'"
+        (click)="exportConfirmationOpen.set(true)"
+      >
+        <i class="bi bi-download" aria-hidden="true"></i>
+        {{ audit.exportState() === 'pending' ? 'Đang gửi yêu cầu...' : 'Xuất CSV' }}
       </button>
-    </div>
+    }
   </div>
 
-  <div class="admin-toolbar audit-toolbar" aria-label="Bộ lọc nhật ký">
-    <label class="audit-toolbar__search">
-      <span class="visually-hidden">Tìm kiếm</span>
-      <span class="audit-search">
-        <i class="bi bi-search" aria-hidden="true"></i>
-        <input
-          class="ant-field"
-          type="search"
-          placeholder="Tìm người dùng, bài đăng, mã giao dịch..."
-          [value]="audit.filter().search || ''"
-          (input)="search($event)"
-        />
-      </span>
-    </label>
-    <label>
-      <span>ID người thực hiện</span>
+  @if (exportStatusText()) {
+    <p
+      class="export-status"
+      [class.export-status--error]="audit.exportState() === 'error'"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      {{ exportStatusText() }}
+    </p>
+  }
+
+  <!-- Toolbar -->
+  <div class="audit-toolbar">
+    <div class="search-box">
+      <i class="bi bi-search" aria-hidden="true"></i>
       <input
-        class="ant-field"
-        type="text"
-        [value]="audit.filter().actorId || ''"
-        (change)="updateFilter('actorId', $event)"
+        type="search"
+        placeholder="Tìm theo admin, đối tượng, hành động..."
+        [value]="audit.filter().search || ''"
+        (input)="search($event)"
       />
-    </label>
-    <label>
-      <span>Loại hành động</span>
+    </div>
+    <div class="filter-group">
+      <select class="filter-select" [value]="actorFilter()" (change)="updateActorFilter($event)">
+        <option value="all">Admin</option>
+        @for (actor of actorOptions(); track actor.id) {
+          <option [value]="actor.id">{{ actor.name }}</option>
+        }
+      </select>
       <select
-        class="ant-field"
+        class="filter-select"
         [value]="audit.filter().action || ''"
-        (change)="updateFilter('action', $event)"
+        (change)="updateActionFilter($event)"
       >
-        <option value="">Tất cả hành động</option>
+        <option value="">Loại hành động</option>
         @for (action of actions; track action) {
           <option [value]="action">{{ label(action) }}</option>
         }
       </select>
-    </label>
-    <label>
-      <span>Mục tiêu</span>
       <select
-        class="ant-field"
-        [value]="audit.filter().targetType || 'all'"
-        (change)="updateFilter('targetType', $event)"
-      >
-        @for (target of targets; track target.value) {
-          <option [value]="target.value">{{ target.label }}</option>
-        }
-      </select>
-    </label>
-    <label>
-      <span>Thời gian</span>
-      <select
-        class="ant-field"
+        class="filter-select"
         [value]="timeRangeFilter()"
         (change)="updateTimeRangeFilter($event)"
       >
         <option value="7d">7 ngày qua</option>
         <option value="30d">30 ngày qua</option>
         <option value="90d">90 ngày qua</option>
-        <option value="all">Toàn bộ thời gian</option>
+        <option value="all">Tất cả</option>
       </select>
-    </label>
-    <button
-      class="ant-btn ant-btn--ghost"
-      type="button"
-      [disabled]="activeFilterCount() === 0"
-      (click)="clearFilters()"
-    >
-      Xóa bộ lọc ({{ activeFilterCount() }})
-    </button>
-  </div>
-
-  @if (canExport()) {
-    <section class="card admin-panel export-panel" aria-labelledby="export-title">
-      <div class="export-panel__main">
-        <div>
-          <p class="ant-kicker">Xuất nhật ký</p>
-          <h3 id="export-title">Yêu cầu CSV đã che dữ liệu</h3>
-          <p class="admin-note">Bản demo chỉ ghi nhận yêu cầu xuất, chưa tạo tệp tải xuống.</p>
-        </div>
-        <div class="export-facts" aria-label="Thông tin xuất nhật ký">
-          <span class="badge bg-blue-lt">CSV</span>
-          <span class="badge bg-orange-lt">Che dữ liệu mặc định</span>
-          <span class="badge bg-green-lt">Lưu 7 ngày</span>
-          <span class="badge bg-secondary-lt">{{ audit.events().length }} sự kiện</span>
-        </div>
-      </div>
-
-      <div class="export-scope">
-        <strong>Phạm vi hiện tại</strong>
-        <div>
-          @for (item of exportScopeItems(); track item) {
-            <span>{{ item }}</span>
-          }
-        </div>
-      </div>
-
-      <div class="export-actions">
-        <button
-          class="ant-btn"
-          type="button"
-          [disabled]="audit.exportState() === 'pending'"
-          (click)="exportConfirmationOpen.set(true)"
-        >
-          {{ audit.exportState() === 'pending' ? 'Đang gửi yêu cầu...' : 'Tạo yêu cầu xuất CSV' }}
+      @if (activeFilterCount() > 0) {
+        <button class="btn btn-secondary" type="button" (click)="clearFilters()">
+          Xóa bộ lọc ({{ activeFilterCount() }})
         </button>
-        @if (audit.exportState() !== 'idle') {
-          <button class="ant-btn ant-btn--ghost" type="button" (click)="audit.clearExportState()">
-            Xóa trạng thái
-          </button>
-        }
-        <p
-          class="export-status"
-          [class.export-status--error]="audit.exportState() === 'error'"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {{ exportStatusText() }}
-        </p>
-      </div>
-
-      <div class="export-jobs" aria-label="Lịch sử yêu cầu xuất">
-        <h4>Yêu cầu gần đây</h4>
-        @for (job of audit.exports(); track job.id) {
-          <article class="list-group-item" [class.is-latest]="audit.latestExport()?.id === job.id">
-            <div>
-              <strong>{{ label(job.status) }}</strong>
-              <span>{{ job.createdAt | date: 'short' }} · {{ job.requestedBy }}</span>
-            </div>
-            <small
-              >CSV · Che dữ liệu mặc định · Lưu đến {{ job.retentionUntil | date: 'short' }}</small
-            >
-          </article>
-        } @empty {
-          <p class="admin-note">Chưa có yêu cầu xuất nào.</p>
-        }
-      </div>
-    </section>
-  }
-
-  <div class="admin-live" aria-live="polite" aria-atomic="true">
-    @if (audit.error() && audit.exportState() !== 'error') {
-      <p class="ant-error" role="alert">{{ audit.error() }}</p>
-    }
-  </div>
-
-  @if (audit.loading() && !rangedEvents().length) {
-    <div class="admin-table-skeleton" aria-label="Đang tải nhật ký" aria-busy="true">
-      @for (row of [1, 2, 3, 4, 5]; track row) {
-        <span></span>
       }
     </div>
+  </div>
+
+  @if (audit.error()) {
+    <p class="ant-error" role="alert">{{ audit.error() }}</p>
+  }
+
+  @if (audit.loading() && !rangedEvents().length) {
+    <div class="state-message" role="status">Đang tải nhật ký...</div>
   } @else if (!rangedEvents().length) {
-    <section class="admin-empty-state">
-      <h3>{{ activeFilterCount() ? 'Không có kết quả phù hợp' : 'Chưa có sự kiện kiểm toán' }}</h3>
-      <p>
-        {{
-          activeFilterCount()
-            ? 'Hãy thay đổi hoặc xóa bộ lọc để xem thêm sự kiện.'
-            : 'Các thao tác quản trị sẽ xuất hiện tại đây.'
-        }}
-      </p>
+    <div class="state-message">
+      <strong>{{ activeFilterCount() ? 'Không có kết quả phù hợp' : 'Chưa có sự kiện kiểm toán' }}</strong>
+      <span>{{
+        activeFilterCount()
+          ? 'Hãy thay đổi hoặc xóa bộ lọc để xem thêm sự kiện.'
+          : 'Các thao tác quản trị sẽ xuất hiện tại đây.'
+      }}</span>
       @if (activeFilterCount()) {
-        <button class="ant-btn ant-btn--secondary" type="button" (click)="clearFilters()">
-          Xóa bộ lọc
-        </button>
+        <button class="btn btn-secondary" type="button" (click)="clearFilters()">Xóa bộ lọc</button>
       }
-    </section>
+    </div>
   } @else {
-    <div class="admin-table-wrap">
-      <table class="admin-table" aria-label="Danh sách sự kiện kiểm toán">
+    <div class="audit-table-wrap">
+      <table class="audit-table">
         <thead>
           <tr>
-            <th scope="col" [attr.aria-sort]="ariaSort('createdAt')">
-              <button class="sort-button" type="button" (click)="toggleSort('createdAt')">
-                Thời gian
-              </button>
-            </th>
-            <th scope="col" [attr.aria-sort]="ariaSort('actorId')">
-              <button class="sort-button" type="button" (click)="toggleSort('actorId')">
-                Người thực hiện
-              </button>
-            </th>
-            <th scope="col" [attr.aria-sort]="ariaSort('action')">
-              <button class="sort-button" type="button" (click)="toggleSort('action')">
-                Hành động
-              </button>
-            </th>
-            <th scope="col" [attr.aria-sort]="ariaSort('targetType')">
-              <button class="sort-button" type="button" (click)="toggleSort('targetType')">
-                Mục tiêu
-              </button>
-            </th>
-            <th scope="col">Lý do</th>
-            <th scope="col"><span class="visually-hidden">Chi tiết</span></th>
+            <th class="col-time">THỜI GIAN</th>
+            <th class="col-actor">ADMIN THỰC HIỆN</th>
+            <th class="col-action">HÀNH ĐỘNG</th>
+            <th class="col-target">ĐỐI TƯỢNG BỊ TÁC ĐỘNG</th>
+            <th class="col-module">MODULE</th>
+            <th class="col-reason">LÝ DO / GHI CHÚ</th>
+            <th class="col-detail"><span class="visually-hidden">Chi tiết</span></th>
           </tr>
         </thead>
         <tbody>
           @for (event of pagedEvents(); track event.id) {
             <tr>
-              <td>{{ event.createdAt | date: 'short' }}</td>
-              <td>
-                <span class="audit-actor">
+              <td class="col-time">{{ event.createdAt | date: 'dd/MM, HH:mm' }}</td>
+              <td class="col-actor">
+                <div class="user-cell">
                   <span
-                    class="audit-actor__avatar"
+                    class="user-avatar"
                     [style.background]="actorColor(event.actorName || event.actorId)"
                   >
                     {{ actorInitials(event.actorName || event.actorId) }}
                   </span>
-                  {{ event.actorName || event.actorId }}
-                </span>
+                  <span class="user-cell__text">
+                    <strong>{{ event.actorName || event.actorId }}</strong>
+                    <small>Admin</small>
+                  </span>
+                </div>
               </td>
-              <td>
+              <td class="col-action">
                 <span class="badge" [class]="actionBadgeClass(event.action)">{{
                   label(event.action)
                 }}</span>
               </td>
-              <td>
-                <span class="badge" [class]="targetBadgeClass(event.targetType)">{{
-                  label(event.targetType)
-                }}</span>
-                {{ event.targetId }}
+              <td class="col-target">
+                @if (event.targetLink) {
+                  <a
+                    [routerLink]="event.targetLink.route"
+                    [queryParams]="event.targetLink.queryParams"
+                    >{{ event.targetLabel }}</a
+                  >
+                } @else {
+                  {{ event.targetLabel }}
+                }
               </td>
-              <td>{{ reasonLabel(event.reason) }}</td>
-              <td>
+              <td class="col-module">
+                <span class="module-pill">{{ event.moduleLabel }}</span>
+              </td>
+              <td class="col-reason">{{ reasonLabel(event.reason) }}</td>
+              <td class="col-detail">
                 <button
-                  class="ant-icon-btn"
+                  class="action-btn"
                   type="button"
                   [attr.aria-expanded]="expandedIds().includes(event.id)"
                   [attr.aria-controls]="'audit-detail-' + event.id"
                   [attr.aria-label]="'Xem chi tiết sự kiện ' + event.id"
                   (click)="toggleDisclosure(event.id)"
                 >
-                  {{ expandedIds().includes(event.id) ? '−' : '+' }}
+                  <i
+                    class="bi"
+                    [class.bi-chevron-down]="!expandedIds().includes(event.id)"
+                    [class.bi-chevron-up]="expandedIds().includes(event.id)"
+                    aria-hidden="true"
+                  ></i>
                 </button>
               </td>
             </tr>
             @if (expandedIds().includes(event.id)) {
               <tr class="audit-detail-row">
-                <td colspan="6" [id]="'audit-detail-' + event.id">
+                <td colspan="7" [id]="'audit-detail-' + event.id">
                   <dl>
                     <div>
                       <dt>ID sự kiện</dt>
@@ -280,12 +201,14 @@
         </tbody>
       </table>
     </div>
+
     <app-admin-pagination
       [page]="page()"
       [pageSize]="pageSize()"
       [total]="rangedEvents().length"
-      (pageChange)="setPage($event)"
-      (pageSizeChange)="setPageSize($event)"
+      [pageSizes]="[6, 20, 50]"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
     />
   }
 </section>

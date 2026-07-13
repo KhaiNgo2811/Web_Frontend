@@ -9,15 +9,10 @@ import { AdminConfigStore } from './admin.stores';
 import { SessionStore } from './session.store';
 
 const CONFIG: BusinessConfig = {
-  platformFeePct: 5,
-  escrowFeePct: 2,
-  postDurationHours: 72,
-  priorityDurationHours: 24,
-  autoCompleteHours: 48,
-  minWithdrawalAmount: 10000,
   minRatingThreshold: 3,
   minComplaintsThreshold: 2,
   tokenPackages: [],
+  tokenConversion: { xuPer1000Vnd: 10, maxAdViewsPerDay: 20, tokensPerAdView: 1 },
   updatedAt: '2026-07-11T00:00:00.000Z',
   updatedBy: 'admin-a',
 };
@@ -45,12 +40,12 @@ describe('admin operation stores', () => {
 
     expect(store.save(asInput(CONFIG))).toBe(true);
     expect(store.saveState()).toBe('pending');
-    save.next({ ...CONFIG, platformFeePct: 6 });
+    save.next({ ...CONFIG, minRatingThreshold: 4 });
     expect(store.saveState()).toBe('pending');
     save.complete();
 
     expect(store.saveState()).toBe('success');
-    expect(store.config()?.platformFeePct).toBe(6);
+    expect(store.config()?.minRatingThreshold).toBe(4);
   });
 
   it('keeps audit export pending until completion and exposes failures', () => {
@@ -108,15 +103,10 @@ describe('admin operation stores', () => {
 
 function asInput(config: BusinessConfig): BusinessConfigInput {
   return {
-    platformFeePct: config.platformFeePct,
-    escrowFeePct: config.escrowFeePct,
-    postDurationHours: config.postDurationHours,
-    priorityDurationHours: config.priorityDurationHours,
-    autoCompleteHours: config.autoCompleteHours,
-    minWithdrawalAmount: config.minWithdrawalAmount,
     minRatingThreshold: config.minRatingThreshold,
     minComplaintsThreshold: config.minComplaintsThreshold,
     tokenPackages: config.tokenPackages,
+    tokenConversion: config.tokenConversion,
   };
 }
 
