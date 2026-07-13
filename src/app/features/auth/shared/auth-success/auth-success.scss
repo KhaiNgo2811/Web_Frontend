@@ -1,0 +1,39 @@
+.auth-success {
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+.auth-success__icon {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--ant-gradient);
+  box-shadow: var(--ant-shadow-orange);
+}
+
+svg {
+  width: 38px;
+  height: 38px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.2;
+}
+
+p {
+  max-width: 330px;
+  margin: 0;
+  color: var(--ant-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.ant-btn {
+  width: 100%;
+}

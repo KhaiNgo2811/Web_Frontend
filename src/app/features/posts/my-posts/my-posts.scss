@@ -1,0 +1,230 @@
+.my-posts-page {
+  min-height: 760px;
+  padding-block: 64px;
+  background: var(--ant-bg);
+}
+
+.my-posts {
+  max-width: 1100px;
+}
+
+.my-posts__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.my-posts__heading h1 {
+  margin: 6px 0 4px;
+  font-size: 36px;
+}
+
+.my-posts__heading p {
+  max-width: 520px;
+  color: var(--ant-muted);
+}
+
+.my-posts__tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--ant-border);
+  padding-bottom: 12px;
+}
+
+.my-posts__tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 99px;
+  padding: 9px 16px;
+  color: var(--ant-muted);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    color var(--ant-transition),
+    background var(--ant-transition),
+    transform var(--ant-transition);
+}
+
+.my-posts__tabs button:hover {
+  color: var(--ant-orange-deep);
+  background: var(--ant-orange-soft);
+}
+
+.my-posts__tabs button.active {
+  color: #fff;
+  background: var(--ant-gradient);
+}
+
+.my-posts__count {
+  display: inline-grid;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 50%;
+  padding: 0 6px;
+  background: rgb(255 255 255 / 24%);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.my-posts__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+.my-posts__grid app-post-card {
+  min-width: 0;
+}
+
+/* Type chooser modal */
+.type-modal {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.type-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(30 20 15 / 48%);
+  cursor: pointer;
+}
+
+.type-modal__content {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  border-radius: var(--ant-radius-xl);
+  padding: 28px;
+  background: #fff;
+  box-shadow: var(--ant-shadow-lg);
+}
+
+.type-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.type-modal__header h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.type-modal__header p {
+  margin: 0;
+  color: var(--ant-muted);
+  font-size: 13px;
+}
+
+.type-modal__close {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ant-muted);
+  background: var(--ant-bg);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all var(--ant-transition);
+}
+
+.type-modal__close:hover {
+  background: var(--ant-border-strong);
+  color: var(--ant-ink);
+}
+
+.type-modal__choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.type-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid transparent;
+  border-radius: var(--ant-radius-lg);
+  padding: 24px 16px;
+  text-align: center;
+  text-decoration: none;
+  background: var(--ant-orange-soft);
+  transition:
+    transform var(--ant-transition),
+    box-shadow var(--ant-transition),
+    border-color var(--ant-transition);
+  cursor: pointer;
+}
+
+.type-choice:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ant-shadow-md);
+  border-color: var(--ant-orange);
+}
+
+.type-choice--service:hover {
+  border-color: var(--ant-green);
+}
+
+.type-choice--service {
+  background: var(--ant-green-soft);
+}
+
+.type-choice__icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--ant-gradient);
+  font-size: 26px;
+  transition: transform var(--ant-transition);
+}
+
+.type-choice:hover .type-choice__icon {
+  transform: scale(1.08);
+}
+
+.type-choice--service .type-choice__icon {
+  background: linear-gradient(145deg, #2ecc71, #27ae60);
+}
+
+.type-choice strong {
+  color: var(--ant-ink);
+  font-size: 16px;
+}
+
+.type-choice span {
+  color: var(--ant-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.my-posts__heading .ant-btn i {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+@media (hover: hover) {
+  .my-posts__heading .ant-btn:hover i {
+    transform: rotate(90deg);
+  }
+}

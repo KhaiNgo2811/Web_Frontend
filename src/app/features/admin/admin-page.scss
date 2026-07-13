@@ -1,0 +1,254 @@
+.admin-page {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-toolbar,
+.admin-panel,
+.admin-table-wrap,
+.admin-detail {
+  border: 1px solid var(--ant-border);
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.admin-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  padding: 14px;
+  border-color: var(--ant-border-strong, #c8b7aa);
+}
+
+.admin-toolbar__summary {
+  margin: 0 auto 0 0;
+  color: var(--ant-muted);
+  font-size: 13px;
+}
+
+.admin-toolbar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-filter-chip {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--ant-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: var(--ant-surface-soft);
+  font-size: 12px;
+}
+
+.admin-toolbar label {
+  display: grid;
+  min-width: 160px;
+  gap: 6px;
+  color: var(--ant-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-metric,
+.admin-panel {
+  padding: 16px;
+}
+
+.admin-metric {
+  border: 1px solid var(--ant-border);
+  border-radius: var(--ant-radius-md);
+  background: #fff;
+}
+
+.admin-metric span {
+  color: var(--ant-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.admin-metric strong {
+  display: block;
+  margin-top: 6px;
+  font-family: 'Baloo 2', sans-serif;
+  font-size: 30px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.admin-table-wrap {
+  max-height: calc(100vh - 250px);
+  overflow: auto;
+}
+
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid var(--ant-border);
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.admin-table th {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  color: var(--ant-muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  background: #f8f4f0;
+}
+
+.admin-table th[aria-sort] button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  padding: 3px 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-transform: inherit;
+}
+
+.admin-table th[aria-sort] button:focus-visible,
+.admin-table button:focus-visible {
+  outline: 2px solid var(--ant-orange);
+  outline-offset: 2px;
+}
+
+.admin-table tr:hover td {
+  background: var(--ant-surface-soft);
+}
+
+.admin-table tr:focus-within td {
+  background: #fff8f0;
+}
+
+.admin-batch-bar {
+  position: sticky;
+  z-index: 3;
+  bottom: 0;
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #5f4636;
+  padding: 8px 14px;
+  color: #fff;
+  background: #2b1b12;
+}
+
+.admin-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.admin-layout-two {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 16px;
+}
+
+.admin-detail {
+  align-self: start;
+  padding: 16px;
+}
+
+.admin-detail h2,
+.admin-panel h2 {
+  margin: 0 0 12px;
+  font-size: 21px;
+}
+
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 9px;
+  color: var(--ant-ink-soft);
+  background: var(--ant-surface-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-pill--danger {
+  color: var(--ant-red);
+  background: var(--ant-red-soft);
+}
+
+.admin-pill--success {
+  color: var(--ant-green);
+  background: var(--ant-green-soft);
+}
+
+.admin-pill--warning {
+  color: var(--ant-yellow);
+  background: var(--ant-yellow-soft);
+}
+
+.admin-note {
+  margin: 0;
+  color: var(--ant-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .admin-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-toolbar__summary {
+    margin: 0;
+  }
+
+  .admin-toolbar label {
+    min-width: 0;
+  }
+
+  .admin-grid,
+  .admin-layout-two {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-table-wrap {
+    max-height: none;
+  }
+
+  .admin-table {
+    min-width: 720px;
+  }
+
+  .admin-batch-bar {
+    flex-wrap: wrap;
+  }
+}

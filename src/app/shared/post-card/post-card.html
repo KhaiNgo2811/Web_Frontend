@@ -1,0 +1,75 @@
+<article class="post-card" [class.post-card--priority]="post().isPriority">
+  <div
+    class="post-card__visual"
+    [class]="'post-card__visual post-card__visual--' + post().category"
+  >
+    <span class="post-card__pattern" aria-hidden="true"></span>
+    <i class="post-card__category-icon" [class]="'bi ' + category().icon" aria-hidden="true"></i>
+    <span class="post-card__type" [class.post-card__type--service]="post().type === 'service'">
+      {{ typeLabel() }}
+    </span>
+    @if (post().isPriority) {
+      <app-status-pill status="priority"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> Ưu tiên</app-status-pill>
+    }
+    <button
+      type="button"
+      class="post-card__like"
+      [attr.aria-label]="'Yêu thích ' + post().title"
+      (click)="likeRequested.emit(post())"
+    >
+      <i [class]="liked() ? 'bi bi-heart-fill' : 'bi bi-heart'" aria-hidden="true"></i>
+      {{ post().likedBy.length }}
+    </button>
+  </div>
+
+  <div class="post-card__body">
+    <div class="post-card__category-line">
+      <span>{{ category().label }}</span>
+      <span aria-hidden="true">•</span>
+      <time [attr.datetime]="post().createdAt">{{ timeLabel() }}</time>
+    </div>
+    <button type="button" class="post-card__title" (click)="opened.emit(post())">
+      {{ post().title }}
+    </button>
+    <p class="post-card__description">{{ post().description }}</p>
+
+    <div class="post-card__meta">
+      <i class="bi bi-geo-alt" aria-hidden="true"></i>
+      <span>{{ author()?.location?.building ?? 'Trong khu vực của bạn' }}</span>
+    </div>
+    @if (post().expectedTime) {
+      <div class="post-card__meta">
+        <i class="bi bi-clock" aria-hidden="true"></i>
+        <span>{{ post().expectedTime }}</span>
+      </div>
+    }
+
+    <div class="post-card__author">
+      <span class="post-card__avatar" aria-hidden="true">{{ authorInitials() }}</span>
+      <span>
+        <strong>{{ author()?.displayName ?? 'Thành viên AntGo' }}</strong>
+        <small>
+          @if (author()?.isVerified) {
+            <i class="bi bi-patch-check-fill verified" aria-hidden="true"></i>
+          }
+          {{ author()?.reputationScore ?? 'Mới' }} sao
+        </small>
+      </span>
+      <span class="post-card__price">{{ price() }}<small>đ</small></span>
+    </div>
+
+    <div class="post-card__actions">
+      <button type="button" class="ant-btn ant-btn--secondary" (click)="opened.emit(post())">
+        Xem chi tiết
+      </button>
+      <button
+        type="button"
+        class="ant-btn ant-btn--primary"
+        [disabled]="!isOpen()"
+        (click)="acceptRequested.emit(post())"
+      >
+        {{ isOpen() ? actionLabel() : 'Đã kết nối' }}
+      </button>
+    </div>
+  </div>
+</article>

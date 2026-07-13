@@ -1,0 +1,44 @@
+:host {
+  display: block;
+  width: min(100%, 400px);
+}
+
+.auth-card {
+  padding: 32px 28px 28px;
+  border-radius: var(--ant-radius-xl);
+  box-shadow: var(--ant-shadow-md);
+}
+
+.auth-card__header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+app-brand-logo {
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.auth-card__eyebrow {
+  margin: 0 0 7px;
+  color: var(--ant-orange-deep);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  color: var(--ant-ink);
+  font-size: 24px;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+
+.auth-card__subtitle {
+  margin: 8px auto 0;
+  color: var(--ant-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}

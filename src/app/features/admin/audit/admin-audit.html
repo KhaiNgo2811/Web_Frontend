@@ -1,0 +1,221 @@
+<section class="admin-audit" aria-labelledby="audit-heading">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/admin">Tổng quan</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Nhật ký hoạt động</span>
+    <span class="breadcrumb-sep">·</span>
+    <span class="breadcrumb-readonly">Chỉ đọc — không thể sửa/xóa</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="audit-header">
+    <h1 id="audit-heading">Nhật ký hoạt động</h1>
+    @if (canExport()) {
+      <button
+        class="btn btn-export"
+        type="button"
+        [disabled]="audit.exportState() === 'pending'"
+        (click)="exportConfirmationOpen.set(true)"
+      >
+        <i class="bi bi-download" aria-hidden="true"></i>
+        {{ audit.exportState() === 'pending' ? 'Đang gửi yêu cầu...' : 'Xuất CSV' }}
+      </button>
+    }
+  </div>
+
+  @if (exportStatusText()) {
+    <p
+      class="export-status"
+      [class.export-status--error]="audit.exportState() === 'error'"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      {{ exportStatusText() }}
+    </p>
+  }
+
+  <!-- Toolbar -->
+  <div class="audit-toolbar">
+    <div class="search-box">
+      <i class="bi bi-search" aria-hidden="true"></i>
+      <input
+        type="search"
+        placeholder="Tìm theo admin, đối tượng, hành động..."
+        [value]="audit.filter().search || ''"
+        (input)="search($event)"
+      />
+    </div>
+    <div class="filter-group">
+      <select class="filter-select" [value]="actorFilter()" (change)="updateActorFilter($event)">
+        <option value="all">Admin</option>
+        @for (actor of actorOptions(); track actor.id) {
+          <option [value]="actor.id">{{ actor.name }}</option>
+        }
+      </select>
+      <select
+        class="filter-select"
+        [value]="audit.filter().action || ''"
+        (change)="updateActionFilter($event)"
+      >
+        <option value="">Loại hành động</option>
+        @for (action of actions; track action) {
+          <option [value]="action">{{ label(action) }}</option>
+        }
+      </select>
+      <select
+        class="filter-select"
+        [value]="timeRangeFilter()"
+        (change)="updateTimeRangeFilter($event)"
+      >
+        <option value="7d">7 ngày qua</option>
+        <option value="30d">30 ngày qua</option>
+        <option value="90d">90 ngày qua</option>
+        <option value="all">Tất cả</option>
+      </select>
+      @if (activeFilterCount() > 0) {
+        <button class="btn btn-secondary" type="button" (click)="clearFilters()">
+          Xóa bộ lọc ({{ activeFilterCount() }})
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (audit.error()) {
+    <p class="ant-error" role="alert">{{ audit.error() }}</p>
+  }
+
+  @if (audit.loading() && !rangedEvents().length) {
+    <div class="state-message" role="status">Đang tải nhật ký...</div>
+  } @else if (!rangedEvents().length) {
+    <div class="state-message">
+      <strong>{{ activeFilterCount() ? 'Không có kết quả phù hợp' : 'Chưa có sự kiện kiểm toán' }}</strong>
+      <span>{{
+        activeFilterCount()
+          ? 'Hãy thay đổi hoặc xóa bộ lọc để xem thêm sự kiện.'
+          : 'Các thao tác quản trị sẽ xuất hiện tại đây.'
+      }}</span>
+      @if (activeFilterCount()) {
+        <button class="btn btn-secondary" type="button" (click)="clearFilters()">Xóa bộ lọc</button>
+      }
+    </div>
+  } @else {
+    <div class="audit-table-wrap">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th class="col-time">THỜI GIAN</th>
+            <th class="col-actor">ADMIN THỰC HIỆN</th>
+            <th class="col-action">HÀNH ĐỘNG</th>
+            <th class="col-target">ĐỐI TƯỢNG BỊ TÁC ĐỘNG</th>
+            <th class="col-module">MODULE</th>
+            <th class="col-reason">LÝ DO / GHI CHÚ</th>
+            <th class="col-detail"><span class="visually-hidden">Chi tiết</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (event of pagedEvents(); track event.id) {
+            <tr>
+              <td class="col-time">{{ event.createdAt | date: 'dd/MM, HH:mm' }}</td>
+              <td class="col-actor">
+                <div class="user-cell">
+                  <span
+                    class="user-avatar"
+                    [style.background]="actorColor(event.actorName || event.actorId)"
+                  >
+                    {{ actorInitials(event.actorName || event.actorId) }}
+                  </span>
+                  <span class="user-cell__text">
+                    <strong>{{ event.actorName || event.actorId }}</strong>
+                    <small>Admin</small>
+                  </span>
+                </div>
+              </td>
+              <td class="col-action">
+                <span class="badge" [class]="actionBadgeClass(event.action)">{{
+                  label(event.action)
+                }}</span>
+              </td>
+              <td class="col-target">
+                @if (event.targetLink) {
+                  <a
+                    [routerLink]="event.targetLink.route"
+                    [queryParams]="event.targetLink.queryParams"
+                    >{{ event.targetLabel }}</a
+                  >
+                } @else {
+                  {{ event.targetLabel }}
+                }
+              </td>
+              <td class="col-module">
+                <span class="module-pill">{{ event.moduleLabel }}</span>
+              </td>
+              <td class="col-reason">{{ reasonLabel(event.reason) }}</td>
+              <td class="col-detail">
+                <button
+                  class="action-btn"
+                  type="button"
+                  [attr.aria-expanded]="expandedIds().includes(event.id)"
+                  [attr.aria-controls]="'audit-detail-' + event.id"
+                  [attr.aria-label]="'Xem chi tiết sự kiện ' + event.id"
+                  (click)="toggleDisclosure(event.id)"
+                >
+                  <i
+                    class="bi"
+                    [class.bi-chevron-down]="!expandedIds().includes(event.id)"
+                    [class.bi-chevron-up]="expandedIds().includes(event.id)"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              </td>
+            </tr>
+            @if (expandedIds().includes(event.id)) {
+              <tr class="audit-detail-row">
+                <td colspan="7" [id]="'audit-detail-' + event.id">
+                  <dl>
+                    <div>
+                      <dt>ID sự kiện</dt>
+                      <dd>{{ event.id }}</dd>
+                    </div>
+                    <div>
+                      <dt>Trước thao tác</dt>
+                      <dd>
+                        @for (item of changeSummary(event.before); track item) {
+                          <span>{{ item }}</span>
+                        }
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Sau thao tác</dt>
+                      <dd>
+                        @for (item of changeSummary(event.after); track item) {
+                          <span>{{ item }}</span>
+                        }
+                      </dd>
+                    </div>
+                  </dl>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <app-admin-pagination
+      [page]="page()"
+      [pageSize]="pageSize()"
+      [total]="rangedEvents().length"
+      [pageSizes]="[6, 20, 50]"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</section>
+
+<app-admin-confirm-dialog
+  [open]="exportConfirmationOpen()"
+  [request]="exportRequest()"
+  (confirmed)="confirmExport()"
+  (cancelled)="exportConfirmationOpen.set(false)"
+/>

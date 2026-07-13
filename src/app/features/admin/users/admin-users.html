@@ -1,0 +1,262 @@
+<section class="admin-users" aria-labelledby="users-heading">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/admin">Tổng quan</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Người dùng · {{ totalUsers() }} tài khoản</span>
+  </nav>
+
+  <!-- Header -->
+  <div class="users-header">
+    <div>
+      <h1 id="users-heading">Quản lý người dùng</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" type="button">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Xem trạng thái tài
+      </button>
+      <button class="btn btn-primary" type="button">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Thêm người dùng
+      </button>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="users-toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input
+        type="search"
+        placeholder="Tìm theo tên, email hoặc số điện thoại..."
+        [value]="usersStore.filter().search || ''"
+        (input)="updateSearch($event)"
+      />
+    </div>
+    <div class="filter-group">
+      <select class="filter-select" [value]="usersStore.filter().status || 'all'" (change)="updateStatus($event)">
+        <option value="all">Trạng thái</option>
+        <option value="active">Hoạt động</option>
+        <option value="locked">Tạm khóa</option>
+      </select>
+      <select class="filter-select" [value]="usersStore.filter().regionId || 'all'" (change)="updateRegion($event)">
+        <option value="all">KTX Khu B...</option>
+        <option value="khu-a">Khu A</option>
+        <option value="khu-b">Khu B</option>
+        <option value="khu-c">Khu C</option>
+      </select>
+    </div>
+    <button class="btn btn-export" type="button" (click)="exportOpen.set(true)">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Xuất Excel
+    </button>
+  </div>
+
+  @if (usersStore.error() && !usersStore.selectedUser()) {
+    <div class="state-message state-message--error" role="alert">
+      <strong>Không thể tải danh sách người dùng.</strong>
+      <span>{{ usersStore.error() }}</span>
+      <button class="btn btn-secondary" type="button" (click)="refresh()">Thử lại</button>
+    </div>
+  } @else if (usersStore.loading() && !usersStore.users().length) {
+    <div class="state-message" role="status" aria-live="polite">
+      Đang tải danh sách người dùng...
+    </div>
+  } @else {
+    <div class="users-table-wrap">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th class="col-checkbox">
+              <input type="checkbox" />
+            </th>
+            <th class="col-user">NGƯỜI DÙNG</th>
+            <th class="col-building">TÒA NHÀ</th>
+            <th class="col-tokens">SỐ DƯ XU</th>
+            <th class="col-status">TRẠNG THÁI</th>
+            <th class="col-joined">NGÀY THAM GIA</th>
+            <th class="col-actions">HÀNH ĐỘNG</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of pagedUsers(); track user.id) {
+            <tr>
+              <td class="col-checkbox">
+                <input type="checkbox" />
+              </td>
+              <td class="col-user">
+                <div class="user-cell">
+                  <span class="user-avatar" [style.background]="avatarColor(user.displayName)">
+                    {{ getInitials(user.displayName) }}
+                  </span>
+                  <div class="user-info">
+                    <strong>{{ user.displayName }}</strong>
+                    <span class="user-email">{{ user.email || user.phone }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="col-building">{{ user.location.building }}</td>
+              <td class="col-tokens">{{ user.tokenBalance }} Xu</td>
+              <td class="col-status">
+                <span class="status-badge" [class]="statusBadgeClass(user.status, user.isVerified)">
+                  {{ statusLabel(user.status, user.isVerified) }}
+                </span>
+              </td>
+              <td class="col-joined">{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td class="col-actions">
+                <button class="action-btn" type="button" (click)="openUser(user)" title="Xem chi tiết">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button class="action-btn" type="button" (click)="toggleStatus(user)" title="Khóa/Mở khóa">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-cell">
+                <strong>Không tìm thấy người dùng</strong>
+                <span>Hãy thay đổi hoặc xóa bộ lọc để xem thêm kết quả.</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (usersStore.users().length) {
+      <div class="table-footer">
+        <span class="table-summary">Hiển thị {{ paginationStart() }}-{{ paginationEnd() }} trong tổng số {{ totalUsers() }} người dùng</span>
+        <nav class="table-pagination" aria-label="Phân trang danh sách người dùng">
+          <button class="page-btn" type="button" [disabled]="page() === 1" (click)="goToPage(page() - 1)">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          @for (p of pageNumbers(); track p) {
+            <button
+              class="page-btn"
+              [class.active]="p === page()"
+              type="button"
+              (click)="goToPage(p)"
+            >
+              {{ p }}
+            </button>
+          }
+          <button class="page-btn" type="button" [disabled]="page() === pageCount()" (click)="goToPage(page() + 1)">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </nav>
+      </div>
+    }
+  }
+</section>
+
+<app-admin-drawer
+  [open]="!!usersStore.selectedUser()"
+  width="moderation"
+  title="Chi tiết tài khoản"
+  [description]="usersStore.selectedUser()?.displayName || ''"
+  (closed)="closeDrawer()"
+>
+  <div drawer-body>
+    @if (usersStore.selectedUser(); as selected) {
+      <p class="admin-note">{{ selected.email || selected.phone }}</p>
+      <dl class="account-facts">
+        <div>
+          <dt>Bài đăng</dt>
+          <dd>{{ selected.postsCount }}</dd>
+        </div>
+        <div>
+          <dt>Đơn hàng</dt>
+          <dd>{{ selected.ordersCount }}</dd>
+        </div>
+        <div>
+          <dt>Đánh giá</dt>
+          <dd>{{ selected.reviewsCount }}</dd>
+        </div>
+        <div>
+          <dt>Token</dt>
+          <dd>{{ selected.tokenBalance }}</dd>
+        </div>
+      </dl>
+
+      @if (canRestrict()) {
+        <label class="reason-field">
+          <span>Lý do thao tác <span aria-hidden="true">*</span></span>
+          <textarea
+            class="ant-field"
+            [class.is-invalid]="reasonError()"
+            [value]="actionReason()"
+            aria-describedby="account-reason-error"
+            (input)="actionReason.set(valueOf($event)); reasonError.set(null)"
+          ></textarea>
+        </label>
+        @if (reasonError()) {
+          <p id="account-reason-error" class="ant-error" role="alert">{{ reasonError() }}</p>
+        }
+        <button
+          class="btn btn-danger"
+          type="button"
+          (click)="toggleStatus(selected)"
+          [disabled]="
+            usersStore.loading() ||
+            (selected.id === usersStore.currentAdminId() && selected.status === 'active')
+          "
+        >
+          {{ selected.status === 'locked' ? 'Mở khóa tài khoản' : 'Khóa tài khoản' }}
+        </button>
+      }
+
+      @if (usersStore.error()) {
+        <p class="ant-error" role="alert">{{ usersStore.error() }}</p>
+      }
+      <h3>Lịch sử an toàn</h3>
+      @for (activity of selected.activity; track activity.id) {
+        <div class="history-entry">
+          <strong>{{ actionLabel(activity.action) }}</strong>
+          <span>{{ activity.reason || 'Không có ghi chú' }}</span>
+          <small>{{ activity.createdAt | date: 'dd/MM/yyyy HH:mm' }}</small>
+        </div>
+      } @empty {
+        <p class="admin-note">Không có thao tác hạn chế trước đó.</p>
+      }
+    }
+  </div>
+</app-admin-drawer>
+
+<app-admin-confirm-dialog
+  [open]="!!pendingStatusUser()"
+  [request]="confirmationRequest()"
+  (confirmed)="confirmStatusChange()"
+  (cancelled)="cancelStatusChange()"
+/>
+
+<app-admin-export-dialog
+  [open]="exportOpen()"
+  [options]="exportOptions"
+  (cancelled)="exportOpen.set(false)"
+  (confirmed)="exportOpen.set(false)"
+/>

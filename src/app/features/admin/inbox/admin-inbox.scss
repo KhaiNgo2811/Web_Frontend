@@ -1,0 +1,144 @@
+@use '../admin-page';
+
+.dashboard-heading,
+.table-pagination,
+.state-message,
+.empty-cell {
+  display: flex;
+}
+
+.dashboard-heading,
+.table-pagination {
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard-heading h2,
+.dashboard-heading p {
+  margin: 0;
+}
+
+.admin-segmented {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid var(--ant-border);
+  background: #fff;
+}
+
+.admin-segmented button {
+  border: 0;
+  border-right: 1px solid var(--ant-border);
+  padding: 9px 14px;
+  color: var(--ant-ink-soft);
+  background: transparent;
+  font-weight: 700;
+}
+
+.admin-segmented button:last-child {
+  border-right: 0;
+}
+
+.admin-segmented button.active {
+  color: #fff;
+  background: var(--ant-ink);
+}
+
+.admin-segmented button:focus-visible,
+.sort-button:focus-visible,
+.detail-link:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 3px solid var(--ant-yellow);
+  outline-offset: 2px;
+}
+
+.inbox-assignment {
+  display: flex;
+  align-items: end;
+  gap: 1rem;
+}
+
+.inbox-assignment label {
+  flex: 1;
+}
+
+.inbox-assignment span {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.filter-count {
+  color: var(--ant-ink-soft);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.selection-cell {
+  width: 44px;
+  text-align: center !important;
+}
+
+.sort-button {
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-transform: inherit;
+}
+
+.selected td {
+  background: var(--ant-surface-soft);
+}
+
+.detail-link {
+  display: inline-flex;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.state-message,
+.empty-cell {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.state-message {
+  border: 1px solid var(--ant-border);
+  padding: 24px;
+  background: #fff;
+}
+
+.state-message--error {
+  border-left: 4px solid var(--ant-red);
+}
+
+.empty-cell {
+  padding-block: 36px !important;
+  text-align: center !important;
+}
+
+.empty-cell > * {
+  align-self: center;
+}
+
+.table-pagination {
+  justify-content: flex-end;
+}
+
+.table-pagination span {
+  margin-right: auto;
+  color: var(--ant-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 760px) {
+  .inbox-assignment {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

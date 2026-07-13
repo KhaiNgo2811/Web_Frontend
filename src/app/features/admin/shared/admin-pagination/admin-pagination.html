@@ -1,0 +1,47 @@
+<nav class="admin-pagination" aria-label="Phân trang kết quả">
+  <p aria-live="polite">Hiển thị {{ firstResult }}–{{ lastResult }} trong {{ total }} kết quả</p>
+  <label>
+    Số dòng mỗi trang
+    <select [value]="pageSize" (change)="changePageSize($event)">
+      @for (size of pageSizes; track size) {
+        <option [value]="size">{{ size }}</option>
+      }
+    </select>
+  </label>
+  <button
+    type="button"
+    [disabled]="page <= 1"
+    aria-label="Đến trang trước"
+    (click)="goTo(page - 1)"
+  >
+    ‹
+  </button>
+  <ul class="admin-pagination__pages">
+    @for (item of pageNumbers; track $index) {
+      @if (item === 'ellipsis') {
+        <li class="admin-pagination__ellipsis" aria-hidden="true">…</li>
+      } @else {
+        <li>
+          <button
+            type="button"
+            class="admin-pagination__page"
+            [class.is-active]="item === page"
+            [attr.aria-current]="item === page ? 'page' : null"
+            [attr.aria-label]="'Đến trang ' + item"
+            (click)="goTo(item)"
+          >
+            {{ item }}
+          </button>
+        </li>
+      }
+    }
+  </ul>
+  <button
+    type="button"
+    [disabled]="page >= totalPages"
+    aria-label="Đến trang sau"
+    (click)="goTo(page + 1)"
+  >
+    ›
+  </button>
+</nav>

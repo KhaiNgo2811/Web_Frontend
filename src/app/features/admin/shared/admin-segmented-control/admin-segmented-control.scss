@@ -1,0 +1,31 @@
+.admin-segmented {
+  display: inline-flex;
+  border: 1px solid var(--ant-border);
+  border-radius: 3px;
+  background: #fff;
+}
+.admin-segmented button {
+  min-height: 36px;
+  border: 0;
+  border-right: 1px solid var(--ant-border);
+  padding: 0 12px;
+  background: transparent;
+  color: var(--ant-ink-soft);
+  font: inherit;
+}
+.admin-segmented button:last-child {
+  border-right: 0;
+}
+.admin-segmented button.active {
+  color: #fff;
+  background: #3a2417;
+}
+.admin-segmented button:focus-visible {
+  position: relative;
+  outline: 2px solid var(--ant-orange);
+  outline-offset: 1px;
+}
+.admin-segmented span {
+  margin-left: 5px;
+  font-size: 12px;
+}

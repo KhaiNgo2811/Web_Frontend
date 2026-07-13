@@ -1,0 +1,115 @@
+<section class="editor ant-container">
+  <aside>
+    <span class="ant-kicker">{{ postId ? 'Chỉnh sửa bài đăng' : 'Đăng đơn mới' }}</span>
+    <h1>{{ type === 'request' ? 'Bạn cần giúp việc gì?' : 'Bạn muốn cung cấp gì?' }}</h1>
+    <p>Thông tin rõ ràng giúp bạn kết nối nhanh hơn với đúng người trong cộng đồng.</p>
+    <div class="tips ant-card">
+      <strong>Gợi ý viết bài tốt</strong>
+      <span><i class="bi bi-check-lg" aria-hidden="true"></i> Tiêu đề cụ thể, dễ hiểu</span>
+      <span><i class="bi bi-check-lg" aria-hidden="true"></i> Nêu rõ thời gian và mức giá</span>
+      <span><i class="bi bi-check-lg" aria-hidden="true"></i> Không chia sẻ thông tin nhạy cảm</span>
+    </div>
+  </aside>
+
+  <form class="editor-form ant-card" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="type-chip">
+      @if (type === 'request') {
+        <i class="bi bi-hand-index-thumb-fill" aria-hidden="true"></i> Cần giúp
+      } @else {
+        <i class="bi bi-briefcase-fill" aria-hidden="true"></i> Cung cấp dịch vụ
+      }
+    </div>
+    <label
+      ><span class="ant-label">Tiêu đề</span
+      ><input
+        class="ant-field"
+        formControlName="title"
+        placeholder="Ví dụ: Mua giúp ít đồ ăn sáng"
+      />
+      @if (form.controls.title.touched && form.controls.title.invalid) {
+        <small class="ant-error">Tối thiểu 10 ký tự.</small>
+      }
+    </label>
+    <label
+      ><span class="ant-label">Mô tả chi tiết</span
+      ><textarea
+        class="ant-field"
+        formControlName="description"
+        placeholder="Mô tả việc cần làm, thời gian và lưu ý..."
+      ></textarea>
+      @if (form.controls.description.touched && form.controls.description.invalid) {
+        <small class="ant-error">Tối thiểu 20 ký tự.</small>
+      }
+    </label>
+    <div class="form-grid">
+      <label
+        ><span class="ant-label">Danh mục</span
+        ><select class="ant-field" formControlName="category">
+          @for (category of categories; track category.value) {
+            <option [value]="category.value">{{ category.label }}</option>
+          }
+        </select></label
+      >
+      <label
+        ><span class="ant-label">Mức giá (VNĐ)</span
+        ><input class="ant-field" type="number" formControlName="price"
+      /></label>
+      <label
+        ><span class="ant-label">Thời gian mong muốn</span
+        ><input class="ant-field" formControlName="expectedTime" placeholder="Hôm nay, trước 20:00"
+      /></label>
+      <label
+        ><span class="ant-label">Mức độ</span
+        ><select class="ant-field" formControlName="urgency">
+          <option value="normal">Bình thường</option>
+          <option value="urgent">Cần gấp</option>
+        </select></label
+      >
+    </div>
+    <label
+      ><span class="ant-label">Ảnh minh hoạ (URL, không bắt buộc)</span
+      ><input class="ant-field" formControlName="imageUrl" placeholder="https://..."
+    /></label>
+    <div class="form-actions">
+      @if (postId) {
+        <button class="ant-btn ant-btn--ghost" type="button" (click)="dialog.set('extend')">
+          <i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Gia hạn</button
+        ><button class="ant-btn ant-btn--danger" type="button" (click)="dialog.set('delete')">
+          <i class="bi bi-trash" aria-hidden="true"></i> Xoá bài
+        </button>
+      }
+      <a class="ant-btn ant-btn--secondary" routerLink="/feed"><i class="bi bi-arrow-left" aria-hidden="true"></i> Huỷ</a>
+      <button class="ant-btn ant-btn--primary" type="submit">
+        <i class="bi bi-send-fill" aria-hidden="true"></i> {{ postId ? 'Lưu thay đổi' : 'Đăng bài ngay' }}
+      </button>
+    </div>
+  </form>
+</section>
+
+@if (dialog()) {
+  <app-ui-dialog
+    [title]="dialog() === 'extend' ? 'Gia hạn bài đăng' : 'Xoá bài đăng'"
+    (closed)="dialog.set(null)"
+  >
+    <p>
+      {{
+        dialog() === 'extend'
+          ? 'Bài đăng sẽ được gia hạn thêm 24 giờ và hiển thị lại trong danh sách mới nhất.'
+          : 'Hành động này không thể hoàn tác. Bạn chắc chắn muốn xoá bài?'
+      }}
+    </p>
+    <div dialog-actions>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="dialog.set(null)">
+        Quay lại</button
+      ><button
+        class="ant-btn"
+        [class.ant-btn--danger]="dialog() === 'delete'"
+        [class.ant-btn--primary]="dialog() === 'extend'"
+        type="button"
+        (click)="confirmDialog()"
+      >
+        Xác nhận
+      </button>
+    </div>
+  </app-ui-dialog>
+}

@@ -1,0 +1,14 @@
+<section class="auth-card ant-card" aria-labelledby="auth-card-title">
+  <header class="auth-card__header">
+    <app-brand-logo />
+    @if (eyebrow()) {
+      <p class="auth-card__eyebrow">{{ eyebrow() }}</p>
+    }
+    <h1 id="auth-card-title">{{ title() }}</h1>
+    @if (subtitle()) {
+      <p class="auth-card__subtitle">{{ subtitle() }}</p>
+    }
+  </header>
+
+  <ng-content />
+</section>

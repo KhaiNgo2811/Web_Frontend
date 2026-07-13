@@ -1,0 +1,106 @@
+@use '../shared/auth-form' as auth;
+
+@include auth.styles;
+
+:host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+}
+
+// Google button
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--ant-border);
+  border-radius: var(--ant-radius-md);
+  background: #fff;
+  color: var(--ant-ink);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--ant-surface-soft);
+  }
+
+  svg {
+    width: 19px;
+    height: 19px;
+  }
+}
+
+// Field with icon
+.auth-field-wrap--icon {
+  position: relative;
+
+  .ant-field {
+    padding-left: 42px;
+  }
+}
+
+.auth-field-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ant-subtle);
+  display: flex;
+  align-items: center;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+// Label row with forgot password link
+.auth-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+
+  .ant-label {
+    margin-bottom: 0;
+  }
+}
+
+// Eye icon button
+.auth-field-action--eye {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  border: 0;
+  padding: 4px;
+  background: transparent;
+  color: var(--ant-subtle);
+  cursor: pointer;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    color: var(--ant-orange-deep);
+  }
+}
+
+// Copyright
+.auth-copyright {
+  margin: 16px 0 0;
+  color: var(--ant-subtle);
+  font-size: 11px;
+  text-align: center;
+}

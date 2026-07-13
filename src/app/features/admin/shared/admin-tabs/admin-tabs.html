@@ -1,0 +1,17 @@
+<div class="admin-tabs" role="tablist" [attr.aria-label]="label">
+  @for (tab of tabs; track tab.value) {
+    <button
+      type="button"
+      role="tab"
+      [id]="'admin-tab-' + tab.value"
+      class="admin-tabs__tab"
+      [class.is-active]="tab.value === active"
+      [attr.aria-selected]="tab.value === active"
+      [attr.tabindex]="tab.value === active ? 0 : -1"
+      (click)="select(tab.value)"
+      (keydown)="move($event, tab.value)"
+    >
+      {{ tab.label }}
+    </button>
+  }
+</div>

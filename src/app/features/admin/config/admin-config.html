@@ -1,0 +1,811 @@
+<section class="admin-page">
+  <app-admin-tabs
+    label="Danh mục cấu hình"
+    [tabs]="tabs"
+    [active]="activeTab()"
+    (activeChange)="setTab($event)"
+  />
+
+  @if (form(); as config) {
+    @if (activeTab() === 'pricing') {
+      <section class="admin-panel">
+        <div class="config-panel-head">
+          <div>
+            <h2>Giá đẩy bài đăng</h2>
+            <p class="admin-note">Áp dụng cho toàn bộ nhà cung cấp và người đăng yêu cầu.</p>
+          </div>
+          <button class="ant-btn ant-btn--primary" type="button" (click)="openBoostTierDrawer()">
+            + Thêm mức giá
+          </button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th scope="col">Thời gian</th>
+                <th scope="col">Số Xu</th>
+                <th scope="col">Quy đổi VNĐ</th>
+                <th scope="col"><span class="visually-hidden">Hành động</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tier of configStore.postBoostTiers(); track tier.id) {
+                <tr>
+                  <td>{{ tier.durationDays }} ngày</td>
+                  <td>{{ tier.tokenCost | number }} Xu</td>
+                  <td>{{ tier.vndValue | number }}đ</td>
+                  <td class="config-row-actions">
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Sửa mức giá ' + tier.durationDays + ' ngày'"
+                      (click)="openBoostTierDrawer(tier)"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="admin-note">Chưa có mức giá đẩy bài nào.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-panel">
+        <div class="config-panel-head">
+          <div>
+            <h2>Gói quảng bá hồ sơ nhà cung cấp</h2>
+            <p class="admin-note">Gói định kỳ theo tháng.</p>
+          </div>
+          <button
+            class="ant-btn ant-btn--primary"
+            type="button"
+            (click)="openPromotionPlanDrawer()"
+          >
+            + Tạo gói mới
+          </button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th scope="col">Gói</th>
+                <th scope="col">Giá / tháng</th>
+                <th scope="col">NCC đang dùng</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col"><span class="visually-hidden">Hành động</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (plan of configStore.providerPromotionPlans(); track plan.id) {
+                <tr>
+                  <td>{{ plan.name }}</td>
+                  <td>{{ plan.pricePerMonth | number }}đ</td>
+                  <td>{{ plan.activeSubscriberCount ?? 0 | number }}</td>
+                  <td>
+                    <span class="admin-pill" [class.admin-pill--success]="plan.status === 'selling'">
+                      {{ plan.status === 'selling' ? 'Đang bán' : 'Ngừng bán' }}
+                    </span>
+                  </td>
+                  <td class="config-row-actions">
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Sửa ' + plan.name"
+                      (click)="openPromotionPlanDrawer(plan)"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Đổi trạng thái ' + plan.name"
+                      (click)="togglePromotionPlanStatus(plan.id, plan.status)"
+                    >
+                      <i class="bi bi-toggle2-on"></i>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="admin-note">Chưa có gói quảng bá nào.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-panel config-panel--narrow">
+        <h2>Cấu hình quy đổi Xu</h2>
+        <p class="admin-note">Tỷ lệ và giới hạn ứng dụng toàn hệ thống</p>
+        <div class="conversion-grid">
+          <div class="conversion-card">
+            <h3>Tỷ lệ quy đổi</h3>
+            <div class="conversion-rate">
+              <span>1.000đ =</span>
+              <input
+                class="ant-field"
+                type="number"
+                min="1"
+                step="1"
+                [value]="config.tokenConversion.xuPer1000Vnd"
+                (input)="updateTokenConversion('xuPer1000Vnd', numberValue($event))"
+              />
+              <span>Xu</span>
+            </div>
+            <small class="admin-note">Thay đổi ảnh hưởng toàn bộ gói nạp Xu</small>
+          </div>
+          <div class="conversion-card">
+            <h3>Giới hạn xem quảng cáo kiếm Xu</h3>
+            <label class="conversion-field">
+              <span>Lượt xem tối đa/ngày</span>
+              <input
+                class="ant-field"
+                type="number"
+                min="0"
+                step="1"
+                [value]="config.tokenConversion.maxAdViewsPerDay"
+                (input)="updateTokenConversion('maxAdViewsPerDay', numberValue($event))"
+              />
+            </label>
+            <label class="conversion-field">
+              <span>Xu kiếm/lượt xem</span>
+              <input
+                class="ant-field"
+                type="number"
+                min="0"
+                step="1"
+                [value]="config.tokenConversion.tokensPerAdView"
+                (input)="updateTokenConversion('tokensPerAdView', numberValue($event))"
+              />
+            </label>
+          </div>
+        </div>
+        @if (fieldError('tokenConversion'); as error) {
+          <p class="ant-error">{{ error }}</p>
+        }
+      </section>
+
+      <section class="admin-panel">
+        <h2>Gói token</h2>
+        <p class="admin-note">Gói nạp Xu người dùng có thể mua trong ví.</p>
+        <div class="token-head" aria-hidden="true">
+          <span>Tên gói</span><span>Số token</span><span>Giá</span><span>Thưởng (%)</span
+          ><span>Trạng thái</span><span>Thao tác</span>
+        </div>
+        <div class="token-list">
+          @for (pack of config.tokenPackages; track pack.id) {
+            <article class="token-row">
+              <input
+                class="ant-field"
+                [attr.aria-label]="'Tên ' + pack.name"
+                [value]="pack.name"
+                (input)="updatePackage(pack.id, { name: textValue($event) })"
+              />
+              <input
+                class="ant-field"
+                type="number"
+                min="1"
+                step="1"
+                [attr.aria-label]="'Số token của ' + pack.name"
+                [value]="pack.tokens"
+                (input)="updatePackage(pack.id, { tokens: numberValue($event) })"
+              />
+              <input
+                class="ant-field"
+                type="number"
+                min="0"
+                step="1000"
+                [attr.aria-label]="'Giá của ' + pack.name"
+                [value]="pack.price"
+                (input)="updatePackage(pack.id, { price: numberValue($event) })"
+              />
+              <input
+                class="ant-field"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                [attr.aria-label]="'Phần trăm thưởng của ' + pack.name"
+                [value]="pack.bonusPct"
+                (input)="updatePackage(pack.id, { bonusPct: numberValue($event) })"
+              />
+              <label class="token-toggle">
+                <input
+                  type="checkbox"
+                  [checked]="pack.active"
+                  (change)="updatePackage(pack.id, { active: checkedValue($event) })"
+                />
+                Bật
+              </label>
+              <button
+                class="ant-icon-btn"
+                type="button"
+                [attr.aria-label]="'Xóa ' + pack.name"
+                title="Xóa gói"
+                (click)="removePackage(pack.id)"
+              >
+                ×
+              </button>
+            </article>
+          }
+        </div>
+        @if (fieldError('tokenPackages'); as error) {
+          <p class="ant-error">{{ error }}</p>
+        }
+        <button class="ant-btn ant-btn--secondary" type="button" (click)="addPackage()">
+          Thêm gói
+        </button>
+      </section>
+
+      <div class="admin-live" aria-live="polite" aria-atomic="true">
+        @if (configStore.saveState() === 'success') {
+          <p class="config-success">Đã lưu cấu hình.</p>
+        }
+        @if (configStore.restoreState() === 'success') {
+          <p class="config-success">Đã khôi phục cấu hình mặc định.</p>
+        }
+        @if (configStore.error()) {
+          <p class="ant-error">{{ configStore.error() }}</p>
+        }
+      </div>
+      @if (dirty()) {
+        <p class="config-dirty">Có thay đổi chưa lưu.</p>
+      }
+      <div class="admin-actions">
+        <button
+          class="ant-btn ant-btn--primary"
+          type="button"
+          [disabled]="!dirty() || configStore.loading()"
+          (click)="save()"
+        >
+          {{ configStore.saveState() === 'pending' ? 'Đang lưu…' : 'Lưu cấu hình' }}
+        </button>
+        <button
+          class="ant-btn ant-btn--secondary"
+          type="button"
+          [disabled]="!dirty() || configStore.loading()"
+          (click)="requestConfirm('discard')"
+        >
+          Hủy thay đổi
+        </button>
+        <button
+          class="ant-btn ant-btn--danger"
+          type="button"
+          [disabled]="configStore.loading()"
+          (click)="requestConfirm('restore')"
+        >
+          Khôi phục mặc định
+        </button>
+      </div>
+    }
+
+    @if (activeTab() === 'categories') {
+      <section class="admin-panel">
+        <div class="config-panel-head">
+          <div>
+            <h2>Danh mục dịch vụ</h2>
+            <p class="admin-note">Quản lý loại dịch vụ và các thuộc tính riêng.</p>
+          </div>
+          <button class="ant-btn ant-btn--primary" type="button" (click)="openCategoryDrawer()">
+            + Thêm danh mục
+          </button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th scope="col">Tên danh mục</th>
+                <th scope="col">Số thuộc tính</th>
+                <th scope="col">Số bài đăng</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col"><span class="visually-hidden">Hành động</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (category of configStore.serviceCategories(); track category.id) {
+                <tr>
+                  <td>{{ category.name }}</td>
+                  <td>{{ category.attributesCount }} thuộc tính</td>
+                  <td>{{ category.postCount }} bài đăng</td>
+                  <td>
+                    <span class="admin-pill" [class.admin-pill--success]="category.active">
+                      {{ category.active ? 'Hoạt động' : 'Tạm dừng' }}
+                    </span>
+                  </td>
+                  <td class="config-row-actions">
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Sửa ' + category.name"
+                      (click)="openCategoryDrawer(category)"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      class="ant-icon-btn"
+                      type="button"
+                      [attr.aria-label]="'Xóa ' + category.name"
+                      (click)="requestRemoveCategory(category.id, category.name)"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="admin-note">Chưa có danh mục dịch vụ nào.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    @if (activeTab() === 'regions') {
+      <section class="admin-panel">
+        <div class="config-panel-head">
+          <div>
+            <h2>Khu vực hoạt động</h2>
+            <p class="admin-note">Quản lý các khu dân cư hệ thống đang phục vụ.</p>
+          </div>
+          <button class="ant-btn ant-btn--primary" type="button" (click)="openRegionDrawer()">
+            + Thêm khu vực
+          </button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th scope="col">Tên khu vực</th>
+                <th scope="col">Địa chỉ</th>
+                <th scope="col">Số người dùng</th>
+                <th scope="col">Số NCC</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col"><span class="visually-hidden">Hành động</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (region of configStore.regions(); track region.id) {
+                <tr>
+                  <td>{{ region.name }}</td>
+                  <td>{{ region.city }}</td>
+                  <td>{{ region.userCount ?? 0 | number }}</td>
+                  <td>{{ region.providerCount ?? 0 | number }}</td>
+                  <td>
+                    <span
+                      class="admin-pill"
+                      [class.admin-pill--success]="region.status === 'active'"
+                    >
+                      {{ region.status === 'active' ? 'Hoạt động' : 'Thử nghiệm' }}
+                    </span>
+                  </td>
+                  <td class="config-row-actions">
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Sửa ' + region.name"
+                      (click)="openRegionDrawer(region)"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Đổi trạng thái ' + region.name"
+                      (click)="requestToggleRegion(region.id, region.name, region.status)"
+                    >
+                      <i class="bi bi-toggle2-on"></i>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="admin-note">Chưa có khu vực nào.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    @if (activeTab() === 'admins') {
+      <section class="admin-panel">
+        <div class="config-panel-head">
+          <div>
+            <h2>Tài khoản quản trị viên</h2>
+            <p class="admin-note">Danh sách tài khoản admin quản lý toàn hệ thống (đăng quyền).</p>
+          </div>
+          <button class="ant-btn ant-btn--primary" type="button" (click)="openAdminDrawer()">
+            + Thêm tài khoản
+          </button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th scope="col">Tên tài khoản</th>
+                <th scope="col">Email</th>
+                <th scope="col">Vai trò</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col"><span class="visually-hidden">Hành động</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (account of configStore.adminAccounts(); track account.id) {
+                <tr>
+                  <td>{{ account.displayName }}</td>
+                  <td>{{ account.email }}</td>
+                  <td>
+                    <span class="admin-pill">{{ roleLabel(account.role) }}</span>
+                  </td>
+                  <td>
+                    <span
+                      class="admin-pill"
+                      [class.admin-pill--success]="account.status === 'active'"
+                    >
+                      {{ account.status === 'active' ? 'Hoạt động' : 'Đã khóa' }}
+                    </span>
+                  </td>
+                  <td class="config-row-actions">
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Sửa ' + account.displayName"
+                      (click)="openAdminDrawer(account)"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Đổi trạng thái ' + account.displayName"
+                      (click)="requestToggleAdmin(account.id, account.displayName, account.status)"
+                    >
+                      <i class="bi bi-toggle2-on"></i>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="admin-note">Chưa có tài khoản quản trị nào.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    @if (activeTab() === 'thresholds') {
+      <section class="admin-panel config-panel--narrow">
+        <h2>Cấu hình ngưỡng cảnh báo</h2>
+        <p class="admin-note">Điều chỉnh tiêu chí xếp loại tài khoản uy tín thấp.</p>
+        <div class="field-grid field-grid--single">
+          <label>
+            <span>Điểm đánh giá tối thiểu</span>
+            <input
+              class="ant-field"
+              type="number"
+              min="0"
+              max="5"
+              step="0.1"
+              [value]="config.minRatingThreshold"
+              [attr.aria-invalid]="!!fieldError('minRatingThreshold')"
+              (input)="updateNumber('minRatingThreshold', numberValue($event))"
+            />
+            <small class="admin-note"
+              >Tài khoản có điểm trung bình dưới ngưỡng này sẽ bị cảnh báo.</small
+            >
+            @if (fieldError('minRatingThreshold'); as error) {
+              <small class="ant-error">{{ error }}</small>
+            }
+          </label>
+          <label>
+            <span>Số khiếu nại tối thiểu</span>
+            <input
+              class="ant-field"
+              type="number"
+              min="0"
+              step="1"
+              [value]="config.minComplaintsThreshold"
+              [attr.aria-invalid]="!!fieldError('minComplaintsThreshold')"
+              (input)="updateNumber('minComplaintsThreshold', numberValue($event))"
+            />
+            <small class="admin-note"
+              >Tài khoản phải có ít nhất {{ config.minComplaintsThreshold }} khiếu nại liên quan mới
+              bị đánh dấu.</small
+            >
+            @if (fieldError('minComplaintsThreshold'); as error) {
+              <small class="ant-error">{{ error }}</small>
+            }
+          </label>
+        </div>
+        <p class="config-callout">
+          Điều kiện kết hợp: Tài khoản phải đồng thời thỏa cả 2 điều kiện trên mới xuất hiện trong
+          danh sách cảnh báo.
+        </p>
+        <div class="admin-live" aria-live="polite" aria-atomic="true">
+          @if (configStore.saveState() === 'success') {
+            <p class="config-success">Đã lưu cấu hình.</p>
+          }
+          @if (configStore.restoreState() === 'success') {
+            <p class="config-success">Đã khôi phục cấu hình mặc định.</p>
+          }
+        </div>
+        <div class="admin-actions">
+          <button
+            class="ant-btn ant-btn--secondary"
+            type="button"
+            [disabled]="!dirty() || configStore.loading()"
+            (click)="requestConfirm('discard')"
+          >
+            Đặt lại mặc định
+          </button>
+          <button
+            class="ant-btn ant-btn--primary"
+            type="button"
+            [disabled]="!dirty() || configStore.loading()"
+            (click)="save()"
+          >
+            {{ configStore.saveState() === 'pending' ? 'Đang lưu…' : 'Lưu cấu hình' }}
+          </button>
+        </div>
+      </section>
+    }
+  } @else if (configStore.error()) {
+    <section class="admin-empty-state" role="alert">
+      <h2>Không thể tải cấu hình</h2>
+      <p>{{ configStore.error() }}</p>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="configStore.load()">
+        Thử lại
+      </button>
+    </section>
+  } @else {
+    <div class="admin-table-skeleton" aria-label="Đang tải cấu hình" aria-busy="true">
+      @for (row of [1, 2, 3, 4]; track row) {
+        <span></span>
+      }
+    </div>
+  }
+</section>
+
+<app-admin-confirm-dialog
+  [open]="!!confirmAction()"
+  [request]="confirmRequest()"
+  (confirmed)="confirm()"
+  (cancelled)="confirmAction.set(null)"
+/>
+
+<app-admin-confirm-dialog
+  [open]="!!itemConfirm()"
+  [request]="itemConfirmRequest() ?? { title: '', message: '', confirmLabel: '', cancelLabel: '' }"
+  (confirmed)="confirmItemAction()"
+  (cancelled)="itemConfirm.set(null)"
+/>
+
+<app-admin-drawer
+  [open]="categoryDrawerOpen()"
+  [title]="editingCategoryId() ? 'Sửa danh mục dịch vụ' : 'Thêm danh mục dịch vụ'"
+  (closed)="closeCategoryDrawer()"
+>
+  <form drawer-body class="config-form" (ngSubmit)="saveCategory()">
+    <label>
+      <span>Tên danh mục</span>
+      <input
+        class="ant-field"
+        [value]="categoryDraft().name"
+        (input)="updateCategoryDraft({ name: textValue($event) })"
+        required
+      />
+    </label>
+    <label>
+      <span>Số thuộc tính riêng</span>
+      <input
+        class="ant-field"
+        type="number"
+        min="0"
+        step="1"
+        [value]="categoryDraft().attributesCount"
+        (input)="updateCategoryDraft({ attributesCount: numberValue($event) })"
+      />
+    </label>
+    <label class="token-toggle">
+      <input
+        type="checkbox"
+        [checked]="categoryDraft().active"
+        (change)="updateCategoryDraft({ active: checkedValue($event) })"
+      />
+      Đang hoạt động
+    </label>
+    <div class="admin-actions">
+      <button class="ant-btn ant-btn--primary" type="submit">Lưu danh mục</button>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="closeCategoryDrawer()">
+        Hủy
+      </button>
+    </div>
+  </form>
+</app-admin-drawer>
+
+<app-admin-drawer
+  [open]="regionDrawerOpen()"
+  [title]="editingRegionId() ? 'Sửa khu vực' : 'Thêm khu vực'"
+  (closed)="closeRegionDrawer()"
+>
+  <form drawer-body class="config-form" (ngSubmit)="saveRegion()">
+    <label>
+      <span>Tên khu vực</span>
+      <input
+        class="ant-field"
+        [value]="regionDraft().name"
+        (input)="updateRegionDraft({ name: textValue($event) })"
+        required
+      />
+    </label>
+    <label>
+      <span>Địa chỉ / thành phố</span>
+      <input
+        class="ant-field"
+        [value]="regionDraft().city"
+        (input)="updateRegionDraft({ city: textValue($event) })"
+        required
+      />
+    </label>
+    <div class="admin-actions">
+      <button class="ant-btn ant-btn--primary" type="submit">Lưu khu vực</button>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="closeRegionDrawer()">
+        Hủy
+      </button>
+    </div>
+  </form>
+</app-admin-drawer>
+
+<app-admin-drawer
+  [open]="adminDrawerOpen()"
+  [title]="editingAdminId() ? 'Sửa tài khoản quản trị' : 'Thêm tài khoản quản trị'"
+  (closed)="closeAdminDrawer()"
+>
+  <form drawer-body class="config-form" (ngSubmit)="saveAdminAccount()">
+    <label>
+      <span>Họ tên</span>
+      <input
+        class="ant-field"
+        [value]="adminDraft().displayName"
+        (input)="updateAdminDraft({ displayName: textValue($event) })"
+        required
+      />
+    </label>
+    <label>
+      <span>Email</span>
+      <input
+        class="ant-field"
+        type="email"
+        [value]="adminDraft().email"
+        (input)="updateAdminDraft({ email: textValue($event) })"
+        required
+        [disabled]="!!editingAdminId()"
+      />
+    </label>
+    <label>
+      <span>Vai trò</span>
+      <select class="ant-field" [value]="adminDraft().role" (change)="updateAdminRole($event)">
+        @for (role of adminRoles; track role) {
+          <option [value]="role">{{ roleLabel(role) }}</option>
+        }
+      </select>
+    </label>
+    <div class="admin-actions">
+      <button class="ant-btn ant-btn--primary" type="submit">Lưu tài khoản</button>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="closeAdminDrawer()">
+        Hủy
+      </button>
+    </div>
+  </form>
+</app-admin-drawer>
+
+<app-admin-drawer
+  [open]="boostTierDrawerOpen()"
+  [title]="editingBoostTierId() ? 'Sửa mức giá đẩy bài' : 'Thêm mức giá đẩy bài'"
+  (closed)="closeBoostTierDrawer()"
+>
+  <form drawer-body class="config-form" (ngSubmit)="saveBoostTier()">
+    <label>
+      <span>Thời gian (ngày)</span>
+      <input
+        class="ant-field"
+        type="number"
+        min="1"
+        step="1"
+        [value]="boostTierDraft().durationDays"
+        (input)="updateBoostTierDraft({ durationDays: numberValue($event) })"
+        required
+      />
+    </label>
+    <label>
+      <span>Số Xu</span>
+      <input
+        class="ant-field"
+        type="number"
+        min="0"
+        step="1"
+        [value]="boostTierDraft().tokenCost"
+        (input)="updateBoostTierDraft({ tokenCost: numberValue($event) })"
+        required
+      />
+    </label>
+    <label>
+      <span>Quy đổi VNĐ</span>
+      <input
+        class="ant-field"
+        type="number"
+        min="0"
+        step="1000"
+        [value]="boostTierDraft().vndValue"
+        (input)="updateBoostTierDraft({ vndValue: numberValue($event) })"
+        required
+      />
+    </label>
+    <div class="admin-actions">
+      <button class="ant-btn ant-btn--primary" type="submit">Lưu mức giá</button>
+      @if (editingBoostTierId(); as id) {
+        <button
+          class="ant-btn ant-btn--danger"
+          type="button"
+          (click)="requestRemoveBoostTier(id, boostTierDraft().durationDays + ' ngày')"
+        >
+          Xóa mức giá
+        </button>
+      }
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="closeBoostTierDrawer()">
+        Hủy
+      </button>
+    </div>
+  </form>
+</app-admin-drawer>
+
+<app-admin-drawer
+  [open]="promotionPlanDrawerOpen()"
+  [title]="editingPromotionPlanId() ? 'Sửa gói quảng bá' : 'Tạo gói quảng bá'"
+  (closed)="closePromotionPlanDrawer()"
+>
+  <form drawer-body class="config-form" (ngSubmit)="savePromotionPlan()">
+    <label>
+      <span>Tên gói</span>
+      <input
+        class="ant-field"
+        [value]="promotionPlanDraft().name"
+        (input)="updatePromotionPlanDraft({ name: textValue($event) })"
+        required
+      />
+    </label>
+    <label>
+      <span>Giá / tháng (VNĐ)</span>
+      <input
+        class="ant-field"
+        type="number"
+        min="0"
+        step="1000"
+        [value]="promotionPlanDraft().pricePerMonth"
+        (input)="updatePromotionPlanDraft({ pricePerMonth: numberValue($event) })"
+        required
+      />
+    </label>
+    <div class="admin-actions">
+      <button class="ant-btn ant-btn--primary" type="submit">Lưu gói quảng bá</button>
+      <button
+        class="ant-btn ant-btn--secondary"
+        type="button"
+        (click)="closePromotionPlanDrawer()"
+      >
+        Hủy
+      </button>
+    </div>
+  </form>
+</app-admin-drawer>

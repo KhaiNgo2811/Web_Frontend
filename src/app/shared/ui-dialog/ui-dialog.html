@@ -1,0 +1,17 @@
+<div class="dialog-backdrop" (click)="closed.emit()" aria-hidden="true"></div>
+<section
+  class="dialog-panel"
+  [style.width.px]="width()"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="dialog-title"
+>
+  <header>
+    <h2 id="dialog-title">{{ title() }}</h2>
+    <button type="button" class="dialog-close" aria-label="Đóng" (click)="closed.emit()">
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
+  </header>
+  <div class="dialog-body"><ng-content /></div>
+  <footer><ng-content select="[dialog-actions]" /></footer>
+</section>

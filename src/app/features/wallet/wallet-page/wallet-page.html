@@ -1,0 +1,395 @@
+<main class="wallet-page">
+  <div class="ant-container wallet-shell">
+    <div class="wallet-heading">
+      <div>
+        <span class="ant-kicker">Ví thành viên</span>
+        <h1>Ví Ant Xu</h1>
+        <p>Tích lũy từ hoạt động cộng đồng, dùng Xu để bài đăng được chú ý hơn.</p>
+      </div>
+    </div>
+
+    <div class="wallet-live" aria-live="polite" aria-atomic="true">
+      @if (wallet.feedback(); as feedback) {
+        <button
+          type="button"
+          class="wallet-notice"
+          [class.wallet-notice--error]="feedback.type === 'error'"
+          (click)="wallet.clearFeedback()"
+        >
+          <i
+            class="bi"
+            [class.bi-check-circle-fill]="feedback.type === 'success'"
+            [class.bi-exclamation-circle-fill]="feedback.type === 'error'"
+            aria-hidden="true"
+          ></i>
+          <span>{{ feedback.message }}</span>
+          <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
+      } @else if (wallet.error(); as error) {
+        <div class="wallet-notice wallet-notice--error" role="alert">
+          <i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i><span>{{ error }}</span>
+        </div>
+      }
+    </div>
+
+    @if (wallet.loading() && !wallet.summary()) {
+      <div class="wallet-loading" role="status">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        Đang mở ví của bạn...
+      </div>
+    } @else if (wallet.summary(); as summary) {
+      <section class="balance-band" aria-labelledby="balance-title">
+        <div class="balance-band__main">
+          <div class="coin-mark" aria-hidden="true">A</div>
+          <div>
+            <span id="balance-title">Số dư khả dụng</span>
+            <strong>{{ summary.balance | number }} <small>Xu</small></strong>
+          </div>
+        </div>
+        <dl class="balance-band__stats">
+          <div>
+            <dt>Kiếm hôm nay</dt>
+            <dd>+{{ summary.todayEarnings | number }} Xu</dd>
+          </div>
+          <div>
+            <dt>Chuỗi điểm danh</dt>
+            <dd>{{ summary.checkInStreak }} ngày</dd>
+          </div>
+          <div>
+            <dt>Video hôm nay</dt>
+            <dd>{{ summary.adsWatchedToday }}/{{ summary.adDailyLimit }}</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="wallet-section" aria-labelledby="earn-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="earn-title">Kiếm Xu mỗi ngày</h2>
+          </div>
+          <p>Hoàn thành việc nhỏ, tích lũy cho lần quảng bá tiếp theo.</p>
+        </div>
+        @if (checkInActivity(); as activity) {
+          <article class="checkin-card">
+            <div class="checkin-card__copy">
+              <span class="feature-icon"><i class="bi bi-gift" aria-hidden="true"></i></span>
+              <div>
+                <h3>Điểm danh hằng ngày</h3>
+                <p>Đi đủ 7 ngày để mở phần thưởng lớn hơn.</p>
+              </div>
+            </div>
+            <div class="checkin-days" role="list" aria-label="Chuỗi điểm danh 7 ngày">
+              @for (day of checkInDays(); track day.day) {
+                <button
+                  type="button"
+                  class="checkin-day"
+                  [class.checkin-day--completed]="day.state === 'completed'"
+                  [class.checkin-day--today]="day.state === 'today'"
+                  [class.checkin-day--opened]="activity.claimed && day.state === 'completed'"
+                  [disabled]="day.state !== 'today' || activityDisabled(activity)"
+                  (click)="claimCheckIn()"
+                  role="listitem"
+                >
+                  <span>Ngày {{ day.day }}</span>
+                  <strong>+{{ day.reward }} Xu</strong>
+                  <i
+                    class="bi"
+                    [class.bi-gift-fill]="day.state !== 'completed'"
+                    [class.bi-box2-heart-fill]="day.state === 'completed'"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              }
+            </div>
+          </article>
+        }
+        <div class="earning-grid">
+          @for (activity of earningActions(); track activity.id) {
+            <article class="earning-row">
+              <span class="feature-icon"
+                ><i class="bi {{ earningIcon(activity.kind) }}" aria-hidden="true"></i
+              ></span>
+              <div class="earning-row__copy">
+                <h3>{{ activity.title }}</h3>
+                <p>{{ activity.description }}</p>
+                @if (activity.target) {
+                  <div
+                    class="activity-progress"
+                    aria-label="Tiến độ {{ activity.progress || 0 }} trên {{ activity.target }}"
+                  >
+                    <span
+                      [style.width.%]="((activity.progress || 0) / activity.target) * 100"
+                    ></span>
+                  </div>
+                }
+              </div>
+              <strong class="reward">+{{ activity.reward }} Xu</strong>
+              <button
+                type="button"
+                class="ant-btn ant-btn--secondary"
+                [disabled]="activityDisabled(activity)"
+                (click)="openActivity(activity)"
+              >
+                {{ activityAction(activity) }}
+              </button>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="wallet-section" aria-labelledby="packages-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="packages-title">Nạp thêm Ant Xu</h2>
+          </div>
+        </div>
+        <div class="package-grid">
+          @for (item of summary.tokenPackages; track item.id; let index = $index) {
+            <article class="package-card" [class.package-card--featured]="index === 1">
+              @if (index === 1) {
+                <span class="package-badge">Phổ biến</span>
+              }
+              <span class="package-card__name">{{ item.name }}</span>
+              <h3>
+                {{ item.tokens + (item.tokens * item.bonusPct) / 100 | number }} <small>Xu</small>
+              </h3>
+              @if (item.bonusPct) {
+                <p>Tặng thêm {{ item.bonusPct }}% Xu</p>
+              } @else {
+                <p>Gói khởi đầu linh hoạt</p>
+              }
+              <strong>{{ item.price | number }}đ</strong>
+              <button
+                type="button"
+                class="ant-btn"
+                [class.ant-btn--primary]="index === 1"
+                [class.ant-btn--secondary]="index !== 1"
+                [disabled]="!!wallet.pendingAction()"
+                (click)="openPackage(item)"
+              >
+                Chọn gói
+              </button>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="promotion-workspace" aria-labelledby="promotion-title">
+        <div class="section-heading section-heading--light">
+          <div>
+            <h2 id="promotion-title">Quảng bá hiệu quả</h2>
+          </div>
+          <p>Chọn đúng công cụ cho bài đăng hoặc hồ sơ dịch vụ.</p>
+        </div>
+        <div class="promotion-grid">
+          <div class="boost-builder">
+            <div class="workspace-title">
+              <span class="feature-icon"
+                ><i class="bi bi-rocket-takeoff" aria-hidden="true"></i
+              ></span>
+              <div>
+                <h3>Đẩy bài đăng</h3>
+                <p>Đưa bài lên vị trí ưu tiên trong thời gian đã chọn.</p>
+              </div>
+            </div>
+            <label class="ant-label" for="boost-post">Bài đăng của bạn</label>
+            <select
+              id="boost-post"
+              class="ant-field"
+              [value]="wallet.selectedPostId() || ''"
+              (change)="wallet.selectPost($any($event.target).value)"
+            >
+              <option value="" disabled>Chọn bài cần đẩy</option>
+              @for (post of summary.ownedPosts; track post.id) {
+                <option [value]="post.id">{{ post.title }}</option>
+              }
+            </select>
+            <span class="ant-label duration-label">Thời gian ưu tiên</span>
+            <div class="duration-options" role="group" aria-label="Chọn thời gian đẩy bài">
+              @for (option of boostOptions; track option.days) {
+                <button
+                  type="button"
+                  [class.active]="wallet.selectedBoostDays() === option.days"
+                  (click)="wallet.selectBoostDays(option.days)"
+                >
+                  <strong>{{ option.label }}</strong
+                  ><span>{{ option.cost }} Xu</span>
+                </button>
+              }
+            </div>
+            <div class="boost-total">
+              <span>Chi phí kích hoạt</span><strong>{{ selectedBoost().cost }} Xu</strong>
+            </div>
+            <button
+              type="button"
+              class="ant-btn ant-btn--primary boost-submit"
+              [disabled]="
+                !wallet.selectedPostId() ||
+                !!wallet.pendingAction() ||
+                summary.balance < selectedBoost().cost
+              "
+              (click)="openBoost()"
+            >
+              <i class="bi bi-rocket-takeoff" aria-hidden="true"></i> Đẩy bài ngay
+            </button>
+            @if (summary.balance < selectedBoost().cost) {
+              <p class="inline-warning">
+                <i class="bi bi-info-circle" aria-hidden="true"></i> Số dư không đủ cho lựa chọn
+                này.
+              </p>
+            }
+          </div>
+
+          <div class="plan-list">
+            <div class="workspace-title">
+              <span class="feature-icon"><i class="bi bi-megaphone" aria-hidden="true"></i></span>
+              <div>
+                <h3>Quảng bá nhà cung cấp</h3>
+                <p>Tăng độ tin cậy và phạm vi xuất hiện của hồ sơ.</p>
+              </div>
+            </div>
+            @for (plan of summary.providerPlans; track plan.id) {
+              <article class="plan-row" [class.plan-row--active]="currentPlanId() === plan.id">
+                <div>
+                  <span>{{ plan.name }}</span>
+                  <h4>{{ plan.priceTokens | number }} Xu</h4>
+                  <p>{{ plan.description }}</p>
+                </div>
+                <ul>
+                  @for (feature of plan.features; track feature) {
+                    <li><i class="bi bi-check2" aria-hidden="true"></i>{{ feature }}</li>
+                  }
+                </ul>
+                <button
+                  type="button"
+                  class="ant-btn ant-btn--secondary"
+                  [disabled]="
+                    currentPlanId() === plan.id ||
+                    !!wallet.pendingAction() ||
+                    summary.balance < plan.priceTokens
+                  "
+                  (click)="openPlan(plan)"
+                >
+                  {{ currentPlanId() === plan.id ? 'Đang sử dụng' : 'Chọn gói' }}
+                </button>
+              </article>
+            }
+          </div>
+        </div>
+      </section>
+    }
+  </div>
+</main>
+
+@if (confirmation(); as dialog) {
+  <app-ui-dialog [title]="confirmationTitle()" [width]="520" (closed)="closeConfirmation()">
+    <div class="confirmation-copy">
+      @if (dialog.kind === 'package') {
+        <div class="confirmation-coin"><i class="bi bi-wallet2" aria-hidden="true"></i></div>
+        <p>
+          Bạn sẽ nhận
+          <strong
+            >{{
+              dialog.item.tokens + (dialog.item.tokens * dialog.item.bonusPct) / 100 | number
+            }}
+            Xu</strong
+          >
+          từ gói {{ dialog.item.name }}.
+        </p>
+        <span>Giá gói: {{ dialog.item.price | number }}đ</span>
+      }
+      @if (dialog.kind === 'boost') {
+        <div class="confirmation-coin"><i class="bi bi-rocket-takeoff" aria-hidden="true"></i></div>
+        <p>
+          Kích hoạt ưu tiên bài đăng trong <strong>{{ dialog.days }} ngày</strong>.
+        </p>
+        <span>{{ dialog.cost }} Xu sẽ được trừ ngay khỏi ví.</span>
+      }
+      @if (dialog.kind === 'plan') {
+        <div class="confirmation-coin"><i class="bi bi-megaphone" aria-hidden="true"></i></div>
+        <p>
+          Chuyển sang gói <strong>{{ dialog.item.name }}</strong> cho hồ sơ nhà cung cấp.
+        </p>
+        <span>{{ dialog.item.priceTokens | number }} Xu sẽ được trừ khỏi ví.</span>
+      }
+      @if (dialog.kind === 'video') {
+        <div class="video-reward">
+          <div class="video-frame">
+            <i class="bi bi-play-fill" aria-hidden="true"></i>
+          </div>
+          <p>
+            Xem video ngắn để nhận <strong>{{ dialog.item.reward }} Xu</strong>.
+          </p>
+          <span>Còn {{ dialog.item.remainingToday || 0 }} lượt hôm nay.</span>
+        </div>
+      }
+      @if (dialog.kind === 'referral') {
+        <div class="referral-dialog">
+          <div class="confirmation-coin"><i class="bi bi-person-plus" aria-hidden="true"></i></div>
+          <p>
+            Mời bạn bè tham gia AntGo để nhận <strong>{{ dialog.item.reward }} Xu</strong>.
+          </p>
+          <div class="referral-copy">
+            <input type="text" [value]="referralLink" readonly aria-label="Link giới thiệu" />
+            <button type="button" (click)="copyReferralLink()" aria-label="Copy link giới thiệu">
+              <i class="bi bi-copy" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="share-row" aria-label="Kênh chia sẻ">
+            <a
+              [href]="'https://www.facebook.com/sharer/sharer.php?u=' + referralLink"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Chia sẻ Facebook"
+              ><i class="bi bi-facebook" aria-hidden="true"></i
+            ></a>
+            <a
+              [href]="'mailto:?subject=Mời bạn tham gia AntGo&body=' + referralLink"
+              aria-label="Chia sẻ Email"
+              ><i class="bi bi-envelope" aria-hidden="true"></i
+            ></a>
+            <a [href]="'sms:?body=' + referralLink" aria-label="Chia sẻ SMS"
+              ><i class="bi bi-chat-dots" aria-hidden="true"></i
+            ></a>
+            <button type="button" (click)="copyReferralLink()" aria-label="Copy link">
+              <i class="bi bi-link-45deg" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+    <div dialog-actions>
+      <button type="button" class="ant-btn ant-btn--secondary" (click)="closeConfirmation()">
+        Huỷ
+      </button>
+      @if (dialog.kind === 'video') {
+        <button
+          type="button"
+          class="ant-btn ant-btn--primary"
+          [disabled]="!!wallet.pendingAction() || activityDisabled(dialog.item)"
+          (click)="claimVideo(dialog.item)"
+        >
+          Nhận Xu
+        </button>
+      } @else if (dialog.kind === 'referral') {
+        <button
+          type="button"
+          class="ant-btn ant-btn--primary"
+          [disabled]="!!wallet.pendingAction() || activityDisabled(dialog.item)"
+          (click)="claimReferral(dialog.item)"
+        >
+          Nhận thưởng
+        </button>
+      } @else {
+        <button
+          type="button"
+          class="ant-btn ant-btn--primary"
+          [disabled]="!!wallet.pendingAction()"
+          (click)="confirm()"
+        >
+          Xác nhận
+        </button>
+      }
+    </div>
+  </app-ui-dialog>
+}
