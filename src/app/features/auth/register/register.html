@@ -260,6 +260,10 @@
               <p class="ant-error terms-error">Bạn cần đồng ý trước khi tiếp tục.</p>
             }
 
+            @if (detailsError()) {
+              <p class="ant-error" role="alert">{{ detailsError() }}</p>
+            }
+
             <button class="btn-submit" type="submit">Tiếp theo</button>
           </form>
         </div>

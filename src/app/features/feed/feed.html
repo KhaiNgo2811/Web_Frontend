@@ -18,8 +18,40 @@
             [value]="search()"
             (input)="updateSearch($event)"
           />
+          @if (voiceSearchSupported()) {
+            <button
+              type="button"
+              class="hero__search-icon-btn"
+              [class.active]="listening()"
+              [attr.aria-label]="listening() ? 'Đang nghe, nhấn để dừng' : 'Tìm kiếm bằng giọng nói'"
+              (click)="toggleVoiceSearch()"
+            >
+              <i class="bi" [class.bi-mic-fill]="!listening()" [class.bi-mic-mute-fill]="listening()" aria-hidden="true"></i>
+            </button>
+          }
+          <label class="hero__search-icon-btn" aria-label="Tìm kiếm bằng hình ảnh">
+            <i class="bi bi-camera-fill" aria-hidden="true"></i>
+            <input type="file" accept="image/*" hidden (change)="onImageSearchSelected($event)" />
+          </label>
           <button type="button" class="ant-btn ant-btn--primary">Tìm kiếm</button>
         </div>
+
+        @if (imageSearching() || imageSearchError() || imageSearchResults()) {
+          <div class="hero__image-search-panel">
+            @if (imageSearching()) {
+              <p><i class="bi bi-hourglass-split" aria-hidden="true"></i> Đang tìm bài đăng có hình ảnh tương tự...</p>
+            } @else if (imageSearchError()) {
+              <p class="hero__image-search-error">{{ imageSearchError() }}</p>
+            } @else if (imageSearchResults()?.length === 0) {
+              <p>Không tìm thấy bài đăng nào có hình ảnh tương tự.</p>
+            } @else {
+              <p>
+                Tìm thấy <strong>{{ imageSearchResults()?.length }}</strong> bài đăng có hình ảnh tương tự
+                <button type="button" class="hero__image-search-clear" (click)="clearImageSearch()">Đóng</button>
+              </p>
+            }
+          </div>
+        }
 
         <div class="hero__proof" aria-label="Thống kê cộng đồng">
           <div class="hero__faces" aria-hidden="true">
@@ -77,6 +109,23 @@
       </div>
     </div>
 
+    @if (imageSearchResults(); as results) {
+      @if (results.length) {
+        <div class="marketplace__image-results">
+          <div class="marketplace__result-line">
+            <p><strong>{{ results.length }}</strong> bài đăng có hình ảnh tương tự</p>
+            <button type="button" class="hero__image-search-clear" (click)="clearImageSearch()">
+              Xem lại toàn bộ bài đăng
+            </button>
+          </div>
+          <div class="marketplace__grid">
+            @for (post of results; track post.id) {
+              <app-post-card [post]="post" (opened)="openDetails($event)" />
+            }
+          </div>
+        </div>
+      }
+    } @else {
     <div class="marketplace__filters">
       <div class="marketplace__categories" aria-label="Lọc theo danh mục">
         @for (category of categories; track category.value) {
@@ -138,6 +187,7 @@
           Xóa bộ lọc
         </button>
       </app-empty-state>
+    }
     }
   </section>
 

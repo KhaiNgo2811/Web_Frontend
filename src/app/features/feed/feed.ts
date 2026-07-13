@@ -8,11 +8,25 @@ import type {
   ServiceCategory,
   User,
 } from '../../core/models';
+import { ImageSearchService } from '../../core/data/image-search.service';
 import { MarketplaceStore } from '../../core/stores';
 import { EmptyState } from '../../shared/empty-state/empty-state';
 import { PostCard } from '../../shared/post-card/post-card';
 import { AcceptOrderDialog } from './accept-order-dialog/accept-order-dialog';
 import { PostDetailPanel } from './post-detail-panel/post-detail-panel';
+
+// Chrome/Edge expose SpeechRecognition under a vendor-prefixed name; not in lib.dom.d.ts.
+interface SpeechRecognitionLike extends EventTarget {
+  lang: string;
+  interimResults: boolean;
+  maxAlternatives: number;
+  start(): void;
+  stop(): void;
+  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+}
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
 
 type FeedType = PostType | 'all';
 type FeedCategory = ServiceCategory | 'all';
@@ -35,6 +49,8 @@ const CATEGORY_FILTERS: readonly { value: FeedCategory; icon: string; label: str
 })
 export class Feed {
   private readonly marketplace = inject(MarketplaceStore);
+  private readonly imageSearch = inject(ImageSearchService);
+  private recognition: SpeechRecognitionLike | null = null;
 
   readonly sourcePosts = input<Post[] | null>(null);
   readonly sourceUsers = input<User[] | null>(null);
@@ -51,6 +67,15 @@ export class Feed {
   protected readonly pendingPost = signal<Post | null>(null);
   protected readonly successMessage = signal('');
   protected readonly loading = this.marketplace.loading;
+
+  protected readonly voiceSearchSupported = signal(
+    typeof window !== 'undefined' &&
+      Boolean((window as unknown as Record<string, unknown>)['SpeechRecognition'] ?? (window as unknown as Record<string, unknown>)['webkitSpeechRecognition']),
+  );
+  protected readonly listening = signal(false);
+  protected readonly imageSearching = signal(false);
+  protected readonly imageSearchError = signal('');
+  protected readonly imageSearchResults = signal<Post[] | null>(null);
 
   private readonly posts = computed(() => this.sourcePosts() ?? this.marketplace.posts());
   private readonly users = computed(() => this.sourceUsers() ?? this.marketplace.users());
@@ -112,6 +137,59 @@ export class Feed {
 
   protected updateSort(event: Event): void {
     this.setSort((event.target as HTMLSelectElement).value as PostSort);
+  }
+
+  protected toggleVoiceSearch(): void {
+    if (this.listening()) {
+      this.recognition?.stop();
+      return;
+    }
+    const Ctor = ((window as unknown as Record<string, unknown>)['SpeechRecognition'] ??
+      (window as unknown as Record<string, unknown>)['webkitSpeechRecognition']) as
+      | SpeechRecognitionCtor
+      | undefined;
+    if (!Ctor) return;
+
+    const recognition = new Ctor();
+    recognition.lang = 'vi-VN';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event) => {
+      const transcript = event.results[0]?.[0]?.transcript;
+      if (transcript) this.setSearch(transcript);
+    };
+    recognition.onerror = () => this.listening.set(false);
+    recognition.onend = () => this.listening.set(false);
+
+    this.recognition = recognition;
+    this.listening.set(true);
+    recognition.start();
+  }
+
+  protected onImageSearchSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    (event.target as HTMLInputElement).value = '';
+    if (!file) return;
+
+    this.imageSearching.set(true);
+    this.imageSearchError.set('');
+    this.imageSearch.searchByImage(file).subscribe({
+      next: (posts) => {
+        this.imageSearchResults.set(posts);
+        this.imageSearching.set(false);
+      },
+      error: (error: unknown) => {
+        this.imageSearchError.set(
+          error instanceof Error ? error.message : 'Không thể tìm kiếm theo ảnh lúc này.',
+        );
+        this.imageSearching.set(false);
+      },
+    });
+  }
+
+  protected clearImageSearch(): void {
+    this.imageSearchResults.set(null);
+    this.imageSearchError.set('');
   }
 
   protected userFor(post: Post | null): User | undefined {
