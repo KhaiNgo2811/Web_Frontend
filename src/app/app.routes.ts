@@ -94,6 +94,13 @@ export const routes: Routes = [
           import('./features/admin/moderation/admin-moderation').then((m) => m.AdminModeration),
       },
       {
+        path: 'reviews',
+        title: 'Đánh giá & Uy tín | AntGo',
+        data: { adminTitle: 'Đánh giá & Uy tín' },
+        loadComponent: () =>
+          import('./features/admin/reviews/admin-reviews').then((m) => m.AdminReviews),
+      },
+      {
         path: 'complaints',
         title: 'Xử lý khiếu nại | AntGo',
         data: { adminTitle: 'Xử lý khiếu nại' },

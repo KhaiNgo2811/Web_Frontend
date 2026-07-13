@@ -231,7 +231,7 @@ export const DEMO_USERS: User[] = [
 
 export const DEMO_AUTH_ACCOUNTS: AuthAccount[] = [
   // Admin accounts
-  { id: 'auth-admin-seed', userId: 'admin-seed', identifiers: ['0900000000', 'admin@antgo.vn'], password: 'AntGoAdmin123!', provider: 'password' },
+  { id: 'auth-admin-seed', userId: 'admin-seed', identifiers: ['0900000000', 'admin@antgo.vn'], password: '1', provider: 'password' },
   { id: 'auth-admin-main', userId: 'admin-main', identifiers: ['0900000004', 'admin1@antgo.vn'], password: 'Admin123!', provider: 'password' },
   { id: 'auth-admin-reviewer', userId: 'admin-reviewer', identifiers: ['0900000001', 'reviewer@antgo.vn'], password: 'Reviewer123!', provider: 'password' },
   { id: 'auth-admin-support', userId: 'admin-support', identifiers: ['0900000002', 'support@antgo.vn'], password: 'Support123!', provider: 'password' },

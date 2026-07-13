@@ -8,173 +8,240 @@
 
   @if (form(); as config) {
     @if (activeTab() === 'pricing') {
-      <div class="config-grid">
-        <section class="admin-panel">
-          <h2>Thông số vận hành</h2>
-          <div class="field-grid">
-            <label>
-              <span>Phí nền tảng (%)</span>
+      <section class="admin-panel">
+        <div class="config-panel-head">
+          <div>
+            <h2>Giá đẩy bài đăng</h2>
+            <p class="admin-note">Áp dụng cho toàn bộ nhà cung cấp và người đăng yêu cầu.</p>
+          </div>
+          <button class="ant-btn ant-btn--primary" type="button" (click)="openBoostTierDrawer()">
+            + Thêm mức giá
+          </button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th scope="col">Thời gian</th>
+                <th scope="col">Số Xu</th>
+                <th scope="col">Quy đổi VNĐ</th>
+                <th scope="col"><span class="visually-hidden">Hành động</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (tier of configStore.postBoostTiers(); track tier.id) {
+                <tr>
+                  <td>{{ tier.durationDays }} ngày</td>
+                  <td>{{ tier.tokenCost | number }} Xu</td>
+                  <td>{{ tier.vndValue | number }}đ</td>
+                  <td class="config-row-actions">
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Sửa mức giá ' + tier.durationDays + ' ngày'"
+                      (click)="openBoostTierDrawer(tier)"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="admin-note">Chưa có mức giá đẩy bài nào.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-panel">
+        <div class="config-panel-head">
+          <div>
+            <h2>Gói quảng bá hồ sơ nhà cung cấp</h2>
+            <p class="admin-note">Gói định kỳ theo tháng.</p>
+          </div>
+          <button
+            class="ant-btn ant-btn--primary"
+            type="button"
+            (click)="openPromotionPlanDrawer()"
+          >
+            + Tạo gói mới
+          </button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th scope="col">Gói</th>
+                <th scope="col">Giá / tháng</th>
+                <th scope="col">NCC đang dùng</th>
+                <th scope="col">Trạng thái</th>
+                <th scope="col"><span class="visually-hidden">Hành động</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (plan of configStore.providerPromotionPlans(); track plan.id) {
+                <tr>
+                  <td>{{ plan.name }}</td>
+                  <td>{{ plan.pricePerMonth | number }}đ</td>
+                  <td>{{ plan.activeSubscriberCount ?? 0 | number }}</td>
+                  <td>
+                    <span class="admin-pill" [class.admin-pill--success]="plan.status === 'selling'">
+                      {{ plan.status === 'selling' ? 'Đang bán' : 'Ngừng bán' }}
+                    </span>
+                  </td>
+                  <td class="config-row-actions">
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Sửa ' + plan.name"
+                      (click)="openPromotionPlanDrawer(plan)"
+                    >
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button
+                      class="ant-icon-btn ant-icon-btn--neutral"
+                      type="button"
+                      [attr.aria-label]="'Đổi trạng thái ' + plan.name"
+                      (click)="togglePromotionPlanStatus(plan.id, plan.status)"
+                    >
+                      <i class="bi bi-toggle2-on"></i>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="5" class="admin-note">Chưa có gói quảng bá nào.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="admin-panel config-panel--narrow">
+        <h2>Cấu hình quy đổi Xu</h2>
+        <p class="admin-note">Tỷ lệ và giới hạn ứng dụng toàn hệ thống</p>
+        <div class="conversion-grid">
+          <div class="conversion-card">
+            <h3>Tỷ lệ quy đổi</h3>
+            <div class="conversion-rate">
+              <span>1.000đ =</span>
+              <input
+                class="ant-field"
+                type="number"
+                min="1"
+                step="1"
+                [value]="config.tokenConversion.xuPer1000Vnd"
+                (input)="updateTokenConversion('xuPer1000Vnd', numberValue($event))"
+              />
+              <span>Xu</span>
+            </div>
+            <small class="admin-note">Thay đổi ảnh hưởng toàn bộ gói nạp Xu</small>
+          </div>
+          <div class="conversion-card">
+            <h3>Giới hạn xem quảng cáo kiếm Xu</h3>
+            <label class="conversion-field">
+              <span>Lượt xem tối đa/ngày</span>
               <input
                 class="ant-field"
                 type="number"
                 min="0"
-                max="30"
-                step="0.1"
-                [value]="config.platformFeePct"
-                [attr.aria-invalid]="!!fieldError('platformFeePct')"
-                aria-describedby="platform-fee-error"
-                (input)="updateNumber('platformFeePct', numberValue($event))"
+                step="1"
+                [value]="config.tokenConversion.maxAdViewsPerDay"
+                (input)="updateTokenConversion('maxAdViewsPerDay', numberValue($event))"
               />
-              @if (fieldError('platformFeePct'); as error) {
-                <small id="platform-fee-error" class="ant-error">{{ error }}</small>
-              }
             </label>
-            <label>
-              <span>Phí đảm bảo (%)</span>
+            <label class="conversion-field">
+              <span>Xu kiếm/lượt xem</span>
               <input
                 class="ant-field"
                 type="number"
                 min="0"
-                max="10"
-                step="0.1"
-                [value]="config.escrowFeePct"
-                [attr.aria-invalid]="!!fieldError('escrowFeePct')"
-                (input)="updateNumber('escrowFeePct', numberValue($event))"
+                step="1"
+                [value]="config.tokenConversion.tokensPerAdView"
+                (input)="updateTokenConversion('tokensPerAdView', numberValue($event))"
               />
-              @if (fieldError('escrowFeePct'); as error) {
-                <small class="ant-error">{{ error }}</small>
-              }
             </label>
-            <label>
-              <span>Thời hạn bài đăng (giờ)</span>
+          </div>
+        </div>
+        @if (fieldError('tokenConversion'); as error) {
+          <p class="ant-error">{{ error }}</p>
+        }
+      </section>
+
+      <section class="admin-panel">
+        <h2>Gói token</h2>
+        <p class="admin-note">Gói nạp Xu người dùng có thể mua trong ví.</p>
+        <div class="token-head" aria-hidden="true">
+          <span>Tên gói</span><span>Số token</span><span>Giá</span><span>Thưởng (%)</span
+          ><span>Trạng thái</span><span>Thao tác</span>
+        </div>
+        <div class="token-list">
+          @for (pack of config.tokenPackages; track pack.id) {
+            <article class="token-row">
+              <input
+                class="ant-field"
+                [attr.aria-label]="'Tên ' + pack.name"
+                [value]="pack.name"
+                (input)="updatePackage(pack.id, { name: textValue($event) })"
+              />
               <input
                 class="ant-field"
                 type="number"
                 min="1"
                 step="1"
-                [value]="config.postDurationHours"
-                (input)="updateNumber('postDurationHours', numberValue($event))"
+                [attr.aria-label]="'Số token của ' + pack.name"
+                [value]="pack.tokens"
+                (input)="updatePackage(pack.id, { tokens: numberValue($event) })"
               />
-              @if (fieldError('postDurationHours'); as error) {
-                <small class="ant-error">{{ error }}</small>
-              }
-            </label>
-            <label>
-              <span>Thời hạn ưu tiên (giờ)</span>
-              <input
-                class="ant-field"
-                type="number"
-                min="1"
-                step="1"
-                [value]="config.priorityDurationHours"
-                (input)="updateNumber('priorityDurationHours', numberValue($event))"
-              />
-              @if (fieldError('priorityDurationHours'); as error) {
-                <small class="ant-error">{{ error }}</small>
-              }
-            </label>
-            <label>
-              <span>Tự hoàn tất (giờ)</span>
-              <input
-                class="ant-field"
-                type="number"
-                min="1"
-                step="1"
-                [value]="config.autoCompleteHours"
-                (input)="updateNumber('autoCompleteHours', numberValue($event))"
-              />
-              @if (fieldError('autoCompleteHours'); as error) {
-                <small class="ant-error">{{ error }}</small>
-              }
-            </label>
-            <label>
-              <span>Rút tiền tối thiểu</span>
               <input
                 class="ant-field"
                 type="number"
                 min="0"
                 step="1000"
-                [value]="config.minWithdrawalAmount"
-                (input)="updateNumber('minWithdrawalAmount', numberValue($event))"
+                [attr.aria-label]="'Giá của ' + pack.name"
+                [value]="pack.price"
+                (input)="updatePackage(pack.id, { price: numberValue($event) })"
               />
-              @if (fieldError('minWithdrawalAmount'); as error) {
-                <small class="ant-error">{{ error }}</small>
-              }
-            </label>
-          </div>
-        </section>
-
-        <section class="admin-panel">
-          <h2>Gói token</h2>
-          <div class="token-head" aria-hidden="true">
-            <span>Tên gói</span><span>Số token</span><span>Giá</span><span>Thưởng (%)</span
-            ><span>Trạng thái</span><span>Thao tác</span>
-          </div>
-          <div class="token-list">
-            @for (pack of config.tokenPackages; track pack.id) {
-              <article class="token-row">
+              <input
+                class="ant-field"
+                type="number"
+                min="0"
+                max="100"
+                step="1"
+                [attr.aria-label]="'Phần trăm thưởng của ' + pack.name"
+                [value]="pack.bonusPct"
+                (input)="updatePackage(pack.id, { bonusPct: numberValue($event) })"
+              />
+              <label class="token-toggle">
                 <input
-                  class="ant-field"
-                  [attr.aria-label]="'Tên ' + pack.name"
-                  [value]="pack.name"
-                  (input)="updatePackage(pack.id, { name: textValue($event) })"
+                  type="checkbox"
+                  [checked]="pack.active"
+                  (change)="updatePackage(pack.id, { active: checkedValue($event) })"
                 />
-                <input
-                  class="ant-field"
-                  type="number"
-                  min="1"
-                  step="1"
-                  [attr.aria-label]="'Số token của ' + pack.name"
-                  [value]="pack.tokens"
-                  (input)="updatePackage(pack.id, { tokens: numberValue($event) })"
-                />
-                <input
-                  class="ant-field"
-                  type="number"
-                  min="0"
-                  step="1000"
-                  [attr.aria-label]="'Giá của ' + pack.name"
-                  [value]="pack.price"
-                  (input)="updatePackage(pack.id, { price: numberValue($event) })"
-                />
-                <input
-                  class="ant-field"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="1"
-                  [attr.aria-label]="'Phần trăm thưởng của ' + pack.name"
-                  [value]="pack.bonusPct"
-                  (input)="updatePackage(pack.id, { bonusPct: numberValue($event) })"
-                />
-                <label class="token-toggle">
-                  <input
-                    type="checkbox"
-                    [checked]="pack.active"
-                    (change)="updatePackage(pack.id, { active: checkedValue($event) })"
-                  />
-                  Bật
-                </label>
-                <button
-                  class="ant-icon-btn"
-                  type="button"
-                  [attr.aria-label]="'Xóa ' + pack.name"
-                  title="Xóa gói"
-                  (click)="removePackage(pack.id)"
-                >
-                  ×
-                </button>
-              </article>
-            }
-          </div>
-          @if (fieldError('tokenPackages'); as error) {
-            <p class="ant-error">{{ error }}</p>
+                Bật
+              </label>
+              <button
+                class="ant-icon-btn"
+                type="button"
+                [attr.aria-label]="'Xóa ' + pack.name"
+                title="Xóa gói"
+                (click)="removePackage(pack.id)"
+              >
+                ×
+              </button>
+            </article>
           }
-          <button class="ant-btn ant-btn--secondary" type="button" (click)="addPackage()">
-            Thêm gói
-          </button>
-        </section>
-      </div>
+        </div>
+        @if (fieldError('tokenPackages'); as error) {
+          <p class="ant-error">{{ error }}</p>
+        }
+        <button class="ant-btn ant-btn--secondary" type="button" (click)="addPackage()">
+          Thêm gói
+        </button>
+      </section>
 
       <div class="admin-live" aria-live="polite" aria-atomic="true">
         @if (configStore.saveState() === 'success') {
@@ -637,6 +704,106 @@
     <div class="admin-actions">
       <button class="ant-btn ant-btn--primary" type="submit">Lưu tài khoản</button>
       <button class="ant-btn ant-btn--secondary" type="button" (click)="closeAdminDrawer()">
+        Hủy
+      </button>
+    </div>
+  </form>
+</app-admin-drawer>
+
+<app-admin-drawer
+  [open]="boostTierDrawerOpen()"
+  [title]="editingBoostTierId() ? 'Sửa mức giá đẩy bài' : 'Thêm mức giá đẩy bài'"
+  (closed)="closeBoostTierDrawer()"
+>
+  <form drawer-body class="config-form" (ngSubmit)="saveBoostTier()">
+    <label>
+      <span>Thời gian (ngày)</span>
+      <input
+        class="ant-field"
+        type="number"
+        min="1"
+        step="1"
+        [value]="boostTierDraft().durationDays"
+        (input)="updateBoostTierDraft({ durationDays: numberValue($event) })"
+        required
+      />
+    </label>
+    <label>
+      <span>Số Xu</span>
+      <input
+        class="ant-field"
+        type="number"
+        min="0"
+        step="1"
+        [value]="boostTierDraft().tokenCost"
+        (input)="updateBoostTierDraft({ tokenCost: numberValue($event) })"
+        required
+      />
+    </label>
+    <label>
+      <span>Quy đổi VNĐ</span>
+      <input
+        class="ant-field"
+        type="number"
+        min="0"
+        step="1000"
+        [value]="boostTierDraft().vndValue"
+        (input)="updateBoostTierDraft({ vndValue: numberValue($event) })"
+        required
+      />
+    </label>
+    <div class="admin-actions">
+      <button class="ant-btn ant-btn--primary" type="submit">Lưu mức giá</button>
+      @if (editingBoostTierId(); as id) {
+        <button
+          class="ant-btn ant-btn--danger"
+          type="button"
+          (click)="requestRemoveBoostTier(id, boostTierDraft().durationDays + ' ngày')"
+        >
+          Xóa mức giá
+        </button>
+      }
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="closeBoostTierDrawer()">
+        Hủy
+      </button>
+    </div>
+  </form>
+</app-admin-drawer>
+
+<app-admin-drawer
+  [open]="promotionPlanDrawerOpen()"
+  [title]="editingPromotionPlanId() ? 'Sửa gói quảng bá' : 'Tạo gói quảng bá'"
+  (closed)="closePromotionPlanDrawer()"
+>
+  <form drawer-body class="config-form" (ngSubmit)="savePromotionPlan()">
+    <label>
+      <span>Tên gói</span>
+      <input
+        class="ant-field"
+        [value]="promotionPlanDraft().name"
+        (input)="updatePromotionPlanDraft({ name: textValue($event) })"
+        required
+      />
+    </label>
+    <label>
+      <span>Giá / tháng (VNĐ)</span>
+      <input
+        class="ant-field"
+        type="number"
+        min="0"
+        step="1000"
+        [value]="promotionPlanDraft().pricePerMonth"
+        (input)="updatePromotionPlanDraft({ pricePerMonth: numberValue($event) })"
+        required
+      />
+    </label>
+    <div class="admin-actions">
+      <button class="ant-btn ant-btn--primary" type="submit">Lưu gói quảng bá</button>
+      <button
+        class="ant-btn ant-btn--secondary"
+        type="button"
+        (click)="closePromotionPlanDrawer()"
+      >
         Hủy
       </button>
     </div>

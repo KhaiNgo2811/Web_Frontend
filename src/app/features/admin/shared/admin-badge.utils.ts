@@ -9,6 +9,9 @@ const TARGET_BADGE_CLASSES: Readonly<Record<AuditTargetType, string>> = {
   region: 'bg-cyan-lt',
   service_category: 'bg-yellow-lt',
   admin_account: 'bg-green-lt',
+  post_boost_tier: 'bg-orange-lt',
+  provider_promotion_plan: 'bg-orange-lt',
+  review: 'bg-purple-lt',
 };
 
 export function auditTargetBadgeClass(targetType: AuditTargetType): string {

@@ -7,6 +7,7 @@ import type {
   AdminAccountStatusInput,
   AdminActivityFilter,
   AdminDashboardSummary,
+  AdminReviewSummary,
   AdminUserDetail,
   AdminUserFilter,
   BusinessConfig,
@@ -23,11 +24,18 @@ import type {
   ComplaintResolutionInput,
   ComplaintStage,
   ComplaintVerificationInput,
+  FlaggedAccount,
   ModerationActionInput,
   ModerationFilter,
   ModerationReport,
+  PostBoostTier,
+  PostBoostTierInput,
+  ProviderPromotionPlan,
+  ProviderPromotionPlanInput,
+  ProviderPromotionPlanStatus,
   Region,
   RegionInput,
+  Review,
   ServiceCategoryConfig,
   ServiceCategoryInput,
   User,
@@ -435,6 +443,95 @@ export class LocalModerationRepository extends ModerationRepository {
         return enrichReport(report, data);
       }),
     );
+  }
+
+  listReviewsForAdmin(actorId: string): Observable<AdminReviewSummary[]> {
+    return asObservable(() => {
+      const data = this.db.snapshot();
+      requireAdminPermission(data.users, actorId, 'moderation.read');
+      return [...data.reviews]
+        .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt))
+        .map((review) => this.enrichReview(review, data));
+    });
+  }
+
+  setReviewVisibility(
+    actorId: string,
+    id: string,
+    hidden: boolean,
+    note?: string,
+  ): Observable<AdminReviewSummary> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'moderation.act');
+        const review = requireValue(
+          data.reviews.find((candidate) => candidate.id === id),
+          'Không tìm thấy đánh giá.',
+        );
+        const before = review.hidden;
+        review.hidden = hidden;
+        const now = nowIso();
+        appendAuditEvent(data.auditEvents, {
+          ...auditTarget(actorId, hidden ? 'review.hide' : 'review.restore', 'review', review.id, now, note),
+          before: { hidden: before },
+          after: { hidden: review.hidden },
+        });
+        return this.enrichReview(review, data);
+      }),
+    );
+  }
+
+  listLowReputationAccounts(actorId: string): Observable<FlaggedAccount[]> {
+    return asObservable(() => {
+      const data = this.db.snapshot();
+      requireAdminPermission(data.users, actorId, 'moderation.read');
+      return this.flagLowReputationAccounts(data);
+    });
+  }
+
+  private flagLowReputationAccounts(data: MockDatabaseData): FlaggedAccount[] {
+    const { minRatingThreshold, minComplaintsThreshold } = data.businessConfig;
+    return data.users
+      .filter((user) => user.role === 'user')
+      .map((user) => ({
+        user,
+        complaintCount: data.complaints.filter((complaint) => complaint.respondentId === user.id)
+          .length,
+      }))
+      .filter(
+        ({ user, complaintCount }) =>
+          user.reputationScore !== null &&
+          user.reputationScore < minRatingThreshold &&
+          complaintCount >= minComplaintsThreshold,
+      )
+      .sort((left, right) => (left.user.reputationScore ?? 0) - (right.user.reputationScore ?? 0));
+  }
+
+  private enrichReview(review: Review, data: MockDatabaseData): AdminReviewSummary {
+    const pendingReport = data.moderationReports.find(
+      (report) =>
+        report.targetType === 'review' && report.targetId === review.id && report.status === 'pending',
+    );
+    const status: AdminReviewSummary['status'] = review.hidden
+      ? 'hidden'
+      : pendingReport
+        ? 'reported'
+        : 'visible';
+    const rateeId = review.rateeId;
+    const lowReputationRatee = this.flagLowReputationAccounts(data).some(
+      (flagged) => flagged.user.id === rateeId,
+    );
+    const order = data.orders.find((candidate) => candidate.id === review.orderId);
+    const post = order ? data.posts.find((candidate) => candidate.id === order.postId) : undefined;
+    return {
+      ...review,
+      rater: data.users.find((user) => user.id === review.raterId),
+      ratee: data.users.find((user) => user.id === review.rateeId),
+      status,
+      watched: !!pendingReport?.assignedAdminId,
+      serviceCategory: post?.category,
+      lowReputationRatee,
+    };
   }
 }
 
@@ -1039,6 +1136,7 @@ export class LocalConfigRepository extends ConfigRepository {
         data.businessConfig = {
           ...input,
           tokenPackages: input.tokenPackages.map((item) => ({ ...item })),
+          tokenConversion: { ...input.tokenConversion },
           updatedAt: now,
           updatedBy: adminId,
         };
@@ -1068,20 +1166,6 @@ export class LocalConfigRepository extends ConfigRepository {
 
   validateBusinessConfig(input: BusinessConfigInput): BusinessConfigValidationErrors {
     const errors: BusinessConfigValidationErrors = {};
-    if (input.platformFeePct < 0 || input.platformFeePct > 30) {
-      errors.platformFeePct = 'Phí nền tảng phải từ 0% đến 30%.';
-    }
-    if (input.escrowFeePct < 0 || input.escrowFeePct > 10) {
-      errors.escrowFeePct = 'Phí đảm bảo phải từ 0% đến 10%.';
-    }
-    if (input.postDurationHours < 1)
-      errors.postDurationHours = 'Thời hạn bài đăng tối thiểu 1 giờ.';
-    if (input.priorityDurationHours < 1) {
-      errors.priorityDurationHours = 'Thời hạn ưu tiên tối thiểu 1 giờ.';
-    }
-    if (input.autoCompleteHours < 1) errors.autoCompleteHours = 'Tự hoàn tất tối thiểu 1 giờ.';
-    if (input.minWithdrawalAmount < 0)
-      errors.minWithdrawalAmount = 'Số tiền rút tối thiểu không âm.';
     if (input.minRatingThreshold < 0 || input.minRatingThreshold > 5) {
       errors.minRatingThreshold = 'Điểm đánh giá tối thiểu phải từ 0 đến 5.';
     }
@@ -1094,7 +1178,167 @@ export class LocalConfigRepository extends ConfigRepository {
     ) {
       errors.tokenPackages = 'Mỗi gói token cần tên, số token dương và giá không âm.';
     }
+    if (
+      input.tokenConversion.xuPer1000Vnd <= 0 ||
+      input.tokenConversion.maxAdViewsPerDay < 0 ||
+      input.tokenConversion.tokensPerAdView < 0
+    ) {
+      errors.tokenConversion = 'Tỷ lệ quy đổi Xu và giới hạn xem quảng cáo phải là số hợp lệ.';
+    }
     return errors;
+  }
+
+  listPostBoostTiers(actorId: string): Observable<PostBoostTier[]> {
+    return asObservable(() => {
+      const data = this.db.snapshot();
+      requireAdminPermission(data.users, actorId, 'configuration.manage');
+      return [...data.postBoostTiers].sort((a, b) => a.durationDays - b.durationDays);
+    });
+  }
+
+  createPostBoostTier(actorId: string, input: PostBoostTierInput): Observable<PostBoostTier> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const now = nowIso();
+        const tier: PostBoostTier = { id: createEntityId('boost-tier'), ...input };
+        data.postBoostTiers.push(tier);
+        appendAuditEvent(
+          data.auditEvents,
+          auditTarget(actorId, 'post_boost_tier.create', 'post_boost_tier', tier.id, now),
+        );
+        return tier;
+      }),
+    );
+  }
+
+  updatePostBoostTier(
+    actorId: string,
+    id: string,
+    input: PostBoostTierInput,
+  ): Observable<PostBoostTier> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const tier = requireValue(
+          data.postBoostTiers.find((candidate) => candidate.id === id),
+          'Không tìm thấy mức giá đẩy bài.',
+        );
+        const before = { ...tier };
+        Object.assign(tier, input);
+        const now = nowIso();
+        appendAuditEvent(data.auditEvents, {
+          ...auditTarget(actorId, 'post_boost_tier.update', 'post_boost_tier', tier.id, now),
+          before,
+          after: { ...tier },
+        });
+        return tier;
+      }),
+    );
+  }
+
+  removePostBoostTier(actorId: string, id: string): Observable<void> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const index = data.postBoostTiers.findIndex((candidate) => candidate.id === id);
+        if (index === -1) throw new RepositoryError('Không tìm thấy mức giá đẩy bài.');
+        const [removed] = data.postBoostTiers.splice(index, 1);
+        appendAuditEvent(
+          data.auditEvents,
+          auditTarget(actorId, 'post_boost_tier.remove', 'post_boost_tier', removed.id, nowIso()),
+        );
+      }),
+    );
+  }
+
+  listProviderPromotionPlans(actorId: string): Observable<ProviderPromotionPlan[]> {
+    return asObservable(() => {
+      const data = this.db.snapshot();
+      requireAdminPermission(data.users, actorId, 'configuration.manage');
+      return data.providerPromotionPlans.map((plan) => this.enrichPromotionPlan(plan, data));
+    });
+  }
+
+  createProviderPromotionPlan(
+    actorId: string,
+    input: ProviderPromotionPlanInput,
+  ): Observable<ProviderPromotionPlan> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const now = nowIso();
+        const plan: ProviderPromotionPlan = { id: createEntityId('promo-plan'), ...input };
+        data.providerPromotionPlans.push(plan);
+        appendAuditEvent(
+          data.auditEvents,
+          auditTarget(actorId, 'provider_promotion_plan.create', 'provider_promotion_plan', plan.id, now),
+        );
+        return this.enrichPromotionPlan(plan, data);
+      }),
+    );
+  }
+
+  updateProviderPromotionPlan(
+    actorId: string,
+    id: string,
+    input: ProviderPromotionPlanInput,
+  ): Observable<ProviderPromotionPlan> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const plan = requireValue(
+          data.providerPromotionPlans.find((candidate) => candidate.id === id),
+          'Không tìm thấy gói quảng bá.',
+        );
+        const before = { name: plan.name, pricePerMonth: plan.pricePerMonth, status: plan.status };
+        Object.assign(plan, input);
+        const now = nowIso();
+        appendAuditEvent(data.auditEvents, {
+          ...auditTarget(actorId, 'provider_promotion_plan.update', 'provider_promotion_plan', plan.id, now),
+          before,
+          after: { name: plan.name, pricePerMonth: plan.pricePerMonth, status: plan.status },
+        });
+        return this.enrichPromotionPlan(plan, data);
+      }),
+    );
+  }
+
+  setProviderPromotionPlanStatus(
+    actorId: string,
+    id: string,
+    status: ProviderPromotionPlanStatus,
+  ): Observable<ProviderPromotionPlan> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        requireAdminPermission(data.users, actorId, 'configuration.manage');
+        const plan = requireValue(
+          data.providerPromotionPlans.find((candidate) => candidate.id === id),
+          'Không tìm thấy gói quảng bá.',
+        );
+        const before = plan.status;
+        plan.status = status;
+        const now = nowIso();
+        appendAuditEvent(data.auditEvents, {
+          ...auditTarget(actorId, 'provider_promotion_plan.update', 'provider_promotion_plan', plan.id, now),
+          before: { status: before },
+          after: { status: plan.status },
+        });
+        return this.enrichPromotionPlan(plan, data);
+      }),
+    );
+  }
+
+  private enrichPromotionPlan(
+    plan: ProviderPromotionPlan,
+    data: MockDatabaseData,
+  ): ProviderPromotionPlan {
+    return {
+      ...plan,
+      activeSubscriberCount: data.walletSubscriptions.filter(
+        (subscription) => subscription.planId === plan.id && !subscription.replacedAt,
+      ).length,
+    };
   }
 }
 

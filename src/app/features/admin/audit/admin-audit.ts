@@ -7,31 +7,19 @@ import {
   signal,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
-import {
-  hasAdminPermission,
-  type AdminSortState,
-  type AuditTargetType,
-  type ExportJob,
-} from '../../../core/models';
+import { hasAdminPermission } from '../../../core/models';
 import { AdminAuditStore, SessionStore } from '../../../core/stores';
 import { adminAvatarColor, adminInitials } from '../shared/admin-avatar.utils';
-import { auditActionBadgeClass, auditTargetBadgeClass } from '../shared/admin-badge.utils';
+import { auditActionBadgeClass } from '../shared/admin-badge.utils';
 import { AdminConfirmDialog } from '../shared/admin-confirm-dialog/admin-confirm-dialog';
 import { adminLabel } from '../shared/admin-labels';
 import { AdminPagination } from '../shared/admin-pagination/admin-pagination';
-import {
-  adminAriaSort,
-  paginateAdminRows,
-  stableAdminSort,
-  toggleAdminSort,
-} from '../shared/admin-table.utils';
-
-type AuditSort = 'createdAt' | 'actorId' | 'action' | 'targetType';
 
 @Component({
   selector: 'app-admin-audit',
-  imports: [DatePipe, AdminConfirmDialog, AdminPagination],
+  imports: [DatePipe, RouterLink, AdminConfirmDialog, AdminPagination],
   templateUrl: './admin-audit.html',
   styleUrl: './admin-audit.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,27 +27,21 @@ type AuditSort = 'createdAt' | 'actorId' | 'action' | 'targetType';
 export class AdminAudit implements OnInit {
   protected readonly audit = inject(AdminAuditStore);
   private readonly session = inject(SessionStore);
+  protected readonly label = adminLabel;
+  protected readonly actorInitials = adminInitials;
+  protected readonly actorColor = adminAvatarColor;
+
   protected readonly canExport = computed(() =>
     hasAdminPermission(this.session.currentUser()?.role ?? '', 'audit.export'),
   );
+
   protected readonly page = signal(1);
-  protected readonly pageSize = signal(20);
-  protected readonly exportConfirmationOpen = signal(false);
+  protected readonly pageSize = signal(6);
   protected readonly expandedIds = signal<string[]>([]);
-  protected readonly sort = signal<AdminSortState<AuditSort>>({
-    key: 'createdAt',
-    direction: 'desc',
-  });
+  protected readonly exportConfirmationOpen = signal(false);
   protected readonly timeRangeFilter = signal<'7d' | '30d' | '90d' | 'all'>('7d');
-  protected readonly label = adminLabel;
-  protected readonly targets: { value: AuditTargetType | 'all'; label: string }[] = [
-    { value: 'all', label: 'Tất cả mục tiêu' },
-    { value: 'user', label: 'Tài khoản' },
-    { value: 'moderation_report', label: 'Báo cáo kiểm duyệt' },
-    { value: 'complaint', label: 'Khiếu nại' },
-    { value: 'configuration', label: 'Cấu hình' },
-    { value: 'export', label: 'Yêu cầu xuất' },
-  ];
+  protected readonly actorFilter = signal<string>('all');
+
   protected readonly actions = [
     'user.locked',
     'user.active',
@@ -78,43 +60,53 @@ export class AdminAudit implements OnInit {
     'configuration.restore',
     'audit.export_requested',
   ];
+
+  protected readonly actorOptions = computed(() => {
+    const seen = new Map<string, string>();
+    for (const event of this.audit.events()) {
+      seen.set(event.actorId, event.actorName || event.actorId);
+    }
+    return [...seen.entries()].map(([id, name]) => ({ id, name }));
+  });
+
   protected readonly rangedEvents = computed(() => {
     const range = this.timeRangeFilter();
-    if (range === 'all') return this.audit.events();
+    const actor = this.actorFilter();
+    let events = this.audit.events();
+    if (actor !== 'all') events = events.filter((event) => event.actorId === actor);
+    if (range === 'all') return events;
     const days = range === '7d' ? 7 : range === '30d' ? 30 : 90;
-    const cutoff = new Date('2026-07-13T00:00:00.000Z');
+    const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - days);
-    return this.audit.events().filter((event) => new Date(event.createdAt) >= cutoff);
+    return events.filter((event) => new Date(event.createdAt) >= cutoff);
   });
-  protected readonly sortedEvents = computed(() => {
-    const sort = this.sort();
-    return stableAdminSort(this.rangedEvents(), (event) => event[sort.key], sort.direction);
+
+  protected readonly pagedEvents = computed(() => {
+    const start = (this.page() - 1) * this.pageSize();
+    return this.rangedEvents().slice(start, start + this.pageSize());
   });
-  protected readonly pagedEvents = computed(() =>
-    paginateAdminRows(this.sortedEvents(), this.page(), this.pageSize()),
-  );
+
   protected readonly activeFilterCount = computed(() => {
     const filter = this.audit.filter();
     return [
       filter.search,
-      filter.actorId,
+      this.actorFilter() !== 'all' && this.actorFilter(),
       filter.action,
-      filter.targetType !== 'all' && filter.targetType,
       this.timeRangeFilter() !== '7d' && this.timeRangeFilter(),
     ].filter(Boolean).length;
   });
+
   protected readonly exportScopeItems = computed(() => {
     const filter = this.audit.filter();
     const items = [
       filter.search && `Từ khóa: ${filter.search}`,
-      filter.actorId && `Người thực hiện: ${filter.actorId}`,
+      this.actorFilter() !== 'all' &&
+        `Người thực hiện: ${this.actorOptions().find((a) => a.id === this.actorFilter())?.name ?? this.actorFilter()}`,
       filter.action && `Hành động: ${adminLabel(filter.action)}`,
-      filter.targetType &&
-        filter.targetType !== 'all' &&
-        `Mục tiêu: ${adminLabel(filter.targetType)}`,
     ].filter((item): item is string => !!item);
     return items.length ? items : ['Toàn bộ nhật ký đang xem'];
   });
+
   protected readonly exportRequest = computed(() => ({
     title: 'Tạo yêu cầu xuất nhật ký?',
     message: `Phạm vi: ${this.exportScopeItems().join('; ')}. CSV sẽ che dữ liệu mặc định và lưu yêu cầu trong nhật ký.`,
@@ -127,56 +119,40 @@ export class AdminAudit implements OnInit {
   }
 
   protected search(event: Event): void {
-    const search = event.target instanceof HTMLInputElement ? event.target.value : '';
-    this.applyFilter({ search });
+    this.page.set(1);
+    this.audit.setFilter({ search: this.valueOf(event) });
   }
 
-  protected updateFilter(key: 'actorId' | 'action' | 'targetType', event: Event): void {
-    const value = (event.target as HTMLInputElement | HTMLSelectElement).value;
-    this.applyFilter({ [key]: value || (key === 'targetType' ? 'all' : undefined) });
+  protected updateActorFilter(event: Event): void {
+    this.page.set(1);
+    this.actorFilter.set(this.valueOf(event));
+  }
+
+  protected updateActionFilter(event: Event): void {
+    this.page.set(1);
+    const value = this.valueOf(event);
+    this.audit.setFilter({ action: value || undefined });
+  }
+
+  protected updateTimeRangeFilter(event: Event): void {
+    this.page.set(1);
+    this.timeRangeFilter.set(this.valueOf(event) as '7d' | '30d' | '90d' | 'all');
   }
 
   protected clearFilters(): void {
     this.page.set(1);
     this.timeRangeFilter.set('7d');
-    this.audit.setFilter({
-      search: undefined,
-      actorId: undefined,
-      action: undefined,
-      targetType: 'all',
-    });
+    this.actorFilter.set('all');
+    this.audit.setFilter({ search: undefined, actorId: undefined, action: undefined, targetType: 'all' });
   }
 
-  protected setPage(page: number): void {
-    const totalPages = Math.max(1, Math.ceil(this.rangedEvents().length / this.pageSize()));
-    this.page.set(Math.min(Math.max(1, page), totalPages));
+  protected onPageChange(page: number): void {
+    this.page.set(page);
   }
 
-  protected setPageSize(size: number): void {
+  protected onPageSizeChange(size: number): void {
     this.pageSize.set(size);
     this.page.set(1);
-  }
-
-  protected updateTimeRangeFilter(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value as '7d' | '30d' | '90d' | 'all';
-    this.timeRangeFilter.set(value);
-    this.page.set(1);
-  }
-
-  protected actorInitials(name: string): string {
-    return adminInitials(name);
-  }
-
-  protected actorColor(name: string): string {
-    return adminAvatarColor(name);
-  }
-
-  protected targetBadgeClass(targetType: AuditTargetType): string {
-    return auditTargetBadgeClass(targetType);
-  }
-
-  protected actionBadgeClass(action: string): string {
-    return auditActionBadgeClass(action);
   }
 
   protected toggleDisclosure(id: string): void {
@@ -185,13 +161,8 @@ export class AdminAudit implements OnInit {
     );
   }
 
-  protected toggleSort(key: AuditSort): void {
-    this.sort.set(toggleAdminSort(this.sort(), key));
-    this.page.set(1);
-  }
-
-  protected ariaSort(key: AuditSort): 'ascending' | 'descending' | 'none' {
-    return adminAriaSort(this.sort(), key);
+  protected actionBadgeClass(action: string): string {
+    return auditActionBadgeClass(action);
   }
 
   protected confirmExport(): void {
@@ -204,11 +175,7 @@ export class AdminAudit implements OnInit {
     if (state === 'pending') return 'Đang gửi yêu cầu xuất...';
     if (state === 'success') return 'Đã tạo yêu cầu xuất. Tệp đang được xếp hàng xử lý.';
     if (state === 'error') return this.audit.error() || 'Không thể tạo yêu cầu xuất.';
-    return 'Sẵn sàng tạo yêu cầu xuất.';
-  }
-
-  protected jobMeta(job: ExportJob): string {
-    return `${job.createdAt} · CSV · ${job.redaction === 'default' ? 'Che dữ liệu mặc định' : job.redaction}`;
+    return '';
   }
 
   protected reasonLabel(reason?: string): string {
@@ -223,8 +190,7 @@ export class AdminAudit implements OnInit {
       status: 'Trạng thái',
       stage: 'Bước xử lý',
       assignedAdminId: 'Người phụ trách',
-      platformFeePct: 'Phí nền tảng',
-      escrowFeePct: 'Phí đảm bảo',
+      hidden: 'Đã ẩn',
     };
     return Object.entries(values).map(([key, value]) => {
       const rendered = typeof value === 'string' ? adminLabel(value) : String(value ?? 'Không có');
@@ -232,8 +198,13 @@ export class AdminAudit implements OnInit {
     });
   }
 
-  private applyFilter(partial: Parameters<AdminAuditStore['setFilter']>[0]): void {
-    this.page.set(1);
-    this.audit.setFilter(partial);
+  protected refresh(): void {
+    this.audit.load();
+  }
+
+  private valueOf(event: Event): string {
+    return event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement
+      ? event.target.value
+      : '';
   }
 }

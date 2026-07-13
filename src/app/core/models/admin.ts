@@ -54,30 +54,55 @@ export interface TokenPackage {
   active: boolean;
 }
 
+export interface PostBoostTier {
+  id: string;
+  durationDays: number;
+  tokenCost: number;
+  vndValue: number;
+}
+
+export interface PostBoostTierInput {
+  durationDays: number;
+  tokenCost: number;
+  vndValue: number;
+}
+
+export type ProviderPromotionPlanStatus = 'selling' | 'stopped';
+
+export interface ProviderPromotionPlan {
+  id: string;
+  name: string;
+  pricePerMonth: number;
+  status: ProviderPromotionPlanStatus;
+  activeSubscriberCount?: number;
+}
+
+export interface ProviderPromotionPlanInput {
+  name: string;
+  pricePerMonth: number;
+  status: ProviderPromotionPlanStatus;
+}
+
+export interface TokenConversionConfig {
+  xuPer1000Vnd: number;
+  maxAdViewsPerDay: number;
+  tokensPerAdView: number;
+}
+
 export interface BusinessConfig {
-  platformFeePct: number;
-  escrowFeePct: number;
-  postDurationHours: number;
-  priorityDurationHours: number;
-  autoCompleteHours: number;
-  minWithdrawalAmount: number;
   minRatingThreshold: number;
   minComplaintsThreshold: number;
   tokenPackages: TokenPackage[];
+  tokenConversion: TokenConversionConfig;
   updatedAt: IsoDateString;
   updatedBy: string;
 }
 
 export interface BusinessConfigInput {
-  platformFeePct: number;
-  escrowFeePct: number;
-  postDurationHours: number;
-  priorityDurationHours: number;
-  autoCompleteHours: number;
-  minWithdrawalAmount: number;
   minRatingThreshold: number;
   minComplaintsThreshold: number;
   tokenPackages: TokenPackage[];
+  tokenConversion: TokenConversionConfig;
 }
 
 export type BusinessConfigValidationErrors = Partial<Record<keyof BusinessConfigInput, string>>;
@@ -169,4 +194,20 @@ export interface ModerationActionInput {
   reportId: string;
   action: ModerationAction;
   note?: string;
+}
+
+export type AdminReviewStatus = 'visible' | 'hidden' | 'reported';
+
+export interface AdminReviewSummary extends Review {
+  rater?: User;
+  ratee?: User;
+  status: AdminReviewStatus;
+  watched: boolean;
+  serviceCategory?: string;
+  lowReputationRatee: boolean;
+}
+
+export interface FlaggedAccount {
+  user: User;
+  complaintCount: number;
 }

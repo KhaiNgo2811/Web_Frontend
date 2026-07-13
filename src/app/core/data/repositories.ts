@@ -4,6 +4,7 @@ import type {
   Application,
   ApplicationSelection,
   AdminAccountActivity,
+  AdminReviewSummary,
   AuditEvent,
   AuditFilter,
   AdminAccountStatusInput,
@@ -30,6 +31,7 @@ import type {
   CreatePostInput,
   CreateReviewInput,
   Credentials,
+  FlaggedAccount,
   Message,
   ModerationActionInput,
   ModerationFilter,
@@ -39,7 +41,12 @@ import type {
   OrderTransitionInput,
   PasswordResetInput,
   Post,
+  PostBoostTier,
+  PostBoostTierInput,
   PostFilter,
+  ProviderPromotionPlan,
+  ProviderPromotionPlanInput,
+  ProviderPromotionPlanStatus,
   RegistrationDraft,
   Review,
   SendMessageInput,
@@ -137,6 +144,14 @@ export abstract class ModerationRepository {
   abstract list(actorId: string, filter?: ModerationFilter): Observable<ModerationReport[]>;
   abstract getById(actorId: string, id: string): Observable<ModerationReport | undefined>;
   abstract act(input: ModerationActionInput): Observable<ModerationReport>;
+  abstract listReviewsForAdmin(actorId: string): Observable<AdminReviewSummary[]>;
+  abstract setReviewVisibility(
+    actorId: string,
+    id: string,
+    hidden: boolean,
+    note?: string,
+  ): Observable<AdminReviewSummary>;
+  abstract listLowReputationAccounts(actorId: string): Observable<FlaggedAccount[]>;
 }
 
 export abstract class ComplaintRepository {
@@ -192,6 +207,32 @@ export abstract class ConfigRepository {
   ): Observable<BusinessConfig>;
   abstract restoreDefaults(adminId: string): Observable<BusinessConfig>;
   abstract validateBusinessConfig(input: BusinessConfigInput): BusinessConfigValidationErrors;
+  abstract listPostBoostTiers(actorId: string): Observable<PostBoostTier[]>;
+  abstract createPostBoostTier(
+    actorId: string,
+    input: PostBoostTierInput,
+  ): Observable<PostBoostTier>;
+  abstract updatePostBoostTier(
+    actorId: string,
+    id: string,
+    input: PostBoostTierInput,
+  ): Observable<PostBoostTier>;
+  abstract removePostBoostTier(actorId: string, id: string): Observable<void>;
+  abstract listProviderPromotionPlans(actorId: string): Observable<ProviderPromotionPlan[]>;
+  abstract createProviderPromotionPlan(
+    actorId: string,
+    input: ProviderPromotionPlanInput,
+  ): Observable<ProviderPromotionPlan>;
+  abstract updateProviderPromotionPlan(
+    actorId: string,
+    id: string,
+    input: ProviderPromotionPlanInput,
+  ): Observable<ProviderPromotionPlan>;
+  abstract setProviderPromotionPlanStatus(
+    actorId: string,
+    id: string,
+    status: ProviderPromotionPlanStatus,
+  ): Observable<ProviderPromotionPlan>;
 }
 
 export abstract class AuditRepository {

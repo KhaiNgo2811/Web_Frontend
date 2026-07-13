@@ -8,7 +8,15 @@ export type AuditTargetType =
   | 'export'
   | 'region'
   | 'service_category'
-  | 'admin_account';
+  | 'admin_account'
+  | 'post_boost_tier'
+  | 'provider_promotion_plan'
+  | 'review';
+
+export interface AuditEventTargetLink {
+  readonly route: readonly string[];
+  readonly queryParams?: Readonly<Record<string, string>>;
+}
 
 export interface AuditEvent {
   readonly id: string;
@@ -21,6 +29,9 @@ export interface AuditEvent {
   readonly reason?: string;
   readonly before?: Readonly<Record<string, string | number | boolean | null>>;
   readonly after?: Readonly<Record<string, string | number | boolean | null>>;
+  readonly targetLabel?: string;
+  readonly moduleLabel?: string;
+  readonly targetLink?: AuditEventTargetLink;
 }
 
 export interface AuditFilter {
