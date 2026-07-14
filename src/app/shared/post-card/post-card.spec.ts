@@ -26,10 +26,16 @@ describe('PostCard', () => {
   it('emits the selected post from the primary action', () => {
     const emitted: string[] = [];
     fixture.componentInstance.acceptRequested.subscribe((post) => emitted.push(post.id));
-    const buttons = fixture.nativeElement.querySelectorAll(
-      '.post-card__actions button',
-    ) as NodeListOf<HTMLButtonElement>;
-    buttons[1].click();
+    const button = fixture.nativeElement.querySelector('.post-card__cta') as HTMLButtonElement;
+    button.click();
+    expect(emitted).toEqual(['post-groceries']);
+  });
+
+  it('emits the selected post from the report button', () => {
+    const emitted: string[] = [];
+    fixture.componentInstance.reportRequested.subscribe((post) => emitted.push(post.id));
+    const button = fixture.nativeElement.querySelector('.post-card__report') as HTMLButtonElement;
+    button.click();
     expect(emitted).toEqual(['post-groceries']);
   });
 });
