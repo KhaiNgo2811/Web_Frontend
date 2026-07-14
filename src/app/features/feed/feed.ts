@@ -1,6 +1,7 @@
 import { Component, computed, inject, input, output, signal } from '@angular/core';
 
 import type {
+  Complaint,
   Post,
   PostFilter,
   PostSort,
@@ -31,6 +32,14 @@ const REPORT_REASONS: readonly ReportReasonOption[] = [
   { value: 'unresponsive', label: 'Người dùng không phản hồi', icon: 'bi-chat-square-x' },
   { value: 'other', label: 'Khác', icon: 'bi-three-dots' },
 ];
+
+const REPORT_REASON_CATEGORIES: Record<string, Complaint['category']> = {
+  inappropriate: 'conduct',
+  scam: 'conduct',
+  'unclear-price': 'payment',
+  unresponsive: 'conduct',
+  other: 'other',
+};
 
 const CATEGORY_FILTERS: readonly { value: FeedCategory; icon: string; label: string }[] = [
   { value: 'all', icon: 'bi-lightning-charge-fill', label: 'Tất cả' },
@@ -167,7 +176,18 @@ export class Feed {
   }
 
   protected submitReport(): void {
+    const post = this.reportingPost();
+    if (!post) return;
+    const reason = REPORT_REASONS.find((option) => option.value === this.reportReason());
+    const details = this.reportDetails.trim();
+    this.marketplace.fileComplaint({
+      respondentId: post.authorId,
+      subject: reason?.label ?? 'Báo cáo bài đăng',
+      description: [`Báo cáo bài đăng "${post.title}".`, details].filter(Boolean).join(' '),
+      category: REPORT_REASON_CATEGORIES[this.reportReason()],
+    });
     this.reportingPost.set(null);
+    if (this.marketplace.error()) return;
     this.successMessage.set('Đã gửi báo cáo. Cảm ơn bạn đã giúp AntGo an toàn hơn!');
   }
 

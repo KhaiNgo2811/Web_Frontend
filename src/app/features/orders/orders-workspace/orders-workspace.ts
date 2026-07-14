@@ -271,6 +271,22 @@ export class OrdersWorkspace {
   }
 
   protected submitReport(): void {
+    const order = this.selectedOrder();
+    if (order) {
+      this.store.fileComplaint({
+        orderId: order.id,
+        respondentId: order.providerId,
+        subject: this.selectedReportReason(),
+        description: [
+          `Báo cáo đơn hàng #${order.id}.`,
+          this.selectedReportReason(),
+          this.reportDescription.trim(),
+        ]
+          .filter(Boolean)
+          .join(' '),
+        evidence: this.reportEvidence(),
+      });
+    }
     this.dialog.set(null);
   }
 }

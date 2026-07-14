@@ -15,7 +15,7 @@ import { UiDialog } from '../../../shared/ui-dialog/ui-dialog';
 export class PostEditor {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly store = inject(MarketplaceStore);
+  protected readonly store = inject(MarketplaceStore);
   private readonly formBuilder = inject(FormBuilder);
   protected readonly dialog = signal<'extend' | 'delete' | null>(null);
   protected readonly categories: { value: ServiceCategory; label: string }[] = [
@@ -60,6 +60,7 @@ export class PostEditor {
     };
     if (this.postId) this.store.updatePost(this.postId, input);
     else this.store.createPost(input);
+    if (this.store.error()) return;
     void this.router.navigateByUrl('/feed');
   }
 
