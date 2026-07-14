@@ -20,12 +20,30 @@
         class="detail-panel__cover"
         [class]="'detail-panel__cover detail-panel__cover--' + post().category"
       >
+        @if (activeImage(); as image) {
+          <img class="detail-panel__cover-image" [src]="image" [alt]="post().title" />
+        } @else {
+          <span class="detail-panel__cover-mark" aria-hidden="true">AG</span>
+        }
         <span class="detail-panel__type">{{ typeLabel() }}</span>
         @if (post().isPriority) {
           <span class="detail-panel__priority"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> Tin ưu tiên</span>
         }
-        <span class="detail-panel__cover-mark" aria-hidden="true">AG</span>
       </div>
+      @if (post().images.length > 1) {
+        <div class="detail-panel__gallery">
+          @for (image of post().images; track image; let i = $index) {
+            <button
+              type="button"
+              class="detail-panel__thumb"
+              [class.active]="selectedImageIndex() === i"
+              (click)="selectImage(i)"
+            >
+              <img [src]="image" alt="" />
+            </button>
+          }
+        </div>
+      }
 
       <div class="detail-panel__title-row">
         <div>
