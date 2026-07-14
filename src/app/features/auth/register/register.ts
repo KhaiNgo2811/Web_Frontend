@@ -41,6 +41,7 @@ export class RegisterPage implements OnInit, OnDestroy {
   readonly registeredPhone = signal('');
   readonly registeredName = signal('');
   readonly termsDialogOpen = signal(false);
+  readonly detailsError = signal('');
   readonly otpSlots = [0, 1, 2, 3, 4, 5];
   readonly policy = ANTGO_POLICY;
 
@@ -97,17 +98,26 @@ export class RegisterPage implements OnInit, OnDestroy {
       return;
     }
 
+    this.detailsError.set('');
     const { displayName, phone, email, password } = this.detailsForm.getRawValue();
-    this.sessionStore.register({
-      displayName: displayName.trim(),
-      phone: phone.trim(),
-      email: email.trim(),
-      password,
-    });
-    this.registeredPhone.set(phone.trim());
-    this.registeredName.set(displayName.trim());
-    this.startResendCountdown();
-    void this.router.navigateByUrl('/auth/register/verify');
+    this.sessionStore
+      .register({
+        displayName: displayName.trim(),
+        phone: phone.trim(),
+        email: email.trim(),
+        password,
+      })
+      .subscribe({
+        next: () => {
+          this.registeredPhone.set(phone.trim());
+          this.registeredName.set(displayName.trim());
+          this.startResendCountdown();
+          void this.router.navigateByUrl('/auth/register/verify');
+        },
+        error: (error: unknown) => {
+          this.detailsError.set(error instanceof Error ? error.message : 'Đăng ký thất bại.');
+        },
+      });
   }
 
   normalizeOtp(event: Event): void {
@@ -122,11 +132,11 @@ export class RegisterPage implements OnInit, OnDestroy {
     this.otpControl.markAsTouched();
     if (this.otpControl.invalid) return;
 
-    if (!this.sessionStore.verifyOtp(this.otpControl.value)) {
-      this.otpError.set('Mã xác thực chưa đúng. Dùng 123456 cho bản demo.');
-      return;
-    }
-    void this.router.navigateByUrl('/auth/register/success');
+    this.otpError.set('');
+    this.sessionStore.verifyOtp(this.otpControl.value).subscribe({
+      next: () => void this.router.navigateByUrl('/auth/register/success'),
+      error: () => this.otpError.set('Mã xác thực chưa đúng. Dùng 123456 cho bản demo.'),
+    });
   }
 
   resendOtp(): void {

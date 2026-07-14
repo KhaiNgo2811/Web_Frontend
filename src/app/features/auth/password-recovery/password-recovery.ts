@@ -35,6 +35,7 @@ export class PasswordRecoveryPage implements OnDestroy {
   readonly showPassword = signal(false);
   readonly identifier = this.readIdentifier();
   readonly otpError = signal('');
+  readonly resetError = signal('');
   readonly resendCountdown = signal(0);
   readonly otpSlots = [0, 1, 2, 3, 4, 5];
 
@@ -104,8 +105,15 @@ export class PasswordRecoveryPage implements OnDestroy {
     }
     if (!this.identifier) return;
 
-    this.sessionStore.resetPassword(this.identifier, this.passwordForm.controls.password.value);
-    void this.router.navigateByUrl('/auth/forgot-password/success');
+    this.resetError.set('');
+    this.sessionStore
+      .resetPassword(this.identifier, this.passwordForm.controls.password.value)
+      .subscribe({
+        next: () => void this.router.navigateByUrl('/auth/forgot-password/success'),
+        error: (error: unknown) => {
+          this.resetError.set(error instanceof Error ? error.message : 'Đặt lại mật khẩu thất bại.');
+        },
+      });
   }
 
   normalizeOtp(event: Event): void {

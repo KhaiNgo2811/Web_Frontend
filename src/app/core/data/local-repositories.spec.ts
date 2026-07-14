@@ -1,13 +1,23 @@
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
+import { LocalApplicationRepository } from './local-application-repository';
+import { LocalOrderRepository } from './local-order-repository';
 import { ApplicationRepository, OrderRepository } from './repositories';
 import { provideAntgoCore } from './core-data.providers';
 
 describe('local marketplace repositories', () => {
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideAntgoCore()] });
+    // Exercises Local*Repository behavior directly, regardless of
+    // environment.useHttpApi (which picks Http* by default).
+    TestBed.configureTestingModule({
+      providers: [
+        provideAntgoCore(),
+        { provide: ApplicationRepository, useClass: LocalApplicationRepository },
+        { provide: OrderRepository, useClass: LocalOrderRepository },
+      ],
+    });
   });
 
   afterEach(() => TestBed.resetTestingModule());

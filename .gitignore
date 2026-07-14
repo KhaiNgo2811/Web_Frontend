@@ -48,6 +48,9 @@ out/
 .claude
 CLAUDE.md
 
+### Backend (pushed to its own Web_BackEnd repo, not tracked here) ###
+antgo-backend/
+
 ### Angular ###
 .angular/
 /out-tsc
