@@ -20,6 +20,7 @@ import type {
   ComplaintAppealInput,
   ComplaintAssignInput,
   ComplaintAssessmentInput,
+  ComplaintCreateInput,
   ComplaintEvidenceRequestInput,
   ComplaintFilter,
   ComplaintNotifyInput,
@@ -157,6 +158,7 @@ export abstract class ModerationRepository {
 export abstract class ComplaintRepository {
   abstract list(actorId: string, filter?: ComplaintFilter): Observable<Complaint[]>;
   abstract getById(actorId: string, id: string): Observable<Complaint | undefined>;
+  abstract create(input: ComplaintCreateInput): Observable<Complaint>;
   abstract assign(input: ComplaintAssignInput): Observable<Complaint>;
   abstract recordVerification(input: ComplaintVerificationInput): Observable<Complaint>;
   abstract requestEvidence(input: ComplaintEvidenceRequestInput): Observable<Complaint>;

@@ -17,6 +17,7 @@ import type {
   ComplaintAppealInput,
   ComplaintAssignInput,
   ComplaintAssessmentInput,
+  ComplaintCreateInput,
   ComplaintEvidenceRequestInput,
   ComplaintFilter,
   ComplaintNotifyInput,
@@ -574,6 +575,60 @@ export class LocalComplaintRepository extends ComplaintRepository {
       const complaint = data.complaints.find((candidate) => candidate.id === id);
       return complaint ? enrichComplaint(complaint, data.users) : undefined;
     });
+  }
+
+  create(input: ComplaintCreateInput): Observable<Complaint> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        const complainant = requireValue(
+          data.users.find((user) => user.id === input.complainantId),
+          'Không tìm thấy người dùng.',
+        );
+        const subject = input.subject.trim();
+        const description = input.description.trim();
+        if (!subject) throw new RepositoryError('Cần chọn lý do khiếu nại.');
+        if (description.length < 10) throw new RepositoryError('Mô tả khiếu nại quá ngắn.');
+        const now = nowIso();
+        const complaint: Complaint = {
+          id: createEntityId('complaint'),
+          code: `CP-${(data.complaints.length + 1).toString().padStart(5, '0')}`,
+          regionId: input.regionId || complainant.location.regionId,
+          orderId: input.orderId,
+          complainantId: input.complainantId,
+          respondentId: input.respondentId,
+          subject,
+          description,
+          category: input.category,
+          stage: 'received',
+          priority: 'normal',
+          evidence: (input.evidence ?? []).map((url, index) => ({
+            id: createEntityId('evidence'),
+            label: `Bằng chứng ${index + 1}`,
+            type: 'image',
+            url,
+            createdAt: now,
+            createdBy: input.complainantId,
+          })),
+          timeline: [
+            {
+              id: createEntityId('complaint-timeline'),
+              stage: 'received',
+              note: 'Người dùng gửi khiếu nại.',
+              createdAt: now,
+              createdBy: input.complainantId,
+            },
+          ],
+          createdAt: now,
+          updatedAt: now,
+        };
+        data.complaints.push(complaint);
+        appendAuditEvent(
+          data.auditEvents,
+          auditTarget(input.complainantId, 'complaint.created', 'complaint', complaint.id, now),
+        );
+        return enrichComplaint(complaint, data.users);
+      }),
+    );
   }
 
   assign(input: ComplaintAssignInput): Observable<Complaint> {

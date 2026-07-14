@@ -3,6 +3,7 @@ import { Observable } from 'rxjs';
 
 import {
   ApplicationRepository,
+  ComplaintRepository,
   ConversationRepository,
   MockDb,
   NotificationRepository,
@@ -12,6 +13,7 @@ import {
 } from '../data';
 import type {
   Application,
+  ComplaintCreateInput,
   Conversation,
   CreateApplicationInput,
   CreatePostInput,
@@ -34,6 +36,7 @@ import { SessionStore } from './session.store';
 export class MarketplaceStore {
   private readonly session = inject(SessionStore);
   private readonly db = inject(MockDb);
+  private readonly complaints = inject(ComplaintRepository);
   private readonly repositories: MarketplaceRepositories = {
     users: inject(UserRepository),
     posts: inject(PostRepository),
@@ -134,6 +137,11 @@ export class MarketplaceStore {
     const actorId = this.requireViewer();
     if (actorId)
       this.mutate(this.repositories.orders.createReview({ orderId, actorId, stars, comment }));
+  }
+
+  fileComplaint(input: Omit<ComplaintCreateInput, 'complainantId'>): void {
+    const complainantId = this.requireViewer();
+    if (complainantId) this.mutate(this.complaints.create({ ...input, complainantId }));
   }
 
   openConversation(id: string): void {

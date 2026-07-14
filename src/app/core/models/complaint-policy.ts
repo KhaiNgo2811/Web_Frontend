@@ -182,3 +182,14 @@ export interface ComplaintAppealInput extends ComplaintActionInput {
   reason: string;
   reviewerId: string;
 }
+
+export interface ComplaintCreateInput {
+  complainantId: string;
+  orderId?: string;
+  respondentId?: string;
+  regionId?: string;
+  subject: string;
+  description: string;
+  category?: Complaint['category'];
+  evidence?: string[];
+}
