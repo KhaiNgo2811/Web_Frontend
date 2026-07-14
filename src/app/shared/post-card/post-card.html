@@ -25,7 +25,11 @@
 
   <div class="post-card__body">
     <div class="post-card__author">
-      <span class="post-card__avatar" aria-hidden="true">{{ authorInitials() }}</span>
+      @if (author(); as user) {
+        <a class="post-card__avatar" [routerLink]="['/users', user.id]">{{ authorInitials() }}</a>
+      } @else {
+        <span class="post-card__avatar" aria-hidden="true">{{ authorInitials() }}</span>
+      }
       <span class="post-card__author-copy">
         <strong>
           @if (author()?.isVerified) {

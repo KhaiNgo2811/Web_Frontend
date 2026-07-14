@@ -1,0 +1,167 @@
+@if (user(); as profile) {
+  <main class="profile-page">
+    <div class="ant-container">
+      <section class="profile-hero ant-card">
+        <span class="profile-hero__avatar">
+          {{ initials() }}
+          <span class="profile-hero__dot" aria-hidden="true"></span>
+        </span>
+
+        <div class="profile-hero__body">
+          <div class="profile-hero__name-row">
+            <h1>{{ profile.displayName }}</h1>
+            @if (isTrusted()) {
+              <span class="trust-badge"><i class="bi bi-patch-check-fill" aria-hidden="true"></i> Hàng xóm uy tín</span>
+            }
+          </div>
+          <p class="profile-hero__location">
+            <i class="bi bi-geo-alt" aria-hidden="true"></i>
+            {{ profile.location.regionId }} · Toà {{ profile.location.building }}
+            @if (profile.university) {
+              · {{ profile.university }}
+            }
+          </p>
+          <p class="profile-hero__meta">
+            Gia nhập: {{ joinLabel(profile.createdAt) }} · Hoạt động: Vừa xong
+          </p>
+
+          @if (profile.isVerified) {
+            <div class="verify-badges">
+              <span><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Đã xác thực Thẻ sinh viên</span>
+              <span><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Đã xác minh Số điện thoại</span>
+              <span><i class="bi bi-check-circle-fill" aria-hidden="true"></i> Đã liên kết Ví Ant Xu</span>
+            </div>
+          }
+
+          <div class="profile-stats">
+            <div>
+              <strong class="tone-orange">{{ profile.reputationScore ?? 'Mới' }} <i class="bi bi-star-fill" aria-hidden="true"></i></strong>
+              <span>Điểm đánh giá</span>
+            </div>
+            <div>
+              <strong>{{ profile.completedCount }} đơn</strong>
+              <span>Đơn hoàn thành</span>
+            </div>
+            <div>
+              <strong>{{ (profile.completionRate * 100).toFixed(0) }}%</strong>
+              <span>Tỉ lệ phản hồi</span>
+            </div>
+            <div>
+              <strong>~5 phút</strong>
+              <span>Trả lời trung bình</span>
+            </div>
+          </div>
+        </div>
+
+        @if (!isSelf()) {
+          <div class="profile-hero__actions">
+            <a class="ant-btn ant-btn--primary" routerLink="/messages"
+              ><i class="bi bi-chat-dots-fill" aria-hidden="true"></i> Nhắn tin ngay</a
+            >
+            <button class="ant-btn ant-btn--secondary" type="button" (click)="openReport()">
+              <i class="bi bi-flag" aria-hidden="true"></i> Báo cáo tài khoản
+            </button>
+          </div>
+        }
+      </section>
+
+      <div class="profile-columns">
+        <section class="profile-panel ant-card">
+          <h2>Tin đăng &amp; Dịch vụ đang mở</h2>
+          @if (openPosts().length) {
+            <div class="profile-post-list">
+              @for (post of openPosts(); track post.id) {
+                <a class="profile-post" [routerLink]="['/posts', post.id]">
+                  <span class="profile-post__category">{{ categoryLabel(post.category) }}</span>
+                  <strong class="profile-post__price">{{ post.price.toLocaleString('vi-VN') }}đ</strong>
+                  <span class="profile-post__title">{{ post.title }}</span>
+                  <p class="profile-post__description">{{ post.description }}</p>
+                </a>
+              }
+            </div>
+          } @else {
+            <app-empty-state
+              icon="bi-journal-text"
+              title="Chưa có bài đăng đang mở"
+              description="Người dùng này hiện chưa có yêu cầu hay dịch vụ nào đang hoạt động."
+            />
+          }
+        </section>
+
+        <section class="profile-panel ant-card">
+          <h2>Đánh giá từ hàng xóm ({{ reviews().length }})</h2>
+          @if (reviews().length) {
+            <div class="profile-review-list">
+              @for (entry of reviews(); track entry.review.id) {
+                <div class="profile-review">
+                  <span class="profile-review__avatar">{{
+                    (entry.rater?.displayName ?? 'AntGo').slice(0, 2).toUpperCase()
+                  }}</span>
+                  <div class="profile-review__body">
+                    <div class="profile-review__head">
+                      <strong>{{ entry.rater?.displayName ?? 'Thành viên AntGo' }}</strong>
+                      <time>{{ timeAgo(entry.review.createdAt) }}</time>
+                    </div>
+                    <app-star-rating [value]="entry.review.stars" [readonly]="true" />
+                    @if (entry.review.comment) {
+                      <p>{{ entry.review.comment }}</p>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <app-empty-state
+              icon="bi-star"
+              title="Chưa có đánh giá"
+              description="Các đánh giá từ hàng xóm sẽ xuất hiện tại đây sau khi hoàn thành đơn hàng."
+            />
+          }
+        </section>
+      </div>
+    </div>
+  </main>
+} @else {
+  <main class="profile-page">
+    <div class="ant-container">
+      <app-empty-state
+        icon="bi-person-x"
+        title="Không tìm thấy người dùng"
+        description="Tài khoản này có thể đã bị xoá hoặc không tồn tại."
+      />
+    </div>
+  </main>
+}
+
+@if (showReport()) {
+  <app-ui-dialog title="Báo cáo tài khoản" [width]="520" (closed)="closeReport()"
+    ><div class="dialog-form">
+      <p>Cho AntGo biết vì sao bạn báo cáo tài khoản này. Đội ngũ hỗ trợ sẽ xem xét trong 24 giờ.</p>
+      <span class="ant-label">Lý do *</span>
+      <div class="reason-list">
+        @for (reasonOption of reportReasons; track reasonOption) {
+          <button
+            type="button"
+            class="reason-option"
+            [class.active]="selectedReportReason() === reasonOption"
+            (click)="selectedReportReason.set(reasonOption)"
+          >
+            <span class="reason-radio"></span>{{ reasonOption }}
+          </button>
+        }
+      </div>
+      <label
+        ><span class="ant-label">Mô tả chi tiết (tuỳ chọn)</span
+        ><textarea
+          class="ant-field"
+          [(ngModel)]="reportDetails"
+          placeholder="Mô tả thêm để AntGo xử lý nhanh hơn..."
+        ></textarea
+      ></label>
+    </div>
+    <div dialog-actions>
+      <button class="ant-btn ant-btn--secondary" (click)="closeReport()">Huỷ</button
+      ><button class="ant-btn ant-btn--danger" (click)="submitReport()">Gửi báo cáo</button>
+    </div></app-ui-dialog
+  >
+}

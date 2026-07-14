@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { DEMO_DATABASE } from '../../core/mock';
 import { PostCard } from './post-card';
@@ -9,7 +10,10 @@ describe('PostCard', () => {
   const author = DEMO_DATABASE.users.find((user) => user.id === post.authorId);
 
   beforeEach(async () => {
-    await TestBed.configureTestingModule({ imports: [PostCard] }).compileComponents();
+    await TestBed.configureTestingModule({
+      imports: [PostCard],
+      providers: [provideRouter([])],
+    }).compileComponents();
     fixture = TestBed.createComponent(PostCard);
     fixture.componentRef.setInput('post', post);
     fixture.componentRef.setInput('author', author);

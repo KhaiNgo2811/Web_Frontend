@@ -79,7 +79,11 @@
 
     <aside class="detail-panel__aside">
       <div class="detail-panel__profile">
-        <span class="detail-panel__avatar" aria-hidden="true">{{ initials() }}</span>
+        @if (author(); as user) {
+          <a class="detail-panel__avatar" [routerLink]="['/users', user.id]">{{ initials() }}</a>
+        } @else {
+          <span class="detail-panel__avatar" aria-hidden="true">{{ initials() }}</span>
+        }
         <div>
           <small>Người đăng</small>
           <h2>{{ author()?.displayName ?? 'Thành viên AntGo' }}</h2>
