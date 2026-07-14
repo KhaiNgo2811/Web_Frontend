@@ -1,0 +1,101 @@
+<main class="help-page">
+  <section class="help-hero">
+    <div class="ant-container help-hero__inner">
+      <span class="help-kicker">Chúng tôi luôn lắng nghe</span>
+      <h1>Trợ giúp &amp; Góp ý</h1>
+      <p>Cần hỗ trợ, muốn báo lỗi hay có ý tưởng giúp AntGo tốt hơn? Đội ngũ AntGo ở đây để giúp bạn.</p>
+    </div>
+  </section>
+
+  <section class="help-section">
+    <div class="ant-container">
+      <div class="help-channel-grid">
+        @for (channel of channels; track channel.title) {
+          <article class="help-channel">
+            <span class="help-channel__icon"><i class="bi {{ channel.icon }}" aria-hidden="true"></i></span>
+            <h3>{{ channel.title }}</h3>
+            <p>{{ channel.description }}</p>
+            @if (channel.href.startsWith('/')) {
+              <a [routerLink]="channel.href" class="help-channel__action">{{ channel.action }}</a>
+            } @else {
+              <a [href]="channel.href" class="help-channel__action">{{ channel.action }}</a>
+            }
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="help-section help-section--soft">
+    <div class="ant-container help-layout">
+      <div class="help-faq">
+        <h2>Câu hỏi thường gặp</h2>
+        <div class="help-faq-list">
+          @for (faq of faqs; track faq.question; let index = $index) {
+            <article class="help-faq-item" [class.open]="openFaqIndex() === index">
+              <button type="button" (click)="toggleFaq(index)">
+                <span>{{ faq.question }}</span>
+                <i class="bi" [class.bi-plus]="openFaqIndex() !== index" [class.bi-dash]="openFaqIndex() === index" aria-hidden="true"></i>
+              </button>
+              @if (openFaqIndex() === index) {
+                <p>{{ faq.answer }}</p>
+              }
+            </article>
+          }
+        </div>
+      </div>
+
+      <div class="help-form ant-card">
+        <h2>Gửi góp ý &amp; báo lỗi</h2>
+        @if (!submitted()) {
+          <div class="help-form__categories" role="group" aria-label="Chọn loại góp ý">
+            <button
+              type="button"
+              [class.active]="category() === 'bug'"
+              (click)="setCategory('bug')"
+            >
+              <i class="bi bi-bug" aria-hidden="true"></i> Báo lỗi
+            </button>
+            <button
+              type="button"
+              [class.active]="category() === 'feature'"
+              (click)="setCategory('feature')"
+            >
+              <i class="bi bi-stars" aria-hidden="true"></i> Đề xuất tính năng
+            </button>
+            <button
+              type="button"
+              [class.active]="category() === 'other'"
+              (click)="setCategory('other')"
+            >
+              <i class="bi bi-chat-square-text" aria-hidden="true"></i> Khác
+            </button>
+          </div>
+          <label class="ant-label" for="feedback-message">Mô tả chi tiết</label>
+          <textarea
+            id="feedback-message"
+            class="ant-field help-form__textarea"
+            rows="5"
+            placeholder="Mô tả lỗi bạn gặp phải hoặc ý tưởng của bạn..."
+            [value]="message()"
+            (input)="setMessage($any($event.target).value)"
+          ></textarea>
+          @if (error()) {
+            <p class="help-form__error">{{ error() }}</p>
+          }
+          <button type="button" class="ant-btn ant-btn--primary help-form__submit" (click)="submitFeedback()">
+            Gửi góp ý
+          </button>
+        } @else {
+          <div class="help-form__success">
+            <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+            <p>Cảm ơn bạn! Góp ý của bạn đã được ghi nhận.</p>
+            <button type="button" class="ant-btn ant-btn--secondary" (click)="sendAnother()">
+              Gửi góp ý khác
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+</main>

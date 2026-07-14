@@ -67,12 +67,61 @@
             <span>{{ userInitials() }}</span>
             <div>
               <strong>{{ currentUser()?.displayName }}</strong>
-              <small>{{ currentUser()?.email }}</small>
+              <small
+                >{{ currentUser()?.location?.building }}
+                @if (currentUser()?.location?.room) {
+                  · Phòng {{ currentUser()?.location?.room }}
+                }</small
+              >
+              <span class="account-summary__rating">
+                <i class="bi bi-star-fill" aria-hidden="true"></i> {{ currentUser()?.reputationScore ?? '—' }}
+                · {{ currentUser()?.completedCount }} giao dịch
+              </span>
             </div>
           </div>
-          <a routerLink="/account" (click)="openMenu.set(null)">Tài khoản của tôi</a>
-          <a routerLink="/orders" (click)="openMenu.set(null)">Đơn hàng</a>
-          <button type="button" class="menu-logout" (click)="logout()">Đăng xuất</button>
+          <a class="menu-row" routerLink="/account" (click)="openMenu.set(null)">
+            <span class="menu-row__icon"><i class="bi bi-person" aria-hidden="true"></i></span>
+            <span class="menu-row__text"><strong>Tài khoản</strong><small>Hồ sơ, đánh giá, thống kê</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </a>
+          <a
+            class="menu-row"
+            routerLink="/account"
+            [queryParams]="{ tab: 'activity' }"
+            (click)="openMenu.set(null)"
+          >
+            <span class="menu-row__icon"><i class="bi bi-pencil-square" aria-hidden="true"></i></span>
+            <span class="menu-row__text"
+              ><strong>Bài đăng của tôi</strong><small>{{ ownOpenPostsCount() }} bài đang mở</small></span
+            >
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </a>
+          <a
+            class="menu-row"
+            routerLink="/account"
+            [queryParams]="{ tab: 'settings' }"
+            (click)="openMenu.set(null)"
+          >
+            <span class="menu-row__icon"><i class="bi bi-gear" aria-hidden="true"></i></span>
+            <span class="menu-row__text"><strong>Cài đặt</strong><small>Thông báo, bảo mật, khu vực</small></span>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </a>
+          <a
+            class="menu-row"
+            routerLink="/account"
+            [queryParams]="{ tab: 'help' }"
+            (click)="openMenu.set(null)"
+          >
+            <span class="menu-row__icon"><i class="bi bi-question-circle" aria-hidden="true"></i></span>
+            <span class="menu-row__text"
+              ><strong>Trợ giúp &amp; Góp ý</strong><small>Báo lỗi, đề xuất tính năng</small></span
+            >
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          </a>
+          <button type="button" class="menu-row menu-row--danger menu-logout" (click)="logout()">
+            <span class="menu-row__icon"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></span>
+            <span class="menu-row__text"><strong>Đăng xuất</strong></span>
+          </button>
         </div>
       }
     </div>
@@ -88,8 +137,8 @@
       <span class="site-footer__tagline">Việc nhỏ góp lợi, khu mình ấm hơn.</span>
     </div>
     <nav aria-label="Điều hướng chân trang">
-      <a href="#about">Giới thiệu</a><a href="#privacy">Chính sách</a><a href="#terms">Điều khoản</a
-      ><a href="#help">Góp ý</a>
+      <a routerLink="/about">Giới thiệu</a><a routerLink="/policy">Điều khoản &amp; Chính sách</a
+      ><a routerLink="/help">Góp ý</a>
     </nav>
   </div>
   <div class="site-footer__bottom">

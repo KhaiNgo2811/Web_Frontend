@@ -1,200 +1,340 @@
-<section class="account-page">
-  <!-- Header Banner -->
-  <div class="account-header">
-    <div class="header-top">
-      <div class="header-left">
-        <div class="avatar">AN</div>
-        <div class="header-info">
-          <h1 class="user-name">Nguyễn Văn A</h1>
-          <p class="user-location">KTX Khu B · Phòng 304 · Thành viên từ tháng 9/2025</p>
-          <div class="user-rating">
-            <span class="rating-score">4.8</span>
-            <span class="star"><i class="bi bi-star-fill" aria-hidden="true"></i></span>
-            <span class="rating-count">32 đánh giá</span>
+@if (currentUser(); as user) {
+  <section class="account-page">
+    <div class="account-layout">
+      <aside class="account-sidebar">
+        <div class="profile-card ant-card">
+          <div class="profile-card__avatar">
+            {{ user.displayName | slice: 0 : 1 }}<span class="profile-status" aria-hidden="true"></span>
           </div>
-        </div>
-      </div>
-      <button class="btn-edit"><i class="bi bi-pencil-square" aria-hidden="true"></i> Chỉnh sửa</button>
-    </div>
-    <div class="header-stats">
-      <div class="stat-item">
-        <span class="stat-value">47</span>
-        <span class="stat-label">Giao dịch</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value">12</span>
-        <span class="stat-label">Đang đăng</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-value">100%</span>
-        <span class="stat-label">Hoàn thành</span>
-      </div>
-    </div>
-  </div>
+          <h1 class="profile-card__name">{{ user.displayName }}</h1>
+          <p class="profile-card__email">{{ user.email }}</p>
+          <span class="profile-card__location"
+            ><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> {{ user.location.building }}
+            @if (user.location.room) {
+              · Phòng {{ user.location.room }}
+            }</span
+          >
 
-  <!-- Cards Grid -->
-  <div class="cards-grid">
-    <!-- Thống kê -->
-    <div class="card ant-card">
-      <h2 class="card-title">Thống kê</h2>
-      <div class="card-divider"></div>
-      <div class="menu-list">
-        <div class="menu-item">
-          <div class="menu-icon">
-            <i class="bi bi-bag-check" aria-hidden="true"></i>
-          </div>
-          <span class="menu-label">Đơn đã đặt</span>
-          <span class="menu-value">28 đơn</span>
+          <dl class="profile-card__facts">
+            @if (user.university) {
+              <div>
+                <dt>Đại học</dt>
+                <dd>{{ user.university }}</dd>
+              </div>
+            }
+            <div>
+              <dt>Gia nhập từ</dt>
+              <dd>{{ formatJoinDate(user.createdAt) }}</dd>
+            </div>
+            <div>
+              <dt>Độ uy tín</dt>
+              <dd>
+                <i class="bi bi-star-fill" aria-hidden="true"></i> {{ user.reputationScore ?? '—' }}
+                ({{ user.completedCount }} đánh giá)
+              </dd>
+            </div>
+          </dl>
         </div>
-        <div class="menu-item">
-          <div class="menu-icon">
-            <i class="bi bi-check2-square" aria-hidden="true"></i>
-          </div>
-          <span class="menu-label">Đơn đã nhận làm</span>
-          <span class="menu-value">19 đơn</span>
-        </div>
-        <div class="menu-item">
-          <div class="menu-icon">
-            <i class="bi bi-journal-text" aria-hidden="true"></i>
-          </div>
-          <span class="menu-label">Bài đăng đang mở</span>
-          <span class="menu-value">12 bài</span>
-        </div>
-        <div class="menu-item">
-          <div class="menu-icon">
-            <i class="bi bi-check-circle" aria-hidden="true"></i>
-          </div>
-          <span class="menu-label">Tỉ lệ hoàn thành</span>
-          <span class="menu-value text-green">100%</span>
-        </div>
-        <div class="menu-item">
-          <div class="menu-icon">
-            <i class="bi bi-star" aria-hidden="true"></i>
-          </div>
-          <span class="menu-label">Điểm uy tín</span>
-          <span class="menu-value text-orange">4.8 sao</span>
-        </div>
-      </div>
-    </div>
 
-    <!-- Tài khoản -->
-    <div class="card ant-card">
-      <h2 class="card-title">Tài khoản</h2>
-      <div class="card-divider"></div>
-      <div class="menu-list">
-        <a class="menu-item" href="#">
-          <div class="menu-icon">
-            <i class="bi bi-person" aria-hidden="true"></i>
+        @if (wallet.summary(); as summary) {
+          <div class="wallet-card">
+            <h2>Ví Ant Xu</h2>
+            <div class="wallet-card__row">
+              <div>
+                <span>Số dư khả dụng</span>
+                <strong>{{ summary.balance * 1000 | number }}đ</strong>
+              </div>
+              <div>
+                <span>Xu tích lũy</span>
+                <strong><i class="bi bi-coin" aria-hidden="true"></i> {{ summary.balance | number }} Xu</strong>
+              </div>
+            </div>
+            <div class="wallet-card__actions">
+              <a routerLink="/wallet" class="ant-btn ant-btn--light">Nạp thêm Xu</a>
+              <button type="button" class="ant-btn ant-btn--ghost-light">Rút Xu</button>
+            </div>
+            <a routerLink="/wallet" class="wallet-card__link"
+              >Chi tiết &amp; Gói ưu đãi Ant Xu <i class="bi bi-arrow-right" aria-hidden="true"></i
+            ></a>
           </div>
-          <div class="menu-text">
-            <span class="menu-label">Chỉnh sửa hồ sơ</span>
-            <span class="menu-desc">Tên, ảnh đại diện, phòng</span>
-          </div>
-          <span class="menu-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
-        </a>
-        <a class="menu-item" href="#">
-          <div class="menu-icon">
-            <i class="bi bi-star" aria-hidden="true"></i>
-          </div>
-          <div class="menu-text">
-            <span class="menu-label">Đánh giá nhận được</span>
-            <span class="menu-desc">4.8 <i class="bi bi-star-fill" aria-hidden="true"></i> · 32 nhận xét</span>
-          </div>
-          <span class="menu-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
-        </a>
-        <a class="menu-item" href="#">
-          <div class="menu-icon">
-            <i class="bi bi-clock-history" aria-hidden="true"></i>
-          </div>
-          <div class="menu-text">
-            <span class="menu-label">Lịch sử giao dịch</span>
-            <span class="menu-desc">47 giao dịch đã hoàn thành</span>
-          </div>
-          <span class="menu-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
-        </a>
-        <a class="menu-item" href="#">
-          <div class="menu-icon">
-            <i class="bi bi-link-45deg" aria-hidden="true"></i>
-          </div>
-          <div class="menu-text">
-            <span class="menu-label">Liên kết mạng xã hội</span>
-            <span class="menu-desc">Facebook, Zalo</span>
-          </div>
-          <span class="menu-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
-        </a>
-      </div>
-    </div>
+        }
+      </aside>
 
-    <!-- Cài đặt -->
-    <div class="card ant-card">
-      <h2 class="card-title">Cài đặt</h2>
-      <div class="card-divider"></div>
-      <div class="menu-list">
-        <a class="menu-item" href="#">
-          <div class="menu-icon">
-            <i class="bi bi-bell" aria-hidden="true"></i>
-          </div>
-          <div class="menu-text">
-            <span class="menu-label">Thông báo</span>
-            <span class="menu-desc">Đơn hàng, tin nhắn, đánh giá</span>
-          </div>
-          <span class="menu-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
-        </a>
-        <a class="menu-item" href="#">
-          <div class="menu-icon">
-            <i class="bi bi-shield-lock" aria-hidden="true"></i>
-          </div>
-          <div class="menu-text">
-            <span class="menu-label">Bảo mật</span>
-            <span class="menu-desc">Đổi mật khẩu, xác thực 2 bước</span>
-          </div>
-          <span class="menu-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
-        </a>
-        <a class="menu-item" href="#">
-          <div class="menu-icon">
-            <i class="bi bi-file-text" aria-hidden="true"></i>
-          </div>
-          <div class="menu-text">
-            <span class="menu-label">Điều khoản & Chính sách</span>
-            <span class="menu-desc">Quy định sử dụng AntGo</span>
-          </div>
-          <span class="menu-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
-        </a>
-      </div>
-    </div>
+      <section class="account-main">
+        <nav class="account-tabs" role="tablist" aria-label="Mục tài khoản">
+          @for (tab of tabs; track tab.id) {
+            <button
+              type="button"
+              role="tab"
+              [attr.aria-selected]="activeTab() === tab.id"
+              [class.active]="activeTab() === tab.id"
+              (click)="selectTab(tab.id)"
+            >
+              {{ tab.label }}
+            </button>
+          }
+        </nav>
 
-    <!-- Khác -->
-    <div class="card ant-card">
-      <h2 class="card-title">Khác</h2>
-      <div class="card-divider"></div>
-      <div class="menu-list">
-        <a class="menu-item" href="#">
-          <div class="menu-icon">
-            <i class="bi bi-question-circle" aria-hidden="true"></i>
-          </div>
-          <div class="menu-text">
-            <span class="menu-label">Trợ giúp & Góp ý</span>
-            <span class="menu-desc">Báo lỗi, đề xuất tính năng</span>
-          </div>
-          <span class="menu-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
-        </a>
-        <a class="menu-item" href="#">
-          <div class="menu-icon">
-            <i class="bi bi-info-circle" aria-hidden="true"></i>
-          </div>
-          <div class="menu-text">
-            <span class="menu-label">Giới thiệu AntGo</span>
-            <span class="menu-desc">Phiên bản 1.0 · Đồ án tốt nghiệp</span>
-          </div>
-          <span class="menu-arrow"><i class="bi bi-chevron-right" aria-hidden="true"></i></span>
-        </a>
-        <a class="menu-item menu-item--danger" href="#">
-          <div class="menu-icon menu-icon--danger">
-            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-          </div>
-          <span class="menu-label menu-label--danger">Đăng xuất</span>
-        </a>
-      </div>
+        @switch (activeTab()) {
+          @case ('profile') {
+            <div class="ant-card tab-panel">
+              <div class="tab-panel__heading">
+                <h2>Thông tin cá nhân</h2>
+                @if (!editingProfile()) {
+                  <button type="button" class="ant-btn ant-btn--secondary" (click)="startEditProfile()">
+                    Chỉnh sửa hồ sơ
+                  </button>
+                }
+              </div>
+
+              @if (!editingProfile()) {
+                <dl class="info-list">
+                  <div>
+                    <dt>Họ và tên</dt>
+                    <dd>{{ user.displayName }}</dd>
+                  </div>
+                  <div>
+                    <dt>Số điện thoại</dt>
+                    <dd>{{ user.phone }}</dd>
+                  </div>
+                  <div>
+                    <dt>Email sinh viên</dt>
+                    <dd>{{ user.email }}</dd>
+                  </div>
+                  <div>
+                    <dt>Phòng / Tòa</dt>
+                    <dd>
+                      @if (user.location.room) {
+                        Phòng {{ user.location.room }},
+                      }
+                      {{ user.location.building }}
+                    </dd>
+                  </div>
+                  @if (user.dateOfBirth) {
+                    <div>
+                      <dt>Ngày sinh</dt>
+                      <dd>{{ formatBirthDate(user.dateOfBirth) }}</dd>
+                    </div>
+                  }
+                </dl>
+              } @else {
+                <div class="info-edit">
+                  <label class="ant-label" for="edit-name">Họ và tên</label>
+                  <input
+                    id="edit-name"
+                    class="ant-field"
+                    type="text"
+                    [value]="editDisplayName()"
+                    (input)="editDisplayName.set($any($event.target).value)"
+                  />
+                  <label class="ant-label" for="edit-building">Tòa nhà</label>
+                  <input
+                    id="edit-building"
+                    class="ant-field"
+                    type="text"
+                    [value]="editBuilding()"
+                    (input)="editBuilding.set($any($event.target).value)"
+                  />
+                  <label class="ant-label" for="edit-room">Phòng</label>
+                  <input
+                    id="edit-room"
+                    class="ant-field"
+                    type="text"
+                    [value]="editRoom()"
+                    (input)="editRoom.set($any($event.target).value)"
+                  />
+                  <div class="info-edit__actions">
+                    <button type="button" class="ant-btn ant-btn--secondary" (click)="cancelEditProfile()">
+                      Huỷ
+                    </button>
+                    <button
+                      type="button"
+                      class="ant-btn ant-btn--primary"
+                      [disabled]="savingProfile()"
+                      (click)="saveProfile()"
+                    >
+                      Lưu thay đổi
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          @case ('activity') {
+            <div class="ant-card tab-panel">
+              <h2>Thống kê hoạt động</h2>
+              <div class="stat-grid">
+                <div class="stat-tile stat-tile--orange">
+                  <strong>{{ ownOpenPosts() }}</strong>
+                  <span>Đang đăng bài</span>
+                </div>
+                <div class="stat-tile stat-tile--green">
+                  <strong>{{ user.completedCount }}</strong>
+                  <span>Hoàn thành</span>
+                </div>
+                <div class="stat-tile stat-tile--blue">
+                  <strong>{{ user.completionRate * 100 | number: '1.0-0' }}%</strong>
+                  <span>Hài lòng</span>
+                </div>
+                <div class="stat-tile stat-tile--yellow">
+                  <strong>{{ user.reputationScore ?? '—' }}<i class="bi bi-star-fill" aria-hidden="true"></i></strong>
+                  <span>Điểm đánh giá</span>
+                </div>
+              </div>
+
+              <h3>Báo cáo chi tiết giao dịch</h3>
+              <dl class="report-list">
+                <div>
+                  <dt>Đơn hàng đã đặt</dt>
+                  <dd>{{ orderedCount() }} đơn</dd>
+                </div>
+                <div>
+                  <dt>Đơn hàng đã nhận làm</dt>
+                  <dd>{{ providedCount() }} đơn</dd>
+                </div>
+                <div>
+                  <dt>Bài đăng đang mở</dt>
+                  <dd>{{ ownOpenPosts() }} bài đăng</dd>
+                </div>
+                <div>
+                  <dt>Tỷ lệ hoàn thành</dt>
+                  <dd>{{ user.completionRate * 100 | number: '1.0-0' }}%</dd>
+                </div>
+                <div>
+                  <dt>Điểm uy tín</dt>
+                  <dd>{{ user.reputationScore ?? '—' }} sao</dd>
+                </div>
+              </dl>
+            </div>
+          }
+
+          @case ('settings') {
+            <div class="ant-card tab-panel">
+              <h2>Thiết lập ứng dụng</h2>
+
+              <h3>Nhận thông báo</h3>
+              <div class="setting-row">
+                <div>
+                  <strong>Thông báo đẩy (Push notification)</strong>
+                  <p>Nhận thông báo trực tiếp trên trình duyệt hoặc thiết bị di động.</p>
+                </div>
+                <button
+                  type="button"
+                  class="toggle"
+                  [class.on]="pushNotifications()"
+                  (click)="togglePush()"
+                  [attr.aria-pressed]="pushNotifications()"
+                >
+                  <span></span>
+                </button>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>Thông báo qua Email sinh viên</strong>
+                  <p>Gửi tóm tắt hoạt động của bạn vào email sinh viên hằng tuần.</p>
+                </div>
+                <button
+                  type="button"
+                  class="toggle"
+                  [class.on]="emailNotifications()"
+                  (click)="toggleEmail()"
+                  [attr.aria-pressed]="emailNotifications()"
+                >
+                  <span></span>
+                </button>
+              </div>
+
+              <h3>Liên kết mạng xã hội</h3>
+              <div class="social-row">
+                <span><i class="bi bi-facebook" aria-hidden="true"></i> Facebook</span>
+                @if (user.social?.facebook) {
+                  <span class="social-status social-status--linked"
+                    >Đã kết nối ({{ user.social?.facebook }})</span
+                  >
+                  <button
+                    type="button"
+                    class="ant-btn ant-btn--secondary"
+                    [disabled]="socialBusy()"
+                    (click)="unlinkFacebook()"
+                  >
+                    Hủy
+                  </button>
+                } @else {
+                  <span class="social-status">Chưa liên kết</span>
+                  <button type="button" class="ant-btn ant-btn--secondary" disabled>Liên kết</button>
+                }
+              </div>
+              <div class="social-row">
+                <span><i class="bi bi-chat-dots" aria-hidden="true"></i> Zalo</span>
+                @if (user.social?.zalo) {
+                  <span class="social-status social-status--linked"
+                    >Đã kết nối ({{ user.social?.zalo }})</span
+                  >
+                  <button type="button" class="ant-btn ant-btn--secondary" disabled>Hủy</button>
+                } @else {
+                  <span class="social-status">Chưa liên kết</span>
+                  <button
+                    type="button"
+                    class="ant-btn ant-btn--secondary"
+                    [disabled]="socialBusy()"
+                    (click)="linkZalo()"
+                  >
+                    Liên kết
+                  </button>
+                }
+              </div>
+
+              <h3>Bảo mật tài khoản</h3>
+              <div class="social-row">
+                <span><i class="bi bi-shield-lock" aria-hidden="true"></i> Đổi mật khẩu bảo mật</span>
+                <span class="social-status">Nên cập nhật mật khẩu 3 tháng một lần</span>
+                <a routerLink="/auth/forgot-password" class="ant-btn ant-btn--secondary">Thay đổi</a>
+              </div>
+              <div class="social-row">
+                <span><i class="bi bi-phone" aria-hidden="true"></i> Xác thực 2 bước (2FA)</span>
+                <span class="social-status">Bảo vệ tài khoản qua mã OTP khi đăng nhập thiết bị mới</span>
+                <button type="button" class="ant-btn ant-btn--secondary" disabled>Thiết lập</button>
+              </div>
+            </div>
+          }
+
+          @case ('help') {
+            <div class="ant-card tab-panel">
+              <h2>Trợ giúp &amp; Giới thiệu</h2>
+              <div class="help-list">
+                <a class="help-row" routerLink="/help">
+                  <span class="help-row__icon"><i class="bi bi-question-circle" aria-hidden="true"></i></span>
+                  <div>
+                    <strong>Trợ giúp &amp; Góp ý</strong>
+                    <p>Báo lỗi ứng dụng hoặc đề xuất tính năng hữu ích cho AntGo.</p>
+                  </div>
+                  <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
+                <a class="help-row" routerLink="/policy">
+                  <span class="help-row__icon"><i class="bi bi-file-text" aria-hidden="true"></i></span>
+                  <div>
+                    <strong>Điều khoản &amp; Chính sách</strong>
+                    <p>Quy định sử dụng, quyền lợi thành viên nội khu KTX.</p>
+                  </div>
+                  <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
+                <a class="help-row" routerLink="/about">
+                  <span class="help-row__icon"><i class="bi bi-info-circle" aria-hidden="true"></i></span>
+                  <div>
+                    <strong>Giới thiệu AntGo</strong>
+                    <p>Hệ thống hỗ trợ sinh viên KTX — Phiên bản 1.0 (Đồ án tốt nghiệp)</p>
+                  </div>
+                  <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
+              </div>
+              <button type="button" class="ant-btn logout-btn" (click)="session.logout()">
+                Đăng xuất khỏi tài khoản
+              </button>
+            </div>
+          }
+        }
+      </section>
     </div>
-  </div>
-</section>
+  </section>
+}

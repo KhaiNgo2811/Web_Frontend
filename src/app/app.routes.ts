@@ -216,6 +216,13 @@ export const routes: Routes = [
           import('./features/wallet/wallet-page/wallet-page').then((m) => m.WalletPage),
       },
       {
+        path: 'wallet/history',
+        title: 'Ant Xu: Lịch sử giao dịch | AntGo',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/wallet/wallet-history/wallet-history').then((m) => m.WalletHistory),
+      },
+      {
         path: 'notifications',
         canActivate: [authGuard],
         loadComponent: () =>
@@ -228,6 +235,22 @@ export const routes: Routes = [
         canActivate: [authGuard],
         loadComponent: () =>
           import('./features/account/account-page/account-page').then((m) => m.AccountPage),
+      },
+      {
+        path: 'policy',
+        title: 'Điều khoản và chính sách | AntGo',
+        loadComponent: () =>
+          import('./features/policy/policy-page/policy-page').then((m) => m.PolicyPage),
+      },
+      {
+        path: 'about',
+        title: 'Giới thiệu AntGo | AntGo',
+        loadComponent: () => import('./features/about/about-page/about-page').then((m) => m.AboutPage),
+      },
+      {
+        path: 'help',
+        title: 'Trợ giúp & Góp ý | AntGo',
+        loadComponent: () => import('./features/help/help-page/help-page').then((m) => m.HelpPage),
       },
       { path: '', pathMatch: 'full', redirectTo: 'feed' },
     ],

@@ -33,6 +33,8 @@ export interface User {
   reviewParticipationRate: number;
   tokenBalance: number;
   createdAt: IsoDateString;
+  university?: string;
+  dateOfBirth?: IsoDateString;
 }
 
 export type UpdateUserInput = Partial<
