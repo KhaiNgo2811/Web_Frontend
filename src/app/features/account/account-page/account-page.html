@@ -303,7 +303,7 @@
             <div class="ant-card tab-panel">
               <h2>Trợ giúp &amp; Giới thiệu</h2>
               <div class="help-list">
-                <a class="help-row" href="mailto:support@antgo.vn">
+                <a class="help-row" routerLink="/help">
                   <span class="help-row__icon"><i class="bi bi-question-circle" aria-hidden="true"></i></span>
                   <div>
                     <strong>Trợ giúp &amp; Góp ý</strong>
@@ -311,20 +311,22 @@
                   </div>
                   <i class="bi bi-arrow-right" aria-hidden="true"></i>
                 </a>
-                <div class="help-row help-row--static">
+                <a class="help-row" routerLink="/policy">
                   <span class="help-row__icon"><i class="bi bi-file-text" aria-hidden="true"></i></span>
                   <div>
                     <strong>Điều khoản &amp; Chính sách</strong>
                     <p>Quy định sử dụng, quyền lợi thành viên nội khu KTX.</p>
                   </div>
-                </div>
-                <div class="help-row help-row--static">
+                  <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
+                <a class="help-row" routerLink="/about">
                   <span class="help-row__icon"><i class="bi bi-info-circle" aria-hidden="true"></i></span>
                   <div>
                     <strong>Giới thiệu AntGo</strong>
                     <p>Hệ thống hỗ trợ sinh viên KTX — Phiên bản 1.0 (Đồ án tốt nghiệp)</p>
                   </div>
-                </div>
+                  <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </a>
               </div>
               <button type="button" class="ant-btn logout-btn" (click)="session.logout()">
                 Đăng xuất khỏi tài khoản

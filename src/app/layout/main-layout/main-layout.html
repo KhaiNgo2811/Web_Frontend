@@ -84,7 +84,12 @@
             <span class="menu-row__text"><strong>Tài khoản</strong><small>Hồ sơ, đánh giá, thống kê</small></span>
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
           </a>
-          <a class="menu-row" routerLink="/my-posts" (click)="openMenu.set(null)">
+          <a
+            class="menu-row"
+            routerLink="/account"
+            [queryParams]="{ tab: 'activity' }"
+            (click)="openMenu.set(null)"
+          >
             <span class="menu-row__icon"><i class="bi bi-pencil-square" aria-hidden="true"></i></span>
             <span class="menu-row__text"
               ><strong>Bài đăng của tôi</strong><small>{{ ownOpenPostsCount() }} bài đang mở</small></span
@@ -113,8 +118,9 @@
             >
             <i class="bi bi-chevron-right" aria-hidden="true"></i>
           </a>
-          <button type="button" class="menu-logout" (click)="logout()">
-            <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Đăng xuất
+          <button type="button" class="menu-row menu-row--danger menu-logout" (click)="logout()">
+            <span class="menu-row__icon"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></span>
+            <span class="menu-row__text"><strong>Đăng xuất</strong></span>
           </button>
         </div>
       }
@@ -131,8 +137,8 @@
       <span class="site-footer__tagline">Việc nhỏ góp lợi, khu mình ấm hơn.</span>
     </div>
     <nav aria-label="Điều hướng chân trang">
-      <a href="#about">Giới thiệu</a><a href="#privacy">Chính sách</a><a href="#terms">Điều khoản</a
-      ><a href="#help">Góp ý</a>
+      <a routerLink="/about">Giới thiệu</a><a routerLink="/policy">Điều khoản &amp; Chính sách</a
+      ><a routerLink="/help">Góp ý</a>
     </nav>
   </div>
   <div class="site-footer__bottom">

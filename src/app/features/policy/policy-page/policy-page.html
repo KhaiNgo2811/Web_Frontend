@@ -1,0 +1,184 @@
+<main class="policy-page">
+  <div class="ant-container policy-layout">
+    <aside class="policy-sidebar">
+      <label class="policy-search">
+        <i class="bi bi-search" aria-hidden="true"></i>
+        <input
+          type="search"
+          placeholder="Tìm kiếm từ khóa..."
+          [value]="searchTerm()"
+          (input)="setSearch($any($event.target).value)"
+        />
+      </label>
+
+      <h2>Danh mục điều khoản</h2>
+      <nav class="policy-toc" aria-label="Mục lục chính sách">
+        @for (section of filteredSections(); track section.id) {
+          <button
+            type="button"
+            class="policy-toc__item"
+            [class.active]="activeSectionId() === section.id"
+            (click)="scrollToSection(section.id)"
+          >
+            {{ section.numbering }}. {{ section.title }}
+          </button>
+        }
+      </nav>
+
+      <div class="policy-sidebar__actions">
+        <button type="button" class="ant-btn ant-btn--secondary" (click)="print()">
+          <i class="bi bi-printer" aria-hidden="true"></i> In tài liệu
+        </button>
+        <button type="button" class="ant-btn ant-btn--secondary" (click)="print()">
+          <i class="bi bi-download" aria-hidden="true"></i> Tải PDF
+        </button>
+      </div>
+    </aside>
+
+    <article class="policy-content ant-card">
+      <header class="policy-content__header">
+        <h1>{{ policy.title }}</h1>
+        <p class="policy-content__meta">Cập nhật lần cuối: Tháng 7, 2026 · Phiên bản 2.0</p>
+        <p class="policy-content__summary">{{ policy.summary }}</p>
+      </header>
+
+      @for (section of policy.sections; track section.id) {
+        <section class="policy-section" [id]="section.id">
+          <h2>{{ section.numbering }}. {{ section.title }}</h2>
+
+          @if (section.blocks) {
+            @for (block of section.blocks; track $index) {
+              @switch (block.type) {
+                @case ('paragraph') {
+                  <p class="policy-paragraph">{{ block.text }}</p>
+                }
+                @case ('list') {
+                  @if (block.ordered) {
+                    <ol class="policy-list policy-list--ordered">
+                      @for (item of block.items; track item.text) {
+                        <li>
+                          @if (item.label) {
+                            <strong>{{ item.label }}</strong>
+                          }
+                          {{ item.text }}
+                        </li>
+                      }
+                    </ol>
+                  } @else {
+                    <ul class="policy-list">
+                      @for (item of block.items; track item.text) {
+                        <li>
+                          @if (item.label) {
+                            <strong>{{ item.label }}</strong>
+                          }
+                          {{ item.text }}
+                        </li>
+                      }
+                    </ul>
+                  }
+                }
+                @case ('table') {
+                  <figure class="policy-table-wrap">
+                    @if (block.caption) {
+                      <figcaption>{{ block.caption }}</figcaption>
+                    }
+                    <table class="policy-table">
+                      <thead>
+                        <tr>
+                          @for (col of block.columns; track col) {
+                            <th>{{ col }}</th>
+                          }
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (row of block.rows; track $index) {
+                          <tr>
+                            @for (cell of row; track $index) {
+                              <td>{{ cell }}</td>
+                            }
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </figure>
+                }
+                @case ('note') {
+                  <div class="policy-note"><strong>Lưu ý:</strong> {{ block.text }}</div>
+                }
+              }
+            }
+          }
+
+          @if (section.subsections) {
+            @for (sub of section.subsections; track sub.id) {
+              <div class="policy-subsection" [id]="sub.id">
+                <h3>{{ sub.numbering }} {{ sub.title }}</h3>
+
+                @for (block of sub.blocks; track $index) {
+                  @switch (block.type) {
+                    @case ('paragraph') {
+                      <p class="policy-paragraph">{{ block.text }}</p>
+                    }
+                    @case ('list') {
+                      @if (block.ordered) {
+                        <ol class="policy-list policy-list--ordered">
+                          @for (item of block.items; track item.text) {
+                            <li>
+                              @if (item.label) {
+                                <strong>{{ item.label }}</strong>
+                              }
+                              {{ item.text }}
+                            </li>
+                          }
+                        </ol>
+                      } @else {
+                        <ul class="policy-list">
+                          @for (item of block.items; track item.text) {
+                            <li>
+                              @if (item.label) {
+                                <strong>{{ item.label }}</strong>
+                              }
+                              {{ item.text }}
+                            </li>
+                          }
+                        </ul>
+                      }
+                    }
+                    @case ('table') {
+                      <figure class="policy-table-wrap">
+                        @if (block.caption) {
+                          <figcaption>{{ block.caption }}</figcaption>
+                        }
+                        <table class="policy-table">
+                          <thead>
+                            <tr>
+                              @for (col of block.columns; track col) {
+                                <th>{{ col }}</th>
+                              }
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (row of block.rows; track $index) {
+                              <tr>
+                                @for (cell of row; track $index) {
+                                  <td>{{ cell }}</td>
+                                }
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </figure>
+                    }
+                    @case ('note') {
+                      <div class="policy-note"><strong>Lưu ý:</strong> {{ block.text }}</div>
+                    }
+                  }
+                }
+              </div>
+            }
+          }
+        </section>
+      }
+    </article>
+  </div>
+</main>
