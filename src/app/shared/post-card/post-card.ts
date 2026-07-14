@@ -1,4 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import type { Post, ServiceCategory, User } from '../../core/models';
 import { StatusPill } from '../status-pill/status-pill';
@@ -14,7 +15,7 @@ const CATEGORY_META: Record<ServiceCategory, { icon: string; label: string }> = 
 
 @Component({
   selector: 'app-post-card',
-  imports: [StatusPill],
+  imports: [RouterLink, StatusPill],
   templateUrl: './post-card.html',
   styleUrl: './post-card.scss',
 })

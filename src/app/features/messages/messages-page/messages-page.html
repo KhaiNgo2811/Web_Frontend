@@ -45,7 +45,9 @@
         <button type="button" class="mobile-back" (click)="closeMobileDetail()">
           <i class="bi bi-arrow-left" aria-hidden="true"></i>
         </button>
-        <span class="avatar">{{ peerName(conversation).slice(0, 2).toUpperCase() }}</span>
+        <a class="avatar" [routerLink]="['/users', peerId(conversation)]">{{
+          peerName(conversation).slice(0, 2).toUpperCase()
+        }}</a>
         <div>
           <h2>{{ peerName(conversation) }}</h2>
           <p>{{ postTitle(conversation) }}</p>

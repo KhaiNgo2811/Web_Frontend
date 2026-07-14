@@ -181,6 +181,12 @@ export const routes: Routes = [
           import('./features/feed/post-detail-page/post-detail-page').then((m) => m.PostDetailPage),
       },
       {
+        path: 'users/:id',
+        title: 'Hồ sơ | AntGo',
+        loadComponent: () =>
+          import('./features/profile/user-profile/user-profile').then((m) => m.UserProfile),
+      },
+      {
         path: 'orders',
         canActivate: [authGuard],
         loadComponent: () =>
