@@ -101,6 +101,7 @@ h1 {
   color: var(--ant-orange-deep);
   background: var(--ant-orange-soft);
   font-size: 11px;
+  text-decoration: none;
   font-weight: 800;
 }
 
@@ -126,4 +127,47 @@ h1 {
   margin-top: 3px;
   color: var(--ant-muted);
   font-size: 10px;
+}
+
+.mobile-back {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .messenger {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: calc(100vh - 200px);
+    margin-block: 12px 24px;
+  }
+
+  aside {
+    border-right: 0;
+  }
+
+  article {
+    display: none;
+  }
+
+  .messenger.mobile-detail-open aside {
+    display: none;
+  }
+
+  .messenger.mobile-detail-open article {
+    display: grid;
+    height: calc(100vh - 130px);
+  }
+
+  .mobile-back {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    color: var(--ant-ink);
+    background: var(--ant-surface-soft);
+    font-size: 16px;
+  }
 }

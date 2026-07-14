@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import type { Conversation, MessageKind } from '../../../core/models';
 import { MarketplaceStore } from '../../../core/stores/marketplace.store';
@@ -10,7 +10,7 @@ import { StatusPill } from '../../../shared/status-pill/status-pill';
 
 @Component({
   selector: 'app-messages-page',
-  imports: [FormsModule, EmptyState, StatusPill],
+  imports: [FormsModule, RouterLink, EmptyState, StatusPill],
   templateUrl: './messages-page.html',
   styleUrls: ['./messages-page.scss', './messages-thread.scss'],
 })
@@ -23,6 +23,7 @@ export class MessagesPage {
   protected readonly selectedId = signal<string | null>(
     this.route.snapshot.paramMap.get('conversationId'),
   );
+  protected readonly mobileDetailOpen = signal(!!this.route.snapshot.paramMap.get('conversationId'));
   protected draft = '';
   protected readonly selected = computed<Conversation | undefined>(() => {
     const conversations = this.store.conversations();
@@ -33,8 +34,12 @@ export class MessagesPage {
   );
   protected readonly currentUserId = computed(() => this.session.currentUser()?.id ?? 'user-demo');
 
+  protected peerId(conversation: Conversation | undefined): string | undefined {
+    return conversation?.participantIds.find((id) => id !== this.currentUserId());
+  }
+
   protected peerName(conversation: Conversation | undefined): string {
-    const peerId = conversation?.participantIds.find((id) => id !== this.currentUserId());
+    const peerId = this.peerId(conversation);
     return this.store.users().find((user) => user.id === peerId)?.displayName ?? 'Thành viên AntGo';
   }
 
@@ -47,7 +52,12 @@ export class MessagesPage {
 
   protected selectConversation(id: string): void {
     this.selectedId.set(id);
+    this.mobileDetailOpen.set(true);
     void this.router.navigate(['/messages', id]);
+  }
+
+  protected closeMobileDetail(): void {
+    this.mobileDetailOpen.set(false);
   }
 
   protected send(kind: MessageKind = 'text'): void {

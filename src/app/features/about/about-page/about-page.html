@@ -1,0 +1,111 @@
+<main class="about-page">
+  <section class="about-hero">
+    <div class="ant-container about-hero__inner">
+      <span class="about-kicker">Nền tảng kết nối nội khu</span>
+      <h1>Kết nối hàng xóm,<br /><span>khu mình ấm hơn</span></h1>
+      <p>
+        AntGo là giải pháp công nghệ giúp cư dân TP HCM dễ dàng nhờ vả, chia sẻ và cùng nhau vận
+        hành khu ở của mình.
+      </p>
+      <div class="about-hero__actions">
+        <a routerLink="/feed" class="ant-btn ant-btn--primary">Khám phá cộng đồng</a>
+        <a routerLink="/posts/new" class="ant-btn ant-btn--secondary">Đăng đơn tự do</a>
+      </div>
+      <div class="about-stats">
+        @for (stat of stats; track stat.label) {
+          <div class="about-stats__item">
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <div class="ant-container">
+      <div class="about-section__heading">
+        <span class="about-kicker about-kicker--muted">Khát vọng phát triển</span>
+        <h2>Sứ mệnh của chúng tôi</h2>
+      </div>
+      <div class="about-mission-grid">
+        @for (mission of missions; track mission.title) {
+          <article class="about-card">
+            <span class="about-card__icon"><i class="bi {{ mission.icon }}" aria-hidden="true"></i></span>
+            <h3>{{ mission.title }}</h3>
+            <p>{{ mission.description }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section about-section--soft">
+    <div class="ant-container">
+      <div class="about-section__heading">
+        <span class="about-kicker about-kicker--muted">Quy trình đơn giản</span>
+        <h2>Cách thức AntGo hoạt động</h2>
+      </div>
+      <div class="about-step-grid">
+        @for (step of steps; track step.step) {
+          <article class="about-card about-card--step">
+            <span class="about-step__number">{{ step.step }}</span>
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.description }}</p>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section">
+    <div class="ant-container">
+      <div class="about-section__heading">
+        <span class="about-kicker about-kicker--muted">Đã phát triển đồng bộ</span>
+        <h2>Tính năng cốt lõi trên AntGo</h2>
+      </div>
+      <div class="about-feature-grid">
+        @for (feature of features; track feature.title) {
+          <article class="about-feature">
+            <span class="about-feature__icon"><i class="bi {{ feature.icon }}" aria-hidden="true"></i></span>
+            <div>
+              <h3>{{ feature.title }}</h3>
+              <p>{{ feature.description }}</p>
+            </div>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="about-section about-section--soft">
+    <div class="ant-container about-faq">
+      <div class="about-section__heading">
+        <span class="about-kicker about-kicker--muted">Bạn cần biết thêm</span>
+        <h2>Câu hỏi thường gặp (FAQ)</h2>
+      </div>
+      <div class="about-faq-list">
+        @for (faq of faqs; track faq.question; let index = $index) {
+          <article class="about-faq-item" [class.open]="openFaqIndex() === index">
+            <button type="button" (click)="toggleFaq(index)">
+              <span>{{ faq.question }}</span>
+              <i class="bi" [class.bi-plus]="openFaqIndex() !== index" [class.bi-dash]="openFaqIndex() === index" aria-hidden="true"></i>
+            </button>
+            @if (openFaqIndex() === index) {
+              <p>{{ faq.answer }}</p>
+            }
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="about-cta">
+    <div class="ant-container about-cta__inner">
+      <span class="about-kicker">Bắt đầu ngay hôm nay</span>
+      <h2>Sẵn sàng trải nghiệm AntGo?</h2>
+      <p>Tham gia cộng đồng đang cùng nhau xây dựng khu ở tốt hơn từng ngày, từ những việc nhỏ nhất.</p>
+      <a routerLink="/auth/register" class="ant-btn ant-btn--primary">Bắt đầu ngay</a>
+    </div>
+  </section>
+</main>

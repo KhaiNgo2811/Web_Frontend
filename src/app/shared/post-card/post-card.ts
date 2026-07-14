@@ -1,4 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import type { Post, ServiceCategory, User } from '../../core/models';
 import { StatusPill } from '../status-pill/status-pill';
@@ -14,7 +15,7 @@ const CATEGORY_META: Record<ServiceCategory, { icon: string; label: string }> = 
 
 @Component({
   selector: 'app-post-card',
-  imports: [StatusPill],
+  imports: [RouterLink, StatusPill],
   templateUrl: './post-card.html',
   styleUrl: './post-card.scss',
 })
@@ -24,6 +25,7 @@ export class PostCard {
   readonly opened = output<Post>();
   readonly acceptRequested = output<Post>();
   readonly likeRequested = output<Post>();
+  readonly reportRequested = output<Post>();
 
   protected readonly category = computed(() => CATEGORY_META[this.post().category]);
   protected readonly typeLabel = computed(() =>
@@ -31,6 +33,9 @@ export class PostCard {
   );
   protected readonly actionLabel = computed(() =>
     this.post().type === 'request' ? 'Nhận việc' : 'Đặt dịch vụ',
+  );
+  protected readonly priceLabel = computed(() =>
+    this.post().type === 'request' ? 'tiền công' : 'giá dịch vụ',
   );
   protected readonly price = computed(() =>
     new Intl.NumberFormat('vi-VN').format(this.post().price),

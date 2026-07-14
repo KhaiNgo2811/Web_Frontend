@@ -171,6 +171,7 @@
             (opened)="openDetails($event)"
             (acceptRequested)="requestAcceptance($event)"
             (likeRequested)="requestLike($event)"
+            (reportRequested)="openReport($event)"
           />
         }
       </div>
@@ -218,6 +219,45 @@
       (cancelled)="pendingPost.set(null)"
       (confirmed)="applyToPost(post.id, $event)"
     />
+  }
+
+  @if (reportingPost(); as post) {
+    <app-ui-dialog title="Báo cáo bài đăng" [width]="480" (closed)="closeReport()">
+      <div class="report-dialog">
+        <p class="report-dialog__target">
+          <i class="bi bi-flag-fill" aria-hidden="true"></i> "{{ post.title }}"
+        </p>
+        <span class="ant-label">Vì sao bạn báo cáo bài đăng này?</span>
+        <div class="report-dialog__reasons">
+          @for (reason of reportReasons; track reason.value) {
+            <button
+              type="button"
+              class="report-reason"
+              [class.active]="reportReason() === reason.value"
+              (click)="reportReason.set(reason.value)"
+            >
+              <i [class]="'bi ' + reason.icon" aria-hidden="true"></i>
+              <span>{{ reason.label }}</span>
+              <i class="bi bi-check-circle-fill report-reason__check" aria-hidden="true"></i>
+            </button>
+          }
+        </div>
+        <label
+          ><span class="ant-label">Mô tả thêm (không bắt buộc)</span
+          ><textarea
+            class="ant-field"
+            placeholder="Cho AntGo biết thêm chi tiết về vấn đề bạn gặp phải..."
+            (input)="reportDetails = $any($event.target).value"
+          ></textarea
+        ></label>
+      </div>
+      <div dialog-actions>
+        <button class="ant-btn ant-btn--secondary" type="button" (click)="closeReport()">Huỷ</button
+        ><button class="ant-btn ant-btn--danger" type="button" (click)="submitReport()">
+          <i class="bi bi-send-fill" aria-hidden="true"></i> Gửi báo cáo
+        </button>
+      </div>
+    </app-ui-dialog>
   }
 
   @if (successMessage()) {

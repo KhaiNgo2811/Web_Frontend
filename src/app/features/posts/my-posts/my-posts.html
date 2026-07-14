@@ -1,11 +1,7 @@
 <main class="my-posts-page">
   <section class="my-posts ant-container">
     <div class="my-posts__heading">
-      <div>
-        <span class="ant-kicker">Quản lý bài đăng</span>
-        <h1>Đăng đơn của tôi</h1>
-        <p>Theo dõi và quản lý các yêu cầu, dịch vụ bạn đã đăng trên AntGo.</p>
-      </div>
+      <h1>Bài đăng của tôi</h1>
       <button type="button" class="ant-btn ant-btn--primary" (click)="openTypeModal()">
         <i class="bi bi-plus-lg" aria-hidden="true"></i> Đăng bài mới
       </button>
@@ -19,20 +15,58 @@
           (click)="chooseTab(tab.value)"
         >
           {{ tab.label }}
-          @if (tab.value === 'request') {
-            <span class="my-posts__count">{{ requestCount() }}</span>
-          }
-          @if (tab.value === 'service') {
-            <span class="my-posts__count">{{ serviceCount() }}</span>
-          }
         </button>
       }
     </div>
 
     @if (filteredPosts().length) {
-      <div class="my-posts__grid">
-        @for (post of filteredPosts(); track post.id) {
-          <app-post-card [post]="post" [author]="userFor(post)" />
+      <div class="my-posts__list">
+        @for (post of filteredPosts(); track post.id; let i = $index) {
+          <article class="post-row">
+            <div class="post-row__thumb" [class]="thumbTone(i)"></div>
+            <div class="post-row__body">
+              <div class="post-row__title-line">
+                <strong>{{ post.title }}</strong>
+                <span class="type-tag" [class.type-tag--service]="post.type === 'service'">{{
+                  typeBadgeLabel(post)
+                }}</span>
+                <span class="status-tag" [class]="'status-tag--' + statusTone(post)"
+                  ><span class="status-dot"></span>{{ statusLabel(post) }}</span
+                >
+                <span class="post-row__time">{{ timeLabel(post) }}</span>
+              </div>
+              <p class="post-row__description">{{ post.description }}</p>
+              <div class="post-row__meta">
+                <span
+                  class="post-row__price"
+                  [class.post-row__price--service]="post.type === 'service'"
+                  >{{ post.price.toLocaleString('vi-VN') }}đ</span
+                >
+                <span><i class="bi bi-geo-alt" aria-hidden="true"></i> KTX Khu B</span>
+                @if (post.expectedTime) {
+                  <span><i class="bi bi-calendar3" aria-hidden="true"></i> {{ post.expectedTime }}</span>
+                }
+                @if (totalApplicants(post.id) > 0) {
+                  <span
+                    ><i class="bi bi-people" aria-hidden="true"></i>
+                    {{ totalApplicants(post.id) }}
+                    {{ post.type === 'request' ? 'người nhận đơn' : 'đặt hàng' }}</span
+                  >
+                }
+                @if (pendingApplicants(post.id) > 0) {
+                  <span class="post-row__pending">{{ pendingApplicants(post.id) }} chờ xác nhận</span>
+                }
+              </div>
+            </div>
+            <div class="post-row__actions">
+              <button type="button" class="row-btn row-btn--edit" (click)="openEditForm(post)">
+                <i class="bi bi-pencil" aria-hidden="true"></i> Sửa
+              </button>
+              <button type="button" class="row-btn row-btn--delete" (click)="openDeleteConfirm(post)">
+                <i class="bi bi-trash" aria-hidden="true"></i> Đóng
+              </button>
+            </div>
+          </article>
         }
       </div>
     } @else {
@@ -68,17 +102,115 @@
         </button>
       </div>
       <div class="type-modal__choices">
-        <a class="type-choice type-choice--request" routerLink="/posts/new/request" (click)="closeTypeModal()">
+        <button type="button" class="type-choice type-choice--request" (click)="openCreateForm('request')">
           <i class="type-choice__icon bi bi-hand-index-thumb-fill" aria-hidden="true"></i>
-          <strong>Yêu cầu</strong>
+          <strong>Cần giúp</strong>
           <span>Nhờ hàng xóm giúp việc, ship đồ, mua hộ...</span>
-        </a>
-        <a class="type-choice type-choice--service" routerLink="/posts/new/service" (click)="closeTypeModal()">
+        </button>
+        <button type="button" class="type-choice type-choice--service" (click)="openCreateForm('service')">
           <i class="type-choice__icon bi bi-briefcase-fill" aria-hidden="true"></i>
-          <strong>Dịch vụ</strong>
+          <strong>Cung cấp</strong>
           <span>Cung cấp dịch vụ cho người trong khu...</span>
-        </a>
+        </button>
       </div>
     </div>
   </div>
+}
+
+@if (formMode(); as mode) {
+  <app-ui-dialog
+    [title]="mode === 'edit' ? 'Chỉnh sửa yêu cầu' : formType() === 'request' ? 'Bạn cần giúp gì?' : 'Bạn muốn cung cấp gì?'"
+    [width]="560"
+    (closed)="closeFormModal()"
+  >
+    <form class="post-form" [formGroup]="form" (ngSubmit)="submitForm()">
+      <label
+        ><span class="ant-label">Tiêu đề {{ formType() === 'request' ? 'yêu cầu' : 'dịch vụ' }} *</span
+        ><input
+          class="ant-field"
+          formControlName="title"
+          placeholder="VD: Ship trà sữa từ cổng A..."
+        />
+        @if (form.controls.title.touched && form.controls.title.invalid) {
+          <small class="ant-error">Tối thiểu 10 ký tự.</small>
+        }
+      </label>
+      <label
+        ><span class="ant-label">Mô tả chi tiết</span
+        ><textarea
+          class="ant-field"
+          formControlName="description"
+          placeholder="Mô tả rõ việc cần làm, thời gian, cách thanh toán..."
+        ></textarea
+      ></label>
+      <div class="post-form__grid">
+        <label
+          ><span class="ant-label">Danh mục</span
+          ><select class="ant-field" formControlName="category">
+            @for (category of categories; track category.value) {
+              <option [value]="category.value">{{ category.label }}</option>
+            }
+          </select></label
+        >
+        <label
+          ><span class="ant-label">Giá gợi ý *</span
+          ><input class="ant-field" type="number" formControlName="price" placeholder="VD: 20.000đ" />
+          @if (form.controls.price.touched && form.controls.price.invalid) {
+            <small class="ant-error">Nhập mức giá hợp lệ.</small>
+          }
+        </label>
+      </div>
+      <label
+        ><span class="ant-label">Thời hạn {{ formType() === 'request' ? 'yêu cầu' : 'dịch vụ' }}</span
+        ><input class="ant-field" formControlName="expectedTime" placeholder="VD: 30/06/2026"
+      /></label>
+      <label
+        ><span class="ant-label">Khu vực</span
+        ><input class="ant-field" value="KTX Khu B" disabled
+      /></label>
+      <div class="post-form__images">
+        <span class="ant-label">Hình ảnh (tối đa {{ maxImages }})</span>
+        <div class="image-picker">
+          @for (image of images(); track $index) {
+            <div class="image-picker__item">
+              <img [src]="image" alt="" />
+              <button type="button" aria-label="Xoá ảnh" (click)="removeImage($index)">
+                <i class="bi bi-x" aria-hidden="true"></i>
+              </button>
+            </div>
+          }
+          @if (images().length < maxImages) {
+            <label class="image-picker__add">
+              <i class="bi bi-plus-circle" aria-hidden="true"></i>
+              <span>Bấm để thêm ảnh minh hoạ</span>
+              <input type="file" accept="image/*" multiple hidden (change)="onPickImages($event)" />
+            </label>
+          }
+        </div>
+      </div>
+    </form>
+    <div dialog-actions>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="closeFormModal()">Huỷ</button
+      ><button class="ant-btn ant-btn--primary" type="button" (click)="submitForm()">
+        {{ mode === 'edit' ? 'Lưu thay đổi' : 'Đăng ngay' }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+      </button>
+    </div>
+  </app-ui-dialog>
+}
+
+@if (deleteTarget(); as post) {
+  <app-ui-dialog title="Xoá bài đăng?" [width]="480" (closed)="closeDeleteConfirm()">
+    <p>Bài đăng "{{ post.title }}" sẽ bị xoá vĩnh viễn.</p>
+    <div class="danger-note">
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+      Thao tác này không thể hoàn tác. Tất cả ứng viên sẽ bị huỷ kết nối.
+    </div>
+    <div dialog-actions>
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="closeDeleteConfirm()">
+        Giữ lại</button
+      ><button class="ant-btn ant-btn--danger" type="button" (click)="confirmDelete()">
+        Xoá bài
+      </button>
+    </div>
+  </app-ui-dialog>
 }

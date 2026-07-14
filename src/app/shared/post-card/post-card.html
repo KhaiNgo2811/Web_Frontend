@@ -3,31 +3,54 @@
     class="post-card__visual"
     [class]="'post-card__visual post-card__visual--' + post().category"
   >
-    <span class="post-card__pattern" aria-hidden="true"></span>
-    <i class="post-card__category-icon" [class]="'bi ' + category().icon" aria-hidden="true"></i>
+    @if (post().images.length) {
+      <img class="post-card__image" [src]="post().images[0]" [alt]="post().title" />
+    } @else {
+      <div class="post-card__placeholder">
+        <i class="bi bi-image" aria-hidden="true"></i>
+        <span>+ Thêm ảnh</span>
+      </div>
+    }
     <span class="post-card__type" [class.post-card__type--service]="post().type === 'service'">
       {{ typeLabel() }}
     </span>
+    @if (post().urgency === 'urgent') {
+      <span class="post-card__urgent"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> Cần gấp</span>
+    }
     @if (post().isPriority) {
       <app-status-pill status="priority"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i> Ưu tiên</app-status-pill>
     }
-    <button
-      type="button"
-      class="post-card__like"
-      [attr.aria-label]="'Yêu thích ' + post().title"
-      (click)="likeRequested.emit(post())"
-    >
-      <i [class]="liked() ? 'bi bi-heart-fill' : 'bi bi-heart'" aria-hidden="true"></i>
-      {{ post().likedBy.length }}
-    </button>
+    <span class="post-card__category-chip">{{ category().label }}</span>
   </div>
 
   <div class="post-card__body">
-    <div class="post-card__category-line">
-      <span>{{ category().label }}</span>
-      <span aria-hidden="true">•</span>
-      <time [attr.datetime]="post().createdAt">{{ timeLabel() }}</time>
+    <div class="post-card__author">
+      @if (author(); as user) {
+        <a class="post-card__avatar" [routerLink]="['/users', user.id]">{{ authorInitials() }}</a>
+      } @else {
+        <span class="post-card__avatar" aria-hidden="true">{{ authorInitials() }}</span>
+      }
+      <span class="post-card__author-copy">
+        <strong>
+          @if (author()?.isVerified) {
+            <i class="bi bi-patch-check-fill verified" aria-hidden="true"></i>
+          }
+          {{ author()?.displayName ?? 'Thành viên AntGo' }}</strong
+        >
+        <small
+          >{{ author()?.location?.building ?? 'Trong khu vực của bạn' }} · {{ timeLabel() }}</small
+        >
+      </span>
+      <button
+        type="button"
+        class="post-card__report"
+        [attr.aria-label]="'Báo cáo ' + post().title"
+        (click)="reportRequested.emit(post())"
+      >
+        <i class="bi bi-flag" aria-hidden="true"></i> Báo cáo
+      </button>
     </div>
+
     <button type="button" class="post-card__title" (click)="opened.emit(post())">
       {{ post().title }}
     </button>
@@ -37,34 +60,36 @@
       <i class="bi bi-geo-alt" aria-hidden="true"></i>
       <span>{{ author()?.location?.building ?? 'Trong khu vực của bạn' }}</span>
     </div>
-    @if (post().expectedTime) {
-      <div class="post-card__meta">
-        <i class="bi bi-clock" aria-hidden="true"></i>
-        <span>{{ post().expectedTime }}</span>
-      </div>
-    }
 
-    <div class="post-card__author">
-      <span class="post-card__avatar" aria-hidden="true">{{ authorInitials() }}</span>
-      <span>
-        <strong>{{ author()?.displayName ?? 'Thành viên AntGo' }}</strong>
-        <small>
-          @if (author()?.isVerified) {
-            <i class="bi bi-patch-check-fill verified" aria-hidden="true"></i>
-          }
-          {{ author()?.reputationScore ?? 'Mới' }} sao
-        </small>
-      </span>
+    <div class="post-card__price-block">
       <span class="post-card__price">{{ price() }}<small>đ</small></span>
+      <small>{{ priceLabel() }}</small>
     </div>
 
-    <div class="post-card__actions">
-      <button type="button" class="ant-btn ant-btn--secondary" (click)="opened.emit(post())">
-        Xem chi tiết
+    <div class="post-card__footer">
+      <button
+        type="button"
+        class="footer-icon"
+        [attr.aria-label]="'Yêu thích ' + post().title"
+        (click)="likeRequested.emit(post())"
+      >
+        <i [class]="liked() ? 'bi bi-heart-fill' : 'bi bi-heart'" aria-hidden="true"></i>
+        {{ post().likedBy.length }}
+      </button>
+      <button type="button" class="footer-icon" aria-label="Xem bình luận" (click)="opened.emit(post())">
+        <i class="bi bi-chat" aria-hidden="true"></i>
       </button>
       <button
         type="button"
-        class="ant-btn ant-btn--primary"
+        class="footer-icon footer-icon--report"
+        [attr.aria-label]="'Báo cáo ' + post().title"
+        (click)="reportRequested.emit(post())"
+      >
+        <i class="bi bi-slash-circle" aria-hidden="true"></i> Báo cáo
+      </button>
+      <button
+        type="button"
+        class="ant-btn ant-btn--primary post-card__cta"
         [disabled]="!isOpen()"
         (click)="acceptRequested.emit(post())"
       >

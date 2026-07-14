@@ -1,4 +1,4 @@
-<section class="workspace ant-container">
+<section class="workspace ant-container" [class.mobile-detail-open]="mobileDetailOpen()">
   <aside class="workspace-sidebar ant-card">
     <div class="sidebar-heading">
       <h1>Đơn hàng</h1>
@@ -62,7 +62,7 @@
           <button
             type="button"
             [class.active]="selectedOrder()?.id === order.id"
-            (click)="selectedOrderId.set(order.id)"
+            (click)="selectOrder(order.id)"
           >
             <span class="list-avatar">{{ order.code.slice(-2) }}</span
             ><span
@@ -76,6 +76,9 @@
   </aside>
 
   <article class="workspace-content ant-card">
+    <button type="button" class="mobile-back" (click)="closeMobileDetail()">
+      <i class="bi bi-arrow-left" aria-hidden="true"></i> Quay lại
+    </button>
     @if (tab() === 'posts') {
       <div class="welcome">
         <span class="ant-kicker">Quản lý bài đăng</span>
@@ -100,9 +103,9 @@
         <app-status-pill [status]="application.status">{{ application.status }}</app-status-pill>
       </header>
       <div class="candidate-profile">
-        <div class="profile-avatar">
+        <a class="profile-avatar" [routerLink]="['/users', application.applicantId]">
           {{ userName(application.applicantId).slice(0, 2).toUpperCase() }}
-        </div>
+        </a>
         <div>
           <h3>{{ userName(application.applicantId) }}</h3>
           <p><i class="bi bi-star-fill" aria-hidden="true"></i> 4.9 · Đã hoàn thành 51 công việc</p>
@@ -128,73 +131,137 @@
           </button>
         }
       </div>
-    } @else if (selectedOrder(); as order) {
-      <header class="detail-header">
-        <div>
-          <span class="ant-kicker">{{ order.code }}</span>
-          <h2>{{ selectedPost()?.title }}</h2>
-          <p>{{ userName(order.customerId) }} ↔ {{ userName(order.providerId) }}</p>
+    } @else if (tab() === 'booked' && selectedOrder(); as order) {
+      <nav class="order-breadcrumb" aria-label="Breadcrumb">
+        <a routerLink="/feed">Trang chủ</a> / <span>Đơn hàng</span> / <strong>{{ order.code }}</strong>
+      </nav>
+
+      <div class="order-detail">
+        <div class="order-main">
+          <div class="order-tags">
+            <app-status-pill [status]="order.status">{{ orderStatusLabel() }}</app-status-pill>
+            <span class="category-chip">{{ categoryLabel() }}</span>
+          </div>
+          <p class="order-meta-line">
+            Mã đơn: {{ order.code }} · Đăng lúc {{ order.createdAt | date: 'HH:mm' }}, hôm nay
+          </p>
+          <h1>{{ selectedPost()?.title }}</h1>
+
+          <div class="price-box">
+            <span>Tiền công thanh toán cho đối tác</span>
+            <strong>{{ selectedPost()?.price?.toLocaleString('vi-VN') }}đ</strong>
+          </div>
+
+          <div class="info-row">
+            <i class="bi bi-geo-alt" aria-hidden="true"></i>
+            <div>
+              <span>Địa điểm giao nhận</span>
+              <strong>{{ deliveryLocation() }}</strong>
+            </div>
+          </div>
+          <div class="info-row">
+            <i class="bi bi-clock" aria-hidden="true"></i>
+            <div>
+              <span>Thời hạn hoàn thành</span>
+              <strong
+                >{{ selectedPost()?.expectedTime }}
+                @if (deadlineCountdown()) {
+                  ({{ deadlineCountdown() }})
+                }</strong
+              >
+            </div>
+          </div>
+
+          <div class="description-box">
+            <strong>Mô tả chi tiết yêu cầu</strong>
+            <p>{{ selectedPost()?.description }}</p>
+          </div>
+
+          <div class="partner-card">
+            <span class="partner-label">Đối tác thực hiện giao nhận</span>
+            <div class="partner-row">
+              <a class="profile-avatar" [routerLink]="['/users', order.providerId]">{{
+                userName(order.providerId).slice(0, 2).toUpperCase()
+              }}</a>
+              <div>
+                <strong>{{ userName(order.providerId) }}</strong>
+                <small
+                  ><i class="bi bi-star-fill" aria-hidden="true"></i>
+                  {{ provider()?.reputationScore ?? 'Mới' }} · {{ provider()?.completedCount ?? 0 }}
+                  đơn hàng thành công · SLA
+                  {{ provider()?.completionRate ? (provider()!.completionRate * 100).toFixed(0) : 100 }}%</small
+                >
+              </div>
+              <a
+                class="ant-btn ant-btn--secondary"
+                [routerLink]="['/messages', 'conversation-' + order.postId.replace('post-', '')]"
+                ><i class="bi bi-chat-dots" aria-hidden="true"></i> Nhắn tin</a
+              >
+            </div>
+          </div>
         </div>
-        <app-status-pill [status]="order.status">{{ order.status }}</app-status-pill>
-      </header>
-      <div class="timeline">
-        <span class="done">Ứng tuyển</span><span class="done">Được chọn</span
-        ><span [class.done]="order.status === 'in_progress' || order.status === 'completed'"
-          >Đang thực hiện</span
-        ><span [class.done]="order.status === 'completed'">Hoàn thành</span>
-      </div>
-      <div class="order-body">
-        <div>
-          <span>Giá trị đơn</span
-          ><strong>{{ selectedPost()?.price?.toLocaleString('vi-VN') }}đ</strong>
+
+        <div class="order-side">
+          <div class="side-card">
+            <h3>Lịch trình giao nhận</h3>
+            <div class="order-timeline">
+              @for (step of timelineSteps(); track step.at; let last = $last) {
+                <div
+                  class="timeline-step"
+                  [class.current]="last && order.status !== 'completed' && order.status !== 'cancelled'"
+                >
+                  <span class="timeline-dot"></span>
+                  <div>
+                    <time>{{ step.at | date: 'HH:mm' }}</time>
+                    <strong>{{ step.title }}</strong>
+                    <p>{{ step.desc }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="side-card">
+            <h3>Quản lý trạng thái đơn</h3>
+            <p class="side-hint">
+              Vui lòng chỉ xác nhận hoàn thành khi đã nhận đủ hàng và hài lòng. Bạn có quyền huỷ
+              đơn nếu xảy ra sự cố.
+            </p>
+            @if (order.status === 'pending') {
+              <button
+                class="status-action status-action--complete"
+                type="button"
+                (click)="transition('start')"
+              >
+                <i class="bi bi-play-fill" aria-hidden="true"></i> Bắt đầu công việc
+              </button>
+            }
+            @if (order.status === 'in_progress') {
+              <button
+                class="status-action status-action--complete"
+                type="button"
+                (click)="transition('confirm_complete')"
+              >
+                <i class="bi bi-check-lg" aria-hidden="true"></i> Xác nhận hoàn thành
+              </button>
+            }
+            @if (order.status === 'completed') {
+              <button class="status-action status-action--complete" type="button" (click)="openReview()">
+                <i class="bi bi-star-fill" aria-hidden="true"></i> Đánh giá dịch vụ
+              </button>
+            }
+            @if (order.status !== 'cancelled') {
+              <button class="status-action status-action--report" type="button" (click)="openReport()">
+                <i class="bi bi-flag" aria-hidden="true"></i> Báo cáo người dùng
+              </button>
+            }
+            @if (order.status !== 'completed' && order.status !== 'cancelled') {
+              <button class="status-action status-action--cancel" type="button" (click)="openCancel()">
+                <i class="bi bi-x-lg" aria-hidden="true"></i> Huỷ đơn hàng
+              </button>
+            }
+          </div>
         </div>
-        <div>
-          <span>Thời gian</span><strong>{{ selectedPost()?.expectedTime }}</strong>
-        </div>
-        <div>
-          <span>Trạng thái đảm bảo</span
-          ><strong>{{ order.escrowState === 'none' ? 'Không sử dụng' : order.escrowState }}</strong>
-        </div>
-      </div>
-      <div class="chat-preview">
-        <span class="profile-avatar">{{
-          userName(order.providerId).slice(0, 2).toUpperCase()
-        }}</span>
-        <p>Trao đổi chi tiết công việc trong Messenger để mọi thông tin được lưu lại.</p>
-        <a
-          class="ant-btn ant-btn--secondary"
-          [routerLink]="['/messages', 'conversation-' + order.postId.replace('post-', '')]"
-          ><i class="bi bi-chat-dots" aria-hidden="true"></i> Mở chat</a
-        >
-      </div>
-      <div class="detail-actions">
-        @if (order.status === 'pending') {
-          <button class="ant-btn ant-btn--primary" type="button" (click)="transition('start')">
-            <i class="bi bi-play-fill" aria-hidden="true"></i> Bắt đầu công việc
-          </button>
-        }
-        @if (order.status === 'in_progress') {
-          <button
-            class="ant-btn ant-btn--primary"
-            type="button"
-            (click)="transition('confirm_complete')"
-          >
-            <i class="bi bi-check-lg" aria-hidden="true"></i> Hoàn thành
-          </button>
-        }
-        @if (order.status === 'completed') {
-          <button class="ant-btn ant-btn--primary" type="button" (click)="dialog.set('review')">
-            <i class="bi bi-star-fill" aria-hidden="true"></i> Đánh giá
-          </button>
-        }
-        @if (order.status !== 'completed' && order.status !== 'cancelled') {
-          <button class="ant-btn ant-btn--danger" type="button" (click)="dialog.set('cancel')">
-            <i class="bi bi-x-lg" aria-hidden="true"></i> Huỷ
-          </button>
-        }
-        <button class="ant-btn ant-btn--ghost" type="button" (click)="dialog.set('complaint')">
-          <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Báo cáo vấn đề
-        </button>
       </div>
     } @else {
       <app-empty-state
@@ -206,59 +273,168 @@
 </section>
 
 @if (dialog() === 'review') {
-  <app-ui-dialog title="Đánh giá sau hoàn thành" (closed)="dialog.set(null)"
+  <app-ui-dialog title="Đánh giá dịch vụ" (closed)="dialog.set(null)"
     ><div class="dialog-form">
-      <app-star-rating [value]="rating()" (valueChange)="rating.set($event)" /><textarea
-        class="ant-field"
-        [(ngModel)]="reviewComment"
-        placeholder="Chia sẻ trải nghiệm của bạn..."
-      ></textarea>
+      <div class="review-target">
+        <span class="profile-avatar">{{ userName(selectedOrder()?.providerId).slice(0, 2).toUpperCase() }}</span>
+        <div>
+          <strong>{{ userName(selectedOrder()?.providerId) }}</strong>
+          <small>{{ selectedPost()?.title }}</small>
+        </div>
+        <span class="review-target__price">{{ selectedPost()?.price?.toLocaleString('vi-VN') }}đ</span>
+      </div>
+      <p class="dialog-question">Bạn cảm thấy thế nào?</p>
+      <app-star-rating [value]="rating()" (valueChange)="rating.set($event)" />
+      <label
+        ><span class="ant-label">Nhận xét của bạn</span
+        ><textarea
+          class="ant-field"
+          [(ngModel)]="reviewComment"
+          placeholder="Chia sẻ trải nghiệm của bạn để giúp người khác lựa chọn tốt hơn..."
+        ></textarea
+      ></label>
+      <div class="review-tags">
+        @for (tag of reviewTags; track tag) {
+          <button
+            type="button"
+            class="review-tag"
+            [class.active]="selectedTags().has(tag)"
+            (click)="toggleTag(tag)"
+          >
+            {{ tag }}
+          </button>
+        }
+      </div>
     </div>
     <div dialog-actions>
-      <button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Để sau</button
+      <button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Bỏ qua</button
       ><button class="ant-btn ant-btn--primary" (click)="submitReview()">Gửi đánh giá</button>
     </div></app-ui-dialog
   >
 }
-@if (dialog() === 'cancel') {
-  <app-ui-dialog title="Huỷ đơn có lý do" (closed)="dialog.set(null)"
-    ><div class="dialog-form">
-      <p>Vui lòng cho bên còn lại biết lý do bạn muốn huỷ đơn.</p>
-      <textarea class="ant-field" [(ngModel)]="reason" placeholder="Nhập lý do huỷ..."></textarea>
+@if (dialog() === 'reviewSuccess') {
+  <app-ui-dialog title="" [width]="380" (closed)="dialog.set(null)"
+    ><div class="success-body">
+      <i class="bi bi-star-fill" aria-hidden="true"></i>
+      <p>Cảm ơn bạn đã gửi đánh giá!</p>
     </div>
     <div dialog-actions>
       <button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Quay lại</button
-      ><button
-        class="ant-btn ant-btn--danger"
-        [disabled]="!reason.trim()"
-        (click)="transition('cancel')"
-      >
-        Xác nhận huỷ
-      </button>
+      ><button class="ant-btn ant-btn--primary" (click)="dialog.set(null)">Xác nhận</button>
     </div></app-ui-dialog
   >
 }
-@if (dialog() === 'complaint') {
-  <app-ui-dialog title="Khiếu nại / Báo cáo vấn đề" [width]="620" (closed)="dialog.set(null)"
-    ><div class="dialog-form">
-      <p>Mô tả vấn đề và bằng chứng liên quan. AntGo sẽ ghi nhận để hỗ trợ xử lý.</p>
-      <select class="ant-field">
-        <option>Dịch vụ không đúng mô tả</option>
-        <option>Không thể liên lạc</option>
-        <option>Vấn đề thanh toán</option>
-        <option>Khác</option></select
-      ><textarea
-        class="ant-field"
-        [(ngModel)]="complaint"
-        placeholder="Mô tả chi tiết..."
-      ></textarea>
+@if (dialog() === 'completeSuccess') {
+  <app-ui-dialog title="" [width]="380" (closed)="dialog.set(null)"
+    ><div class="success-body">
+      <i class="bi bi-stars" aria-hidden="true"></i>
+      <p>Đơn hàng đã hoàn thành!</p>
     </div>
     <div dialog-actions>
-      <button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Huỷ</button
+      <button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Quay lại</button
+      ><button class="ant-btn ant-btn--primary" (click)="openReview()">Tiếp tục tới đánh giá</button>
+    </div></app-ui-dialog
+  >
+}
+@if (dialog() === 'cancel') {
+  <app-ui-dialog title="Huỷ đơn" (closed)="dialog.set(null)"
+    ><div class="dialog-form">
+      <div class="review-target">
+        <span class="profile-avatar">{{ userName(selectedOrder()?.providerId).slice(0, 2).toUpperCase() }}</span>
+        <div>
+          <strong>{{ userName(selectedOrder()?.providerId) }}</strong>
+          <small>{{ selectedPost()?.title }}</small>
+        </div>
+        <app-status-pill status="in_progress">Đang thực hiện</app-status-pill>
+      </div>
+      <span class="ant-label">Lý do huỷ *</span>
+      <div class="reason-list">
+        @for (reasonOption of cancelReasons; track reasonOption) {
+          <button
+            type="button"
+            class="reason-option"
+            [class.active]="selectedCancelReason() === reasonOption"
+            (click)="selectedCancelReason.set(reasonOption)"
+          >
+            <span class="reason-radio"></span>{{ reasonOption }}
+          </button>
+        }
+      </div>
+      <label
+        ><span class="ant-label">Ghi chú thêm (tuỳ chọn)</span
+        ><textarea class="ant-field" [(ngModel)]="cancelNote" placeholder="Mô tả thêm nếu có..."></textarea
+      ></label>
+    </div>
+    <div dialog-actions>
+      <button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Giữ lại</button
+      ><button class="ant-btn ant-btn--danger" (click)="confirmCancel()">Xác nhận huỷ</button>
+    </div></app-ui-dialog
+  >
+}
+@if (dialog() === 'report') {
+  <app-ui-dialog title="Báo cáo người dùng" [width]="620" (closed)="dialog.set(null)"
+    ><div class="dialog-form">
+      <div class="review-target">
+        <span class="profile-avatar">{{ userName(selectedOrder()?.providerId).slice(0, 2).toUpperCase() }}</span>
+        <div>
+          <strong>{{ userName(selectedOrder()?.providerId) }}</strong>
+          <small>{{ selectedPost()?.title }}</small>
+        </div>
+        <app-status-pill [status]="selectedOrder()?.status ?? 'pending'">{{
+          orderStatusLabel()
+        }}</app-status-pill>
+      </div>
+      <span class="ant-label">Lý do *</span>
+      <div class="reason-list">
+        @for (reasonOption of reportReasons; track reasonOption) {
+          <button
+            type="button"
+            class="reason-option"
+            [class.active]="selectedReportReason() === reasonOption"
+            (click)="selectedReportReason.set(reasonOption)"
+          >
+            <span class="reason-radio"></span>{{ reasonOption }}
+          </button>
+        }
+      </div>
+      <label
+        ><span class="ant-label">Mô tả chi tiết *</span
+        ><textarea
+          class="ant-field"
+          [(ngModel)]="reportDescription"
+          placeholder="Mô tả cụ thể vấn đề bạn gặp phải để hệ thống có thể xử lý nhanh nhất..."
+        ></textarea
+      ></label>
+      <div class="evidence-picker">
+        <span class="ant-label">Bằng chứng đính kèm (tuỳ chọn)</span>
+        <div class="evidence-list">
+          @for (image of reportEvidence(); track $index) {
+            <div class="evidence-item">
+              <img [src]="image" alt="" />
+              <button type="button" aria-label="Xoá ảnh" (click)="removeEvidence($index)">
+                <i class="bi bi-x" aria-hidden="true"></i>
+              </button>
+            </div>
+          }
+          @if (reportEvidence().length < maxEvidenceImages) {
+            <label class="evidence-add">
+              <i class="bi bi-plus-lg" aria-hidden="true"></i>
+              <input type="file" accept="image/*" multiple hidden (change)="onPickEvidence($event)" />
+            </label>
+          }
+        </div>
+      </div>
+      <div class="report-warning">
+        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Báo cáo giả mạo có thể bị
+        khoá tài khoản vĩnh viễn.
+      </div>
+    </div>
+    <div dialog-actions>
+      <button class="ant-btn ant-btn--secondary" (click)="dialog.set(null)">Đóng</button
       ><button
         class="ant-btn ant-btn--primary"
-        [disabled]="!complaint.trim()"
-        (click)="submitComplaint()"
+        [disabled]="!reportDescription.trim()"
+        (click)="submitReport()"
       >
         Gửi báo cáo
       </button>

@@ -1,4 +1,5 @@
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import type { Post, ServiceCategory, User } from '../../../core/models';
 import { StarRating } from '../../../shared/star-rating/star-rating';
@@ -15,7 +16,7 @@ const CATEGORY_LABELS: Record<ServiceCategory, string> = {
 
 @Component({
   selector: 'app-post-detail-panel',
-  imports: [StarRating, StatusPill],
+  imports: [RouterLink, StarRating, StatusPill],
   templateUrl: './post-detail-panel.html',
   styleUrl: './post-detail-panel.scss',
 })
@@ -25,6 +26,11 @@ export class PostDetailPanel {
   readonly closed = output<void>();
   readonly acceptRequested = output<Post>();
   readonly messageRequested = output<Post>();
+
+  protected readonly selectedImageIndex = signal(0);
+  protected readonly activeImage = computed(
+    () => this.post().images[this.selectedImageIndex()],
+  );
 
   protected readonly categoryLabel = computed(() => CATEGORY_LABELS[this.post().category]);
   protected readonly typeLabel = computed(() =>
@@ -60,4 +66,8 @@ export class PostDetailPanel {
     Math.round((this.author()?.reviewParticipationRate ?? 0) * 100),
   );
   protected readonly isOpen = computed(() => this.post().status === 'open');
+
+  protected selectImage(index: number): void {
+    this.selectedImageIndex.set(index);
+  }
 }

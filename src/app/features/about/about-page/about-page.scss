@@ -1,0 +1,264 @@
+:host {
+  display: block;
+}
+.about-kicker {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--ant-orange-deep);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.about-kicker--muted {
+  color: var(--ant-orange);
+}
+
+// Hero
+.about-hero {
+  padding: 56px 0 48px;
+  background: linear-gradient(180deg, #fff1e8 0%, var(--ant-bg) 100%);
+  text-align: center;
+}
+.about-hero__inner {
+  max-width: 720px;
+}
+.about-hero h1 {
+  margin: 0 0 18px;
+  font-size: 40px;
+  line-height: 1.15;
+}
+.about-hero h1 span {
+  color: var(--ant-orange-deep);
+}
+.about-hero p {
+  margin: 0 auto 28px;
+  max-width: 560px;
+  color: var(--ant-ink-soft);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.about-hero__actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+.about-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  border-radius: var(--ant-radius-lg);
+  padding: 20px;
+  background: #fff;
+  box-shadow: var(--ant-shadow-sm);
+}
+.about-stats__item strong {
+  display: block;
+  color: var(--ant-orange-deep);
+  font-size: 24px;
+}
+.about-stats__item span {
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+// Sections
+.about-section {
+  padding: 56px 0;
+}
+.about-section--soft {
+  background: #fff;
+}
+.about-section__heading {
+  margin-bottom: 32px;
+  text-align: center;
+}
+.about-section__heading h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+// Mission grid
+.about-mission-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.about-card {
+  border: 1px solid var(--ant-border);
+  border-radius: var(--ant-radius-lg);
+  padding: 28px 24px;
+  background: #fff;
+  text-align: center;
+}
+.about-card__icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--ant-orange-deep);
+  background: var(--ant-orange-soft);
+  font-size: 22px;
+}
+.about-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+.about-card p {
+  margin: 0;
+  color: var(--ant-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+// Steps
+.about-step-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.about-card--step {
+  position: relative;
+  background: var(--ant-bg);
+}
+.about-step__number {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 14px;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--ant-gradient);
+  font-weight: 800;
+}
+
+// Features
+.about-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.about-feature {
+  display: flex;
+  gap: 16px;
+  border: 1px solid var(--ant-border);
+  border-radius: var(--ant-radius-lg);
+  padding: 22px;
+  background: #fff;
+}
+.about-feature__icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: none;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--ant-orange-deep);
+  background: var(--ant-orange-soft);
+  font-size: 19px;
+}
+.about-feature h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+.about-feature p {
+  margin: 0;
+  color: var(--ant-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+// FAQ
+.about-faq {
+  max-width: 760px;
+}
+.about-faq-list {
+  display: grid;
+  gap: 10px;
+}
+.about-faq-item {
+  border: 1px solid var(--ant-border);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+.about-faq-item button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border: 0;
+  padding: 16px 20px;
+  color: var(--ant-ink);
+  background: transparent;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+}
+.about-faq-item button i {
+  color: var(--ant-orange);
+  font-size: 18px;
+}
+.about-faq-item.open {
+  border-color: var(--ant-orange);
+}
+.about-faq-item p {
+  margin: 0;
+  padding: 0 20px 18px;
+  color: var(--ant-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+// CTA
+.about-cta {
+  padding: 56px 0 72px;
+  color: #fff;
+  background: var(--ant-gradient);
+  text-align: center;
+}
+.about-cta .about-kicker {
+  color: #fff;
+  opacity: 0.85;
+}
+.about-cta__inner {
+  max-width: 560px;
+}
+.about-cta h2 {
+  margin: 0 0 12px;
+  font-size: 26px;
+}
+.about-cta p {
+  margin: 0 0 24px;
+  opacity: 0.9;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.about-cta .ant-btn--primary {
+  color: var(--ant-orange-deep);
+  background: #fff;
+  box-shadow: none;
+}
+
+@media (max-width: 900px) {
+  .about-mission-grid,
+  .about-step-grid,
+  .about-feature-grid {
+    grid-template-columns: 1fr;
+  }
+  .about-stats {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .about-hero h1 {
+    font-size: 30px;
+  }
+  .about-hero__actions {
+    flex-direction: column;
+  }
+}

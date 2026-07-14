@@ -12,6 +12,7 @@ import { ImageSearchService } from '../../core/data/image-search.service';
 import { MarketplaceStore } from '../../core/stores';
 import { EmptyState } from '../../shared/empty-state/empty-state';
 import { PostCard } from '../../shared/post-card/post-card';
+import { UiDialog } from '../../shared/ui-dialog/ui-dialog';
 import { AcceptOrderDialog } from './accept-order-dialog/accept-order-dialog';
 import { PostDetailPanel } from './post-detail-panel/post-detail-panel';
 
@@ -31,6 +32,20 @@ type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
 type FeedType = PostType | 'all';
 type FeedCategory = ServiceCategory | 'all';
 
+interface ReportReasonOption {
+  value: string;
+  label: string;
+  icon: string;
+}
+
+const REPORT_REASONS: readonly ReportReasonOption[] = [
+  { value: 'inappropriate', label: 'Nội dung không phù hợp', icon: 'bi-exclamation-octagon' },
+  { value: 'scam', label: 'Lừa đảo, gian lận', icon: 'bi-shield-exclamation' },
+  { value: 'unclear-price', label: 'Giá cả không rõ ràng', icon: 'bi-tag' },
+  { value: 'unresponsive', label: 'Người dùng không phản hồi', icon: 'bi-chat-square-x' },
+  { value: 'other', label: 'Khác', icon: 'bi-three-dots' },
+];
+
 const CATEGORY_FILTERS: readonly { value: FeedCategory; icon: string; label: string }[] = [
   { value: 'all', icon: 'bi-lightning-charge-fill', label: 'Tất cả' },
   { value: 'food', icon: 'bi-basket2-fill', label: 'Đi chợ' },
@@ -43,7 +58,7 @@ const CATEGORY_FILTERS: readonly { value: FeedCategory; icon: string; label: str
 
 @Component({
   selector: 'app-feed',
-  imports: [AcceptOrderDialog, EmptyState, PostCard, PostDetailPanel],
+  imports: [AcceptOrderDialog, EmptyState, PostCard, PostDetailPanel, UiDialog],
   templateUrl: './feed.html',
   styleUrls: ['./feed.scss', './feed-marketplace.scss', './feed-overlays.scss'],
 })
@@ -59,6 +74,10 @@ export class Feed {
   readonly likeRequested = output<string>();
 
   protected readonly categories = CATEGORY_FILTERS;
+  protected readonly reportReasons = REPORT_REASONS;
+  protected readonly reportingPost = signal<Post | null>(null);
+  protected readonly reportReason = signal(REPORT_REASONS[0].value);
+  protected reportDetails = '';
   protected readonly search = signal('');
   protected readonly selectedType = signal<FeedType>('all');
   protected readonly selectedCategory = signal<FeedCategory>('all');
@@ -213,6 +232,21 @@ export class Feed {
   protected requestLike(post: Post): void {
     this.marketplace.toggleLike(post.id);
     this.likeRequested.emit(post.id);
+  }
+
+  protected openReport(post: Post): void {
+    this.reportingPost.set(post);
+    this.reportReason.set(REPORT_REASONS[0].value);
+    this.reportDetails = '';
+  }
+
+  protected closeReport(): void {
+    this.reportingPost.set(null);
+  }
+
+  protected submitReport(): void {
+    this.reportingPost.set(null);
+    this.successMessage.set('Đã gửi báo cáo. Cảm ơn bạn đã giúp AntGo an toàn hơn!');
   }
 
   protected resetFilters(): void {

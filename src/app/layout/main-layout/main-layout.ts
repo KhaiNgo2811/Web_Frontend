@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MarketplaceStore } from '../../core/stores/marketplace.store';
 import { SessionStore } from '../../core/stores/session.store';
 import { BrandLogo } from '../../shared/brand-logo/brand-logo';
+import { MobileTabBar } from '../mobile-tab-bar/mobile-tab-bar';
 
 type MenuName = 'location' | 'notifications' | 'account' | null;
 
@@ -14,7 +15,7 @@ function getInitials(name: string): string {
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, BrandLogo],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, BrandLogo, MobileTabBar],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
 })
@@ -29,6 +30,13 @@ export class MainLayout {
     const user = this.currentUser();
     return user ? getInitials(user.displayName) : '';
   });
+  protected readonly ownOpenPostsCount = computed(
+    () =>
+      this.marketplace
+        .posts()
+        .filter((post) => post.authorId === this.currentUser()?.id && post.status === 'open')
+        .length,
+  );
 
   constructor() {
     this.marketplace.load();

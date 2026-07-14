@@ -156,3 +156,46 @@
     background-position-x: -220%;
   }
 }
+
+@media (max-width: 640px) {
+  .marketplace {
+    padding-block: 32px 48px;
+  }
+
+  .marketplace__heading {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .marketplace h2 {
+    font-size: 24px;
+  }
+
+  .marketplace__type button {
+    min-width: 0;
+  }
+
+  .marketplace__filters {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .marketplace__categories {
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .marketplace__categories button {
+    flex: 0 0 auto;
+  }
+
+  .marketplace__sort {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .marketplace__grid {
+    grid-template-columns: 1fr;
+  }
+}
