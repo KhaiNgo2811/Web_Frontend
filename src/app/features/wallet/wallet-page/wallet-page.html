@@ -62,7 +62,9 @@
           </div>
         </div>
         <div class="balance-band__actions">
-          <a href="#packages-title" class="ant-btn ant-btn--light">Nạp thêm Xu</a>
+          <button type="button" class="ant-btn ant-btn--light" (click)="openPackage()">
+            Nạp thêm Xu
+          </button>
           <a routerLink="/wallet/history" class="ant-btn ant-btn--ghost-light"
             >Xem lịch sử giao dịch</a
           >
@@ -294,21 +296,74 @@
 </main>
 
 @if (confirmation(); as dialog) {
-  <app-ui-dialog [title]="confirmationTitle()" [width]="520" (closed)="closeConfirmation()">
-    <div class="confirmation-copy">
+  <app-ui-dialog
+    [title]="confirmationTitle()"
+    [width]="dialog.kind === 'package' ? 620 : 520"
+    (closed)="closeConfirmation()"
+  >
+    <div class="confirmation-copy" [class.topup-dialog]="dialog.kind === 'package'">
       @if (dialog.kind === 'package') {
-        <div class="confirmation-coin"><i class="bi bi-wallet2" aria-hidden="true"></i></div>
-        <p>
-          Bạn sẽ nhận
-          <strong
-            >{{
-              dialog.item.tokens + (dialog.item.tokens * dialog.item.bonusPct) / 100 | number
-            }}
-            Xu</strong
-          >
-          từ gói {{ dialog.item.name }}.
-        </p>
-        <span>Giá gói: {{ dialog.item.price | number }}đ</span>
+        <p class="topup-label">Chọn gói muốn nạp</p>
+        <div class="topup-grid">
+          @for (item of packageOptions(); track item.id; let index = $index) {
+            <button
+              type="button"
+              class="topup-option"
+              [class.topup-option--featured]="index === 1"
+              [class.topup-option--active]="selectedPackageId() === item.id"
+              (click)="selectPackage(item)"
+            >
+              @if (index === 1) {
+                <span class="topup-option__badge">Phổ biến</span>
+              }
+              <span class="topup-option__coin"
+                >{{ item.tokens + (item.tokens * item.bonusPct) / 100 | number }}<small>Xu</small></span
+              >
+              @if (item.bonusPct) {
+                <span class="topup-option__bonus">Tặng thêm {{ item.bonusPct }}%</span>
+              }
+              <strong>{{ item.price | number }}đ</strong>
+            </button>
+          }
+        </div>
+
+        <p class="topup-label">Phương thức thanh toán</p>
+        <div class="topup-methods" role="group" aria-label="Chọn phương thức thanh toán">
+          @for (method of paymentMethods; track method.id) {
+            <button
+              type="button"
+              [class.active]="selectedPaymentMethod() === method.id"
+              (click)="selectPaymentMethod(method.id)"
+            >
+              <i class="bi {{ method.icon }}" aria-hidden="true"></i> {{ method.label }}
+            </button>
+          }
+        </div>
+
+        @if (selectedPackage(); as selected) {
+          <dl class="topup-summary">
+            <div>
+              <dt>Gói đã chọn</dt>
+              <dd>
+                {{ selected.tokens + (selected.tokens * selected.bonusPct) / 100 | number }} Xu
+              </dd>
+            </div>
+            <div>
+              <dt>Phương thức</dt>
+              <dd>{{ paymentMethodLabel() }}</dd>
+            </div>
+            @if (selected.bonusPct) {
+              <div>
+                <dt>Bonus</dt>
+                <dd class="topup-summary__bonus">Tặng thêm {{ selected.bonusPct }}%</dd>
+              </div>
+            }
+            <div class="topup-summary__total">
+              <dt>Tổng thanh toán</dt>
+              <dd>{{ selected.price | number }}đ</dd>
+            </div>
+          </dl>
+        }
       }
       @if (dialog.kind === 'boost') {
         <div class="confirmation-coin"><i class="bi bi-rocket-takeoff" aria-hidden="true"></i></div>
@@ -391,6 +446,15 @@
           (click)="claimReferral(dialog.item)"
         >
           Nhận thưởng
+        </button>
+      } @else if (dialog.kind === 'package') {
+        <button
+          type="button"
+          class="ant-btn ant-btn--primary"
+          [disabled]="!!wallet.pendingAction() || !selectedPackage()"
+          (click)="confirm()"
+        >
+          Xác nhận nạp Xu <i class="bi bi-arrow-right" aria-hidden="true"></i>
         </button>
       } @else {
         <button
