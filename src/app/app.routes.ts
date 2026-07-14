@@ -216,6 +216,13 @@ export const routes: Routes = [
           import('./features/wallet/wallet-page/wallet-page').then((m) => m.WalletPage),
       },
       {
+        path: 'wallet/history',
+        title: 'Ant Xu: Lịch sử giao dịch | AntGo',
+        canActivate: [authGuard],
+        loadComponent: () =>
+          import('./features/wallet/wallet-history/wallet-history').then((m) => m.WalletHistory),
+      },
+      {
         path: 'notifications',
         canActivate: [authGuard],
         loadComponent: () =>

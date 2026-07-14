@@ -1,6 +1,6 @@
 import { DecimalPipe } from '@angular/common';
 import { Component, computed, ElementRef, HostListener, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import type {
   BoostDuration,
@@ -12,7 +12,7 @@ import { SessionStore, WalletStore } from '../../../core/stores';
 import { UiDialog } from '../../../shared/ui-dialog/ui-dialog';
 
 type Confirmation =
-  | { kind: 'package'; item: TokenPackage }
+  | { kind: 'package' }
   | { kind: 'boost'; days: BoostDuration; cost: number }
   | { kind: 'plan'; item: ProviderPlan };
 type WalletDialog =
@@ -26,15 +26,23 @@ interface CheckInDay {
   state: 'completed' | 'today' | 'upcoming';
 }
 
+type PaymentMethod = 'bank' | 'ewallet' | 'card';
+
 const BOOST_OPTIONS: readonly { days: BoostDuration; cost: number; label: string }[] = [
   { days: 1, cost: 50, label: '1 ngày' },
   { days: 3, cost: 120, label: '3 ngày' },
   { days: 7, cost: 200, label: '7 ngày' },
 ];
 
+const PAYMENT_METHODS: readonly { id: PaymentMethod; label: string; icon: string }[] = [
+  { id: 'bank', label: 'Chuyển khoản', icon: 'bi-bank' },
+  { id: 'ewallet', label: 'Ví điện tử', icon: 'bi-wallet2' },
+  { id: 'card', label: 'Thẻ ATM/Visa', icon: 'bi-credit-card' },
+];
+
 @Component({
   selector: 'app-wallet-page',
-  imports: [DecimalPipe, UiDialog],
+  imports: [DecimalPipe, RouterLink, UiDialog],
   templateUrl: './wallet-page.html',
   styleUrl: './wallet-page.scss',
 })
@@ -46,8 +54,18 @@ export class WalletPage {
   private dialogInvoker: HTMLElement | null = null;
 
   protected readonly boostOptions = BOOST_OPTIONS;
+  protected readonly paymentMethods = PAYMENT_METHODS;
   protected readonly confirmation = signal<WalletDialog | null>(null);
   protected readonly referralLink = 'https://antgo.vn/invite/an-nguyen';
+  protected readonly selectedPackageId = signal<string | null>(null);
+  protected readonly selectedPaymentMethod = signal<PaymentMethod>('bank');
+  protected readonly packageOptions = computed(() => this.wallet.summary()?.tokenPackages ?? []);
+  protected readonly selectedPackage = computed(() =>
+    this.packageOptions().find((item) => item.id === this.selectedPackageId()),
+  );
+  protected readonly paymentMethodLabel = computed(
+    () => PAYMENT_METHODS.find((method) => method.id === this.selectedPaymentMethod())!.label,
+  );
   protected readonly checkInActivity = computed(() =>
     this.wallet.summary()?.earningActivities.find((activity) => activity.id === 'daily-check-in'),
   );
@@ -133,8 +151,17 @@ export class WalletPage {
     this.wallet.clearFeedback();
   }
 
-  protected openPackage(item: TokenPackage): void {
-    this.openConfirmation({ kind: 'package', item });
+  protected openPackage(item?: TokenPackage): void {
+    this.selectedPackageId.set(item?.id ?? this.packageOptions()[0]?.id ?? null);
+    this.openConfirmation({ kind: 'package' });
+  }
+
+  protected selectPackage(item: TokenPackage): void {
+    this.selectedPackageId.set(item.id);
+  }
+
+  protected selectPaymentMethod(method: PaymentMethod): void {
+    this.selectedPaymentMethod.set(method);
   }
 
   protected openBoost(): void {
@@ -150,7 +177,11 @@ export class WalletPage {
   protected confirm(): void {
     const confirmation = this.confirmation();
     if (!confirmation) return;
-    if (confirmation.kind === 'package') this.wallet.purchasePackage(confirmation.item.id);
+    if (confirmation.kind === 'package') {
+      const packageId = this.selectedPackageId();
+      if (!packageId) return;
+      this.wallet.purchasePackage(packageId);
+    }
     if (confirmation.kind === 'boost') this.wallet.boostSelectedPost();
     if (confirmation.kind === 'plan') this.wallet.purchaseProviderPlan(confirmation.item.id);
     this.closeConfirmation();
@@ -215,7 +246,7 @@ export class WalletPage {
 
   protected confirmationTitle(): string {
     const item = this.confirmation();
-    if (item?.kind === 'package') return 'Xác nhận nạp Ant Xu';
+    if (item?.kind === 'package') return 'Nạp thêm Xu';
     if (item?.kind === 'boost') return 'Xác nhận đẩy bài';
     if (item?.kind === 'plan') return 'Xác nhận gói quảng bá';
     if (item?.kind === 'video') return 'Video nhận Xu';
