@@ -29,6 +29,13 @@ export class MainLayout {
     const user = this.currentUser();
     return user ? getInitials(user.displayName) : '';
   });
+  protected readonly ownOpenPostsCount = computed(
+    () =>
+      this.marketplace
+        .posts()
+        .filter((post) => post.authorId === this.currentUser()?.id && post.status === 'open')
+        .length,
+  );
 
   constructor() {
     this.marketplace.load();
