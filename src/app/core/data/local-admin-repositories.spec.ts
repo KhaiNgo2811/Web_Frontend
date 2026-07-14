@@ -10,12 +10,24 @@ import {
   PostRepository,
 } from './repositories';
 import { provideAntgoCore } from './core-data.providers';
+import { LocalConversationRepository } from './local-conversation-repository';
+import { LocalOrderRepository } from './local-order-repository';
+import { LocalPostRepository } from './local-post-repository';
 import { MockDb } from './mock-db';
 
 describe('local admin repositories', () => {
   beforeEach(() => {
     localStorage.clear();
-    TestBed.configureTestingModule({ providers: [provideAntgoCore()] });
+    // Exercises Local*Repository behavior directly, regardless of
+    // environment.useHttpApi (which picks Http* by default).
+    TestBed.configureTestingModule({
+      providers: [
+        provideAntgoCore(),
+        { provide: ConversationRepository, useClass: LocalConversationRepository },
+        { provide: OrderRepository, useClass: LocalOrderRepository },
+        { provide: PostRepository, useClass: LocalPostRepository },
+      ],
+    });
   });
 
   afterEach(() => TestBed.resetTestingModule());

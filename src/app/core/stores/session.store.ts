@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, catchError, finalize, switchMap, tap, throwError } from 'rxjs';
 
 import type { AuthChallenge, RegistrationDraft, Session, User, UserLocation } from '../models';
 import { AuthRepository, MockDb } from '../data';
@@ -34,31 +34,31 @@ export class SessionStore {
     this.currentUserState.set(restored?.user ?? null);
   }
 
-  login(identifier: string, password: string, remember = false): boolean {
+  login(identifier: string, password: string, remember = false): Observable<Session> {
     return this.run(this.auth.login({ identifier, password }), (session) => {
       this.acceptSession(session, remember);
     });
   }
 
-  googleLogin(): void {
-    this.run(this.auth.loginWithGoogle(), (session) => this.acceptSession(session, true));
+  googleLogin(): Observable<Session> {
+    return this.run(this.auth.loginWithGoogle(), (session) => this.acceptSession(session, true));
   }
 
-  register(input: RegisterInput): void {
+  register(input: RegisterInput): Observable<AuthChallenge> {
     const draft: RegistrationDraft = {
       ...input,
       location: input.location ?? DEFAULT_LOCATION,
     };
-    this.run(this.auth.beginRegistration(draft), (challenge) => {
+    return this.run(this.auth.beginRegistration(draft), (challenge) => {
       this.pendingChallengeState.set(challenge);
     });
   }
 
-  verifyOtp(code: string): boolean {
+  verifyOtp(code: string): Observable<Session> {
     const challenge = this.pendingChallengeState();
     if (!challenge) {
       this.errorState.set('Không có yêu cầu xác thực đang chờ.');
-      return false;
+      return throwError(() => new Error('Không có yêu cầu xác thực đang chờ.'));
     }
 
     return this.run(this.auth.verifyRegistration(challenge.id, code), (session) => {
@@ -67,13 +67,15 @@ export class SessionStore {
     });
   }
 
-  resetPassword(identifier: string, password: string): void {
-    this.run(this.auth.requestPasswordReset(identifier), (challenge) => {
-      this.run(
-        this.auth.resetPassword({ challengeId: challenge.id, newPassword: password }),
-        () => undefined,
-      );
-    });
+  resetPassword(identifier: string, password: string): Observable<void> {
+    return this.run(this.auth.requestPasswordReset(identifier), () => undefined).pipe(
+      switchMap((challenge) =>
+        this.run(
+          this.auth.resetPassword({ challengeId: challenge.id, newPassword: password }),
+          () => undefined,
+        ),
+      ),
+    );
   }
 
   refreshUser(): void {
@@ -81,7 +83,7 @@ export class SessionStore {
     if (!userId) return;
     this.run(this.auth.getUser(userId), (user) => {
       if (user) this.currentUserState.set(user);
-    });
+    }).subscribe({ error: () => undefined });
   }
 
   logout(): void {
@@ -101,21 +103,16 @@ export class SessionStore {
     else this.db.clearSession();
   }
 
-  private run<T>(source: Observable<T>, next: (value: T) => void): boolean {
-    let succeeded = false;
+  private run<T>(source: Observable<T>, next: (value: T) => void): Observable<T> {
     this.loadingState.set(true);
     this.errorState.set(null);
-    source.subscribe({
-      next: (value) => {
-        next(value);
-        succeeded = true;
-      },
-      error: (error: unknown) => {
+    return source.pipe(
+      tap((value) => next(value)),
+      catchError((error: unknown) => {
         this.errorState.set(error instanceof Error ? error.message : 'Đã có lỗi xảy ra.');
-        this.loadingState.set(false);
-      },
-      complete: () => this.loadingState.set(false),
-    });
-    return succeeded;
+        return throwError(() => error);
+      }),
+      finalize(() => this.loadingState.set(false)),
+    );
   }
 }

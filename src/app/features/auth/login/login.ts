@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 import { isAdminRole } from '../../../core/models';
 import { SessionStore } from '../../../core/stores/session.store';
@@ -42,12 +43,10 @@ export class LoginPage implements OnInit {
     }
 
     const { identifier, password, remember } = this.form.getRawValue();
-    if (!this.sessionStore.login(identifier.trim(), password, remember)) {
-      this.errorMessage.set('Số điện thoại, email hoặc mật khẩu chưa chính xác.');
-      return;
-    }
-
-    void this.router.navigateByUrl(this.returnUrl());
+    this.sessionStore.login(identifier.trim(), password, remember).subscribe({
+      next: () => void this.router.navigateByUrl(this.returnUrl()),
+      error: () => this.errorMessage.set('Số điện thoại, email hoặc mật khẩu chưa chính xác.'),
+    });
   }
 
   async loginWithGoogle(): Promise<void> {
@@ -56,9 +55,7 @@ export class LoginPage implements OnInit {
 
     try {
       await this.googleAuth.signIn();
-
-      // Use the existing googleLogin method which handles mock data
-      this.sessionStore.googleLogin();
+      await firstValueFrom(this.sessionStore.googleLogin());
       void this.router.navigateByUrl(this.returnUrl());
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Đăng nhập Google thất bại.';
