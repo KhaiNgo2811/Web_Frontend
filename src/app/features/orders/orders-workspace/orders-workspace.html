@@ -1,4 +1,4 @@
-<section class="workspace ant-container">
+<section class="workspace ant-container" [class.mobile-detail-open]="mobileDetailOpen()">
   <aside class="workspace-sidebar ant-card">
     <div class="sidebar-heading">
       <h1>Đơn hàng</h1>
@@ -62,7 +62,7 @@
           <button
             type="button"
             [class.active]="selectedOrder()?.id === order.id"
-            (click)="selectedOrderId.set(order.id)"
+            (click)="selectOrder(order.id)"
           >
             <span class="list-avatar">{{ order.code.slice(-2) }}</span
             ><span
@@ -76,6 +76,9 @@
   </aside>
 
   <article class="workspace-content ant-card">
+    <button type="button" class="mobile-back" (click)="closeMobileDetail()">
+      <i class="bi bi-arrow-left" aria-hidden="true"></i> Quay lại
+    </button>
     @if (tab() === 'posts') {
       <div class="welcome">
         <span class="ant-kicker">Quản lý bài đăng</span>

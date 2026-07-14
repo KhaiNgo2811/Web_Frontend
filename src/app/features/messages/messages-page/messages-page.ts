@@ -23,6 +23,7 @@ export class MessagesPage {
   protected readonly selectedId = signal<string | null>(
     this.route.snapshot.paramMap.get('conversationId'),
   );
+  protected readonly mobileDetailOpen = signal(!!this.route.snapshot.paramMap.get('conversationId'));
   protected draft = '';
   protected readonly selected = computed<Conversation | undefined>(() => {
     const conversations = this.store.conversations();
@@ -47,7 +48,12 @@ export class MessagesPage {
 
   protected selectConversation(id: string): void {
     this.selectedId.set(id);
+    this.mobileDetailOpen.set(true);
     void this.router.navigate(['/messages', id]);
+  }
+
+  protected closeMobileDetail(): void {
+    this.mobileDetailOpen.set(false);
   }
 
   protected send(kind: MessageKind = 'text'): void {

@@ -25,6 +25,7 @@ export class OrdersWorkspace {
   protected readonly tab = signal<WorkspaceTab>('booked');
   protected readonly selectedOrderId = signal<string | null>(null);
   protected readonly selectedApplicationId = signal<string | null>(null);
+  protected readonly mobileDetailOpen = signal(false);
   protected readonly dialog = signal<DialogName>(null);
   protected readonly rating = signal(5);
   protected reviewComment = '';
@@ -54,10 +55,21 @@ export class OrdersWorkspace {
 
   protected chooseTab(tab: WorkspaceTab): void {
     this.tab.set(tab);
+    this.mobileDetailOpen.set(false);
   }
 
   protected selectApplication(id: string): void {
     this.selectedApplicationId.set(id);
+    this.mobileDetailOpen.set(true);
+  }
+
+  protected selectOrder(id: string): void {
+    this.selectedOrderId.set(id);
+    this.mobileDetailOpen.set(true);
+  }
+
+  protected closeMobileDetail(): void {
+    this.mobileDetailOpen.set(false);
   }
 
   protected acceptApplication(): void {

@@ -10,7 +10,7 @@ interface StoredDatabase {
 
 const DATABASE_KEY = 'antgo.mock-db';
 const SESSION_KEY = 'antgo.session';
-const SCHEMA_VERSION = 8;
+const SCHEMA_VERSION = 9;
 const COLLECTION_KEYS: (keyof MockDatabaseData)[] = [
   'users',
   'authAccounts',

@@ -145,3 +145,37 @@
   color: var(--ant-muted);
   font-size: 13px;
 }
+
+@media (max-width: 640px) {
+  .welcome h2,
+  .detail-header h2 {
+    font-size: 22px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .order-body {
+    grid-template-columns: 1fr;
+  }
+
+  .order-body div {
+    border-right: 0;
+    border-bottom: 1px solid var(--ant-border);
+  }
+
+  .order-body div:last-child {
+    border-bottom: 0;
+  }
+
+  .detail-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}

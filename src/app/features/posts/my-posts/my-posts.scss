@@ -473,3 +473,37 @@
   background: var(--ant-orange-soft);
   font-size: 12px;
 }
+
+@media (max-width: 640px) {
+  .my-posts-page {
+    padding-block: 20px 32px;
+  }
+
+  .my-posts__heading h1 {
+    font-size: 22px;
+  }
+
+  .post-row {
+    grid-template-columns: 56px 1fr;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .post-row__thumb {
+    width: 56px;
+    height: 56px;
+  }
+
+  .post-row__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
+  .post-row__meta {
+    gap: 4px 10px;
+  }
+
+  .post-form__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -157,3 +157,32 @@ nav a:hover::after {
   border-radius: 50%;
   background: var(--ant-orange);
 }
+
+@media (max-width: 640px) {
+  .site-header__inner {
+    width: calc(100% - 24px);
+  }
+
+  nav {
+    display: none;
+  }
+
+  .site-actions {
+    gap: 8px;
+  }
+
+  .location-button span:not(:first-child) {
+    max-width: 78px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .site-main {
+    padding-bottom: 74px;
+  }
+
+  .site-footer__top nav {
+    display: flex;
+  }
+}

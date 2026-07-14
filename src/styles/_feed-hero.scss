@@ -289,3 +289,35 @@
   border-radius: 50%;
   background: rgb(234 88 12 / 35%);
 }
+
+@media (max-width: 640px) {
+  .hero__layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    gap: 24px;
+    padding-block: 28px;
+  }
+
+  .hero h1 {
+    font-size: clamp(30px, 8vw, 40px);
+  }
+
+  .hero__search {
+    grid-template-columns: 24px 1fr;
+    max-width: none;
+  }
+
+  .hero__search .ant-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .hero__proof {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .hero__visual {
+    display: none;
+  }
+}

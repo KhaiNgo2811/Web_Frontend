@@ -1,4 +1,4 @@
-<section class="messenger ant-container ant-card">
+<section class="messenger ant-container ant-card" [class.mobile-detail-open]="mobileDetailOpen()">
   <aside>
     <div class="messenger-title">
       <div>
@@ -42,6 +42,9 @@
   <article>
     @if (selected(); as conversation) {
       <header>
+        <button type="button" class="mobile-back" (click)="closeMobileDetail()">
+          <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        </button>
         <span class="avatar">{{ peerName(conversation).slice(0, 2).toUpperCase() }}</span>
         <div>
           <h2>{{ peerName(conversation) }}</h2>
