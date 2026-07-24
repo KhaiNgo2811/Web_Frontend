@@ -1,4 +1,5 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, output, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
 import type {
   Complaint,
@@ -11,6 +12,7 @@ import type {
 } from '../../core/models';
 import { ImageSearchService } from '../../core/data/image-search.service';
 import { MarketplaceStore } from '../../core/stores';
+import { ToastStore } from '../../core/stores/toast.store';
 import { EmptyState } from '../../shared/empty-state/empty-state';
 import { PostCard } from '../../shared/post-card/post-card';
 import { UiDialog } from '../../shared/ui-dialog/ui-dialog';
@@ -71,9 +73,11 @@ const CATEGORY_FILTERS: readonly { value: FeedCategory; icon: string; label: str
   templateUrl: './feed.html',
   styleUrls: ['./feed.scss', './feed-marketplace.scss', './feed-overlays.scss'],
 })
-export class Feed {
+export class Feed implements OnInit {
   private readonly marketplace = inject(MarketplaceStore);
   private readonly imageSearch = inject(ImageSearchService);
+  private readonly toast = inject(ToastStore);
+  private readonly router = inject(Router);
   private recognition: SpeechRecognitionLike | null = null;
 
   readonly sourcePosts = input<Post[] | null>(null);
@@ -98,7 +102,10 @@ export class Feed {
 
   protected readonly voiceSearchSupported = signal(
     typeof window !== 'undefined' &&
-      Boolean((window as unknown as Record<string, unknown>)['SpeechRecognition'] ?? (window as unknown as Record<string, unknown>)['webkitSpeechRecognition']),
+      Boolean(
+        (window as unknown as Record<string, unknown>)['SpeechRecognition'] ??
+        (window as unknown as Record<string, unknown>)['webkitSpeechRecognition'],
+      ),
   );
   protected readonly listening = signal(false);
   protected readonly imageSearching = signal(false);
@@ -174,8 +181,7 @@ export class Feed {
     }
     const Ctor = ((window as unknown as Record<string, unknown>)['SpeechRecognition'] ??
       (window as unknown as Record<string, unknown>)['webkitSpeechRecognition']) as
-      | SpeechRecognitionCtor
-      | undefined;
+      SpeechRecognitionCtor | undefined;
     if (!Ctor) return;
 
     const recognition = new Ctor();
@@ -234,8 +240,20 @@ export class Feed {
   }
 
   protected requestMessage(post: Post): void {
-    this.messageRequested.emit(post.id);
-    this.successMessage.set('Đã mở yêu cầu trò chuyện cho bài đăng này.');
+    this.marketplace.startConversation(post.id, post.authorId).subscribe({
+      next: (conversation) => {
+        this.messageRequested.emit(post.id);
+        this.selectedPost.set(null);
+        this.toast.show('Đã mở cuộc trò chuyện cho bài đăng này.');
+        void this.router.navigate(['/messages', conversation.id]);
+      },
+      error: (error: unknown) => {
+        this.toast.show(
+          error instanceof Error ? error.message : 'Không thể mở cuộc trò chuyện.',
+          'error',
+        );
+      },
+    });
   }
 
   protected requestLike(post: Post): void {
@@ -267,6 +285,14 @@ export class Feed {
     this.reportingPost.set(null);
     if (this.marketplace.error()) return;
     this.successMessage.set('Đã gửi báo cáo. Cảm ơn bạn đã giúp AntGo an toàn hơn!');
+  }
+
+  ngOnInit(): void {
+    // Another page (e.g. My Posts) may have reset the shared marketplace
+    // filter since this component was last active — reassert Feed's own
+    // filter (status: open + whatever type/category/search is selected)
+    // instead of trusting whatever was left behind.
+    this.syncStoreFilter();
   }
 
   protected resetFilters(): void {

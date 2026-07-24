@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { Observable } from 'rxjs';
+import { EMPTY, Observable, tap } from 'rxjs';
 
 import {
   ApplicationRepository,
@@ -146,6 +146,19 @@ export class MarketplaceStore {
 
   openConversation(id: string): void {
     this.activeConversationState.set(id);
+  }
+
+  /** Finds or starts a conversation with a post's author, for the "message before applying" flow. */
+  startConversation(postId: string, otherUserId: string): Observable<Conversation> {
+    const viewerId = this.requireViewer();
+    if (!viewerId) return EMPTY;
+    this.errorState.set(null);
+    return this.repositories.conversations.startForPost(viewerId, postId, otherUserId).pipe(
+      tap({
+        next: () => this.load(),
+        error: (error: unknown) => this.fail(error),
+      }),
+    );
   }
 
   sendMessage(

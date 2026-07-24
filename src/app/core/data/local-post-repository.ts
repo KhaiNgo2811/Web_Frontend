@@ -71,7 +71,7 @@ export class LocalPostRepository extends PostRepository {
           likedBy: [],
           isPriority: false,
           hidden: false,
-          regionId: author.location.regionId,
+          regionId: input.regionId ?? author.location.regionId,
           expiresAt: new Date(Date.now() + POST_DURATION_MS).toISOString(),
           createdAt: now,
           updatedAt: now,

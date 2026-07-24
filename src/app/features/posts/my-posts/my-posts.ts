@@ -1,7 +1,19 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 
-import type { Application, CreatePostInput, Post, PostType, ServiceCategory } from '../../../core/models';
+import type {
+  Application,
+  CreatePostInput,
+  Post,
+  PostType,
+  ServiceCategory,
+} from '../../../core/models';
 import { MarketplaceStore } from '../../../core/stores/marketplace.store';
 import { SessionStore } from '../../../core/stores/session.store';
 import { EmptyState } from '../../../shared/empty-state/empty-state';
@@ -25,6 +37,28 @@ const CATEGORY_OPTIONS: readonly { value: ServiceCategory; label: string }[] = [
   { value: 'other', label: 'Khác' },
 ];
 
+// Matches antgo-backend's seeded regions (khu-a/khu-b/khu-c — see seed.ts).
+const REGION_OPTIONS: readonly { value: string; label: string }[] = [
+  { value: 'khu-a', label: 'KTX Khu A' },
+  { value: 'khu-b', label: 'KTX Khu B' },
+  { value: 'khu-c', label: 'KTX Khu C' },
+];
+
+// Flags obvious keyboard-mashing/spam: a run of the same character, a short
+// chunk repeated back-to-back, or very low character diversity over a long string.
+function looksLikeSpam(value: string): boolean {
+  const normalized = value.trim().toLocaleLowerCase('vi');
+  if (!normalized) return false;
+  if (/(.)\1{3,}/.test(normalized)) return true;
+  if (/(.{2,6})\1{2,}/.test(normalized)) return true;
+  const letters = normalized.replace(/[^\p{L}]/gu, '');
+  return letters.length >= 12 && new Set(letters).size / letters.length < 0.35;
+}
+
+function spamValidator(control: AbstractControl): ValidationErrors | null {
+  return looksLikeSpam((control.value as string | null) ?? '') ? { spam: true } : null;
+}
+
 const STATUS_META: Record<Post['status'], { label: string; tone: string }> = {
   open: { label: 'Đang mở', tone: 'open' },
   connected: { label: 'Đã có người nhận', tone: 'connected' },
@@ -42,13 +76,14 @@ const MAX_IMAGES = 5;
   templateUrl: './my-posts.html',
   styleUrl: './my-posts.scss',
 })
-export class MyPostsPage {
+export class MyPostsPage implements OnInit {
   private readonly store = inject(MarketplaceStore);
   private readonly session = inject(SessionStore);
   private readonly formBuilder = inject(FormBuilder);
 
   protected readonly tabs = TAB_META;
   protected readonly categories = CATEGORY_OPTIONS;
+  protected readonly regions = REGION_OPTIONS;
   protected readonly selectedTab = signal<MyPostsTab>('all');
   protected readonly showTypeModal = signal(false);
   protected readonly formMode = signal<FormMode>(null);
@@ -60,11 +95,14 @@ export class MyPostsPage {
 
   protected readonly form = this.formBuilder.group({
     title: ['', [Validators.required, Validators.minLength(10)]],
-    description: [''],
+    description: ['', [Validators.required, Validators.minLength(20), spamValidator]],
     category: ['food' as ServiceCategory],
     price: [null as number | null, [Validators.required, Validators.min(1)]],
     expectedTime: [''],
+    regionId: ['', Validators.required],
   });
+
+  protected readonly formError = this.store.error;
 
   protected readonly currentUserId = computed(() => this.session.currentUser()?.id ?? 'user-demo');
 
@@ -87,6 +125,14 @@ export class MyPostsPage {
     }
     return map;
   });
+
+  ngOnInit(): void {
+    // The marketplace-wide filter is shared with Feed's browse tabs — if the
+    // user last filtered Feed by type/category/status, that filter otherwise
+    // stays applied here too and hides own posts of the other type after
+    // creating them. Reset it so every own post (any type/category/status) loads.
+    this.store.setFilter({ sort: 'newest' });
+  }
 
   protected chooseTab(tab: MyPostsTab): void {
     this.selectedTab.set(tab);
@@ -111,6 +157,7 @@ export class MyPostsPage {
       category: 'food',
       price: null,
       expectedTime: '',
+      regionId: this.session.currentUser()?.location.regionId ?? this.regions[0].value,
     });
     this.showTypeModal.set(false);
   }
@@ -126,6 +173,7 @@ export class MyPostsPage {
       category: post.category,
       price: post.price,
       expectedTime: post.expectedTime ?? '',
+      regionId: post.regionId,
     });
   }
 
@@ -166,10 +214,12 @@ export class MyPostsPage {
       price: Number(raw.price ?? 0),
       expectedTime: raw.expectedTime || undefined,
       images: this.images(),
+      regionId: raw.regionId || undefined,
     };
     const editing = this.editingPost();
     if (this.formMode() === 'edit' && editing) this.store.updatePost(editing.id, input);
     else this.store.createPost(input);
+    if (this.store.error()) return;
     this.closeFormModal();
   }
 
@@ -208,7 +258,8 @@ export class MyPostsPage {
   }
 
   protected pendingApplicants(postId: string): number {
-    return (this.applicationsByPost().get(postId) ?? []).filter((a) => a.status === 'pending').length;
+    return (this.applicationsByPost().get(postId) ?? []).filter((a) => a.status === 'pending')
+      .length;
   }
 
   protected timeLabel(post: Post): string {

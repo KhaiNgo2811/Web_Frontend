@@ -1,0 +1,12 @@
+@if (store.message(); as toast) {
+  <div class="app-toast" [class]="'app-toast--' + toast.tone" role="status">
+    @if (toast.tone === 'success') {
+      <i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+    } @else if (toast.tone === 'error') {
+      <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+    } @else {
+      <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+    }
+    <span>{{ toast.text }}</span>
+  </div>
+}

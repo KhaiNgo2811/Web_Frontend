@@ -21,12 +21,18 @@
   gap: 14px;
 }
 
-.summary-grid a {
+.summary-grid a,
+.summary-grid button {
   display: grid;
   gap: 6px;
+  width: 100%;
   border: 1px solid var(--ant-border);
   border-radius: 14px;
   padding: 18px;
+  color: inherit;
+  background: none;
+  text-align: left;
+  cursor: pointer;
 }
 
 .summary-grid span,
@@ -122,6 +128,56 @@
 
 .order-breadcrumb strong {
   color: var(--ant-ink);
+}
+
+.link-reset {
+  border: 0;
+  padding: 0;
+  color: inherit;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Post applicants (posts tab detail) */
+.applicant-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.applicant-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--ant-border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.applicant-row__body p {
+  margin: 6px 0 0;
+  color: var(--ant-muted);
+  font-size: 12px;
+}
+
+.applicant-row__title-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.applicant-row__time {
+  color: var(--ant-subtle);
+  font-size: 11px;
+}
+
+.applicant-row__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .order-detail {

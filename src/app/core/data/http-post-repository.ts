@@ -33,24 +33,33 @@ export class HttpPostRepository extends PostRepository {
   }
 
   getById(id: string): Observable<Post | undefined> {
-    return this.http.get<Record<string, unknown>>(`${this.baseUrl}/${id}`).pipe(map(toPost), mapNotFoundToUndefined());
+    return this.http
+      .get<Record<string, unknown>>(`${this.baseUrl}/${id}`)
+      .pipe(map(toPost), mapNotFoundToUndefined());
   }
 
   create(authorId: string, input: CreatePostInput): Observable<Post> {
-    // Backend requires a regionId the CreatePostInput doesn't carry — default
-    // to the author's own region (see CLAUDE.md "Backend" known gaps).
-    return this.http.get<Record<string, unknown>>(`${environment.apiBaseUrl}/users/${authorId}`).pipe(
-      switchMap((rawAuthor) => {
-        const regionId = toUser(rawAuthor).location.regionId;
-        return this.http.post<Record<string, unknown>>(this.baseUrl, { ...input, regionId });
-      }),
-      map(toPost),
-      mapHttpError(),
-    );
+    // Backend requires a regionId. The frontend's region picker (used by
+    // LocalPostRepository) sends CreatePostInput.regionId, but there's no
+    // /api/regions endpoint and seeded region ids aren't stable across
+    // reseeds, so that value is intentionally ignored here — always default
+    // to the author's own region instead (see CLAUDE.md "Backend" known gaps).
+    return this.http
+      .get<Record<string, unknown>>(`${environment.apiBaseUrl}/users/${authorId}`)
+      .pipe(
+        switchMap((rawAuthor) => {
+          const regionId = toUser(rawAuthor).location.regionId;
+          return this.http.post<Record<string, unknown>>(this.baseUrl, { ...input, regionId });
+        }),
+        map(toPost),
+        mapHttpError(),
+      );
   }
 
   update(_actorId: string, id: string, input: UpdatePostInput): Observable<Post> {
-    return this.http.patch<Record<string, unknown>>(`${this.baseUrl}/${id}`, input).pipe(map(toPost), mapHttpError());
+    return this.http
+      .patch<Record<string, unknown>>(`${this.baseUrl}/${id}`, input)
+      .pipe(map(toPost), mapHttpError());
   }
 
   extend(_actorId: string, _id: string): Observable<Post> {

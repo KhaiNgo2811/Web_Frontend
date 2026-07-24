@@ -36,6 +36,7 @@ export interface CreatePostInput {
   expectedTime?: string;
   images?: string[];
   urgency?: PostUrgency;
+  regionId?: string;
 }
 
 export type UpdatePostInput = Partial<Omit<CreatePostInput, 'type'>>;

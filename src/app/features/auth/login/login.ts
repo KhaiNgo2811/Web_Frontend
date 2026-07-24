@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { isAdminRole } from '../../../core/models';
 import { SessionStore } from '../../../core/stores/session.store';
+import { ToastStore } from '../../../core/stores/toast.store';
 import { GoogleAuthService } from '../../../core/services/google-auth.service';
 import { AuthCard } from '../shared/auth-card/auth-card';
 
@@ -20,6 +21,7 @@ export class LoginPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly sessionStore = inject(SessionStore);
+  private readonly toast = inject(ToastStore);
   private readonly googleAuth = inject(GoogleAuthService);
 
   readonly showPassword = signal(false);
@@ -44,7 +46,10 @@ export class LoginPage implements OnInit {
 
     const { identifier, password, remember } = this.form.getRawValue();
     this.sessionStore.login(identifier.trim(), password, remember).subscribe({
-      next: () => void this.router.navigateByUrl(this.returnUrl()),
+      next: () => {
+        this.toast.show('Đăng nhập thành công!');
+        void this.router.navigateByUrl(this.returnUrl());
+      },
       error: () => this.errorMessage.set('Số điện thoại, email hoặc mật khẩu chưa chính xác.'),
     });
   }
@@ -56,6 +61,7 @@ export class LoginPage implements OnInit {
     try {
       await this.googleAuth.signIn();
       await firstValueFrom(this.sessionStore.googleLogin());
+      this.toast.show('Đăng nhập thành công!');
       void this.router.navigateByUrl(this.returnUrl());
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Đăng nhập Google thất bại.';

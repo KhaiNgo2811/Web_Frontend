@@ -7,3 +7,5 @@ export * from './admin.stores';
 export { AdminAuditStore } from './admin-audit.store';
 export { AdminInboxStore } from './admin-inbox.store';
 export { WalletStore } from './wallet.store';
+export { ToastStore } from './toast.store';
+export type { ToastMessage, ToastTone } from './toast.store';

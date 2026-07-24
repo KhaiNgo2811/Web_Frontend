@@ -1,10 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 import type {
   Application,
+  ApplicationStatus,
   Order,
   OrderAction,
   OrderStatus,
@@ -12,12 +13,14 @@ import type {
 } from '../../../core/models';
 import { MarketplaceStore } from '../../../core/stores/marketplace.store';
 import { SessionStore } from '../../../core/stores/session.store';
+import { ToastStore } from '../../../core/stores/toast.store';
 import { EmptyState } from '../../../shared/empty-state/empty-state';
 import { StarRating } from '../../../shared/star-rating/star-rating';
 import { StatusPill } from '../../../shared/status-pill/status-pill';
 import { UiDialog } from '../../../shared/ui-dialog/ui-dialog';
 
 type WorkspaceTab = 'posts' | 'accepted' | 'booked';
+type PostApplicantFilter = 'all' | 'pending' | 'selected';
 type DialogName = 'review' | 'reviewSuccess' | 'cancel' | 'report' | 'completeSuccess' | null;
 
 const CATEGORY_LABELS: Record<ServiceCategory, string> = {
@@ -34,6 +37,13 @@ const STATUS_LABELS: Record<OrderStatus, string> = {
   in_progress: 'ĐANG THỰC HIỆN',
   completed: 'HOÀN THÀNH',
   cancelled: 'ĐÃ HUỶ',
+};
+
+const APPLICATION_STATUS_LABELS: Record<ApplicationStatus, string> = {
+  pending: 'Chờ duyệt',
+  selected: 'Đã duyệt',
+  rejected: 'Đã từ chối',
+  withdrawn: 'Đã rút lại',
 };
 
 const TIMELINE_STEP_META: Record<OrderStatus, { title: string; desc: string }> = {
@@ -77,9 +87,13 @@ interface TimelineStep {
 export class OrdersWorkspace {
   protected readonly store = inject(MarketplaceStore);
   protected readonly session = inject(SessionStore);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastStore);
   protected readonly tab = signal<WorkspaceTab>('booked');
   protected readonly selectedOrderId = signal<string | null>(null);
   protected readonly selectedApplicationId = signal<string | null>(null);
+  protected readonly managedPostId = signal<string | null>(null);
+  protected readonly postApplicantFilter = signal<PostApplicantFilter>('all');
   protected readonly mobileDetailOpen = signal(false);
   protected readonly dialog = signal<DialogName>(null);
 
@@ -103,6 +117,32 @@ export class OrdersWorkspace {
   protected readonly ownPosts = computed(() =>
     this.store.posts().filter((post) => post.authorId === this.currentUserId()),
   );
+  protected readonly managedPost = computed(() => {
+    const posts = this.ownPosts();
+    return posts.find((post) => post.id === this.managedPostId());
+  });
+  protected readonly managedPostApplications = computed(() => {
+    const postId = this.managedPost()?.id;
+    return this.store
+      .applications()
+      .filter((application) => application.postId === postId)
+      .sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
+  });
+  protected readonly managedPostApplicationCounts = computed(() => {
+    const applications = this.managedPostApplications();
+    return {
+      all: applications.length,
+      pending: applications.filter((application) => application.status === 'pending').length,
+      selected: applications.filter((application) => application.status === 'selected').length,
+    };
+  });
+  protected readonly filteredManagedPostApplications = computed(() => {
+    const filter = this.postApplicantFilter();
+    const applications = this.managedPostApplications();
+    return filter === 'all'
+      ? applications
+      : applications.filter((application) => application.status === filter);
+  });
   protected readonly selectedOrder = computed<Order | undefined>(() => {
     const orders = this.store.orders();
     return orders.find((order) => order.id === this.selectedOrderId()) ?? orders[0];
@@ -188,6 +228,38 @@ export class OrdersWorkspace {
     this.mobileDetailOpen.set(true);
   }
 
+  protected selectManagedPost(id: string): void {
+    this.managedPostId.set(id);
+    this.postApplicantFilter.set('all');
+    this.mobileDetailOpen.set(true);
+  }
+
+  protected setPostApplicantFilter(filter: PostApplicantFilter): void {
+    this.postApplicantFilter.set(filter);
+  }
+
+  protected applicationStatusLabel(status: ApplicationStatus): string {
+    return APPLICATION_STATUS_LABELS[status];
+  }
+
+  protected approveApplicant(applicationId: string): void {
+    this.store.selectApplication(applicationId);
+  }
+
+  protected chatWithApplicant(applicantId: string): void {
+    const post = this.managedPost();
+    if (!post) return;
+    this.store.startConversation(post.id, applicantId).subscribe({
+      next: (conversation) => void this.router.navigate(['/messages', conversation.id]),
+      error: (error: unknown) => {
+        this.toast.show(
+          error instanceof Error ? error.message : 'Không thể mở cuộc trò chuyện.',
+          'error',
+        );
+      },
+    });
+  }
+
   protected closeMobileDetail(): void {
     this.mobileDetailOpen.set(false);
   }
@@ -235,7 +307,9 @@ export class OrdersWorkspace {
   }
 
   protected confirmCancel(): void {
-    const reason = [this.selectedCancelReason(), this.cancelNote.trim()].filter(Boolean).join(' — ');
+    const reason = [this.selectedCancelReason(), this.cancelNote.trim()]
+      .filter(Boolean)
+      .join(' — ');
     this.transition('cancel', reason);
   }
 

@@ -44,7 +44,10 @@
                 >
                 <span><i class="bi bi-geo-alt" aria-hidden="true"></i> KTX Khu B</span>
                 @if (post.expectedTime) {
-                  <span><i class="bi bi-calendar3" aria-hidden="true"></i> {{ post.expectedTime }}</span>
+                  <span
+                    ><i class="bi bi-calendar3" aria-hidden="true"></i>
+                    {{ post.expectedTime }}</span
+                  >
                 }
                 @if (totalApplicants(post.id) > 0) {
                   <span
@@ -54,7 +57,9 @@
                   >
                 }
                 @if (pendingApplicants(post.id) > 0) {
-                  <span class="post-row__pending">{{ pendingApplicants(post.id) }} chờ xác nhận</span>
+                  <span class="post-row__pending"
+                    >{{ pendingApplicants(post.id) }} chờ xác nhận</span
+                  >
                 }
               </div>
             </div>
@@ -62,7 +67,11 @@
               <button type="button" class="row-btn row-btn--edit" (click)="openEditForm(post)">
                 <i class="bi bi-pencil" aria-hidden="true"></i> Sửa
               </button>
-              <button type="button" class="row-btn row-btn--delete" (click)="openDeleteConfirm(post)">
+              <button
+                type="button"
+                class="row-btn row-btn--delete"
+                (click)="openDeleteConfirm(post)"
+              >
                 <i class="bi bi-trash" aria-hidden="true"></i> Đóng
               </button>
             </div>
@@ -97,17 +106,30 @@
           <h2 id="type-modal-title">Bạn muốn đăng gì?</h2>
           <p>Chọn loại bài đăng phù hợp với nhu cầu của bạn</p>
         </div>
-        <button type="button" class="type-modal__close" aria-label="Đóng" (click)="closeTypeModal()">
+        <button
+          type="button"
+          class="type-modal__close"
+          aria-label="Đóng"
+          (click)="closeTypeModal()"
+        >
           <i class="bi bi-x-lg" aria-hidden="true"></i>
         </button>
       </div>
       <div class="type-modal__choices">
-        <button type="button" class="type-choice type-choice--request" (click)="openCreateForm('request')">
+        <button
+          type="button"
+          class="type-choice type-choice--request"
+          (click)="openCreateForm('request')"
+        >
           <i class="type-choice__icon bi bi-hand-index-thumb-fill" aria-hidden="true"></i>
           <strong>Cần giúp</strong>
           <span>Nhờ hàng xóm giúp việc, ship đồ, mua hộ...</span>
         </button>
-        <button type="button" class="type-choice type-choice--service" (click)="openCreateForm('service')">
+        <button
+          type="button"
+          class="type-choice type-choice--service"
+          (click)="openCreateForm('service')"
+        >
           <i class="type-choice__icon bi bi-briefcase-fill" aria-hidden="true"></i>
           <strong>Cung cấp</strong>
           <span>Cung cấp dịch vụ cho người trong khu...</span>
@@ -119,13 +141,25 @@
 
 @if (formMode(); as mode) {
   <app-ui-dialog
-    [title]="mode === 'edit' ? 'Chỉnh sửa yêu cầu' : formType() === 'request' ? 'Bạn cần giúp gì?' : 'Bạn muốn cung cấp gì?'"
+    [title]="
+      mode === 'edit'
+        ? 'Chỉnh sửa yêu cầu'
+        : formType() === 'request'
+          ? 'Bạn cần giúp gì?'
+          : 'Bạn muốn cung cấp gì?'
+    "
     [width]="560"
     (closed)="closeFormModal()"
   >
     <form class="post-form" [formGroup]="form" (ngSubmit)="submitForm()">
+      @if (formError()) {
+        <div class="form-error" role="alert">
+          <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> {{ formError() }}
+        </div>
+      }
       <label
-        ><span class="ant-label">Tiêu đề {{ formType() === 'request' ? 'yêu cầu' : 'dịch vụ' }} *</span
+        ><span class="ant-label"
+          >Tiêu đề {{ formType() === 'request' ? 'yêu cầu' : 'dịch vụ' }} *</span
         ><input
           class="ant-field"
           formControlName="title"
@@ -136,13 +170,18 @@
         }
       </label>
       <label
-        ><span class="ant-label">Mô tả chi tiết</span
+        ><span class="ant-label">Mô tả chi tiết *</span
         ><textarea
           class="ant-field"
           formControlName="description"
           placeholder="Mô tả rõ việc cần làm, thời gian, cách thanh toán..."
-        ></textarea
-      ></label>
+        ></textarea>
+        @if (form.controls.description.touched && form.controls.description.hasError('spam')) {
+          <small class="ant-error">Nội dung có vẻ là spam, vui lòng mô tả rõ ràng hơn.</small>
+        } @else if (form.controls.description.touched && form.controls.description.invalid) {
+          <small class="ant-error">Tối thiểu 20 ký tự.</small>
+        }
+      </label>
       <div class="post-form__grid">
         <label
           ><span class="ant-label">Danh mục</span
@@ -154,20 +193,33 @@
         >
         <label
           ><span class="ant-label">Giá gợi ý *</span
-          ><input class="ant-field" type="number" formControlName="price" placeholder="VD: 20.000đ" />
+          ><input
+            class="ant-field"
+            type="number"
+            formControlName="price"
+            placeholder="VD: 20.000đ"
+          />
           @if (form.controls.price.touched && form.controls.price.invalid) {
             <small class="ant-error">Nhập mức giá hợp lệ.</small>
           }
         </label>
       </div>
       <label
-        ><span class="ant-label">Thời hạn {{ formType() === 'request' ? 'yêu cầu' : 'dịch vụ' }}</span
-        ><input class="ant-field" formControlName="expectedTime" placeholder="VD: 30/06/2026"
+        ><span class="ant-label"
+          >Thời hạn {{ formType() === 'request' ? 'yêu cầu' : 'dịch vụ' }}</span
+        ><input class="ant-field" type="date" formControlName="expectedTime"
       /></label>
       <label
-        ><span class="ant-label">Khu vực</span
-        ><input class="ant-field" value="KTX Khu B" disabled
-      /></label>
+        ><span class="ant-label">Khu vực *</span
+        ><select class="ant-field" formControlName="regionId">
+          @for (region of regions; track region.value) {
+            <option [value]="region.value">{{ region.label }}</option>
+          }
+        </select>
+        @if (form.controls.regionId.touched && form.controls.regionId.invalid) {
+          <small class="ant-error">Vui lòng chọn khu vực.</small>
+        }
+      </label>
       <div class="post-form__images">
         <span class="ant-label">Hình ảnh (tối đa {{ maxImages }})</span>
         <div class="image-picker">
@@ -190,9 +242,11 @@
       </div>
     </form>
     <div dialog-actions>
-      <button class="ant-btn ant-btn--secondary" type="button" (click)="closeFormModal()">Huỷ</button
+      <button class="ant-btn ant-btn--secondary" type="button" (click)="closeFormModal()">
+        Huỷ</button
       ><button class="ant-btn ant-btn--primary" type="button" (click)="submitForm()">
-        {{ mode === 'edit' ? 'Lưu thay đổi' : 'Đăng ngay' }} <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        {{ mode === 'edit' ? 'Lưu thay đổi' : 'Đăng ngay' }}
+        <i class="bi bi-arrow-right" aria-hidden="true"></i>
       </button>
     </div>
   </app-ui-dialog>

@@ -119,6 +119,12 @@ export abstract class ConversationRepository {
   abstract getById(id: string, userId: string): Observable<Conversation | undefined>;
   abstract listMessages(conversationId: string, userId: string): Observable<Message[]>;
   abstract sendMessage(input: SendMessageInput): Observable<Message>;
+  /** Finds the viewer's existing conversation with otherUserId about this post, or starts a new one. */
+  abstract startForPost(
+    viewerId: string,
+    postId: string,
+    otherUserId: string,
+  ): Observable<Conversation>;
 }
 
 export abstract class NotificationRepository {

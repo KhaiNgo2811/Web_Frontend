@@ -51,6 +51,39 @@ export class LocalConversationRepository extends ConversationRepository {
     });
   }
 
+  startForPost(viewerId: string, postId: string, otherUserId: string): Observable<Conversation> {
+    return asObservable(() =>
+      this.db.transaction((data) => {
+        if (otherUserId === viewerId) {
+          throw new RepositoryError('Bạn không thể tự nhắn tin với chính mình.');
+        }
+        const existing = data.conversations.find(
+          (conversation) =>
+            conversation.postId === postId &&
+            conversation.participantIds.includes(viewerId) &&
+            conversation.participantIds.includes(otherUserId),
+        );
+        if (existing) return existing;
+
+        requireValue(
+          data.posts.find((candidate) => candidate.id === postId),
+          'Không tìm thấy bài đăng.',
+        );
+
+        const now = nowIso();
+        const conversation: Conversation = {
+          id: createEntityId('conversation'),
+          postId,
+          participantIds: [otherUserId, viewerId],
+          createdAt: now,
+          updatedAt: now,
+        };
+        data.conversations.push(conversation);
+        return conversation;
+      }),
+    );
+  }
+
   sendMessage(input: SendMessageInput): Observable<Message> {
     return asObservable(() =>
       this.db.transaction((data) => {

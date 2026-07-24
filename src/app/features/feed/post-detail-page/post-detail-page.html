@@ -5,6 +5,7 @@
       [author]="author()"
       (closed)="router.navigateByUrl('/feed')"
       (acceptRequested)="accepting.set(true)"
+      (messageRequested)="requestMessage($event)"
     />
     @if (accepting()) {
       <app-accept-order-dialog
@@ -15,13 +16,17 @@
       />
     }
   } @else if (store.loading()) {
-    <div class="loading"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Đang tải bài đăng...</div>
+    <div class="loading">
+      <i class="bi bi-arrow-repeat" aria-hidden="true"></i> Đang tải bài đăng...
+    </div>
   } @else {
     <app-empty-state
       icon="bi-search"
       title="Không tìm thấy bài đăng"
       description="Bài đăng có thể đã bị xoá hoặc hết hạn."
-      ><a class="ant-btn ant-btn--primary" href="/feed"><i class="bi bi-house" aria-hidden="true"></i> Về trang chủ</a></app-empty-state
+      ><a class="ant-btn ant-btn--primary" href="/feed"
+        ><i class="bi bi-house" aria-hidden="true"></i> Về trang chủ</a
+      ></app-empty-state
     >
   }
 </section>

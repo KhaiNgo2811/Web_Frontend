@@ -40,7 +40,7 @@ export class PasswordRecoveryPage implements OnDestroy {
   readonly otpSlots = [0, 1, 2, 3, 4, 5];
 
   readonly identifierForm = this.formBuilder.nonNullable.group({
-    identifier: ['', Validators.required],
+    identifier: ['', [Validators.required, Validators.pattern(/^(0|\+84)\d{9,10}$/)]],
   });
   readonly otpControl = this.formBuilder.nonNullable.control('', [
     Validators.required,
@@ -91,7 +91,9 @@ export class PasswordRecoveryPage implements OnDestroy {
       return;
     }
 
-    void this.router.navigate(['/auth/forgot-password/reset'], { state: { identifier: this.identifier } });
+    void this.router.navigate(['/auth/forgot-password/reset'], {
+      state: { identifier: this.identifier },
+    });
   }
 
   resendOtp(): void {
@@ -111,7 +113,9 @@ export class PasswordRecoveryPage implements OnDestroy {
       .subscribe({
         next: () => void this.router.navigateByUrl('/auth/forgot-password/success'),
         error: (error: unknown) => {
-          this.resetError.set(error instanceof Error ? error.message : 'Đặt lại mật khẩu thất bại.');
+          this.resetError.set(
+            error instanceof Error ? error.message : 'Đặt lại mật khẩu thất bại.',
+          );
         },
       });
   }
@@ -132,7 +136,9 @@ export class PasswordRecoveryPage implements OnDestroy {
     if (this.step === 'verify') {
       void this.router.navigateByUrl('/auth/forgot-password');
     } else if (this.step === 'reset') {
-      void this.router.navigate(['/auth/forgot-password/verify'], { state: { identifier: this.identifier } });
+      void this.router.navigate(['/auth/forgot-password/verify'], {
+        state: { identifier: this.identifier },
+      });
     } else {
       void this.router.navigateByUrl('/auth/forgot-password');
     }

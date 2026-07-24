@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -45,16 +52,12 @@ export class RegisterPage implements OnInit, OnDestroy {
   readonly otpSlots = [0, 1, 2, 3, 4, 5];
   readonly policy = ANTGO_POLICY;
 
-  readonly stepperSteps = [
-    { label: 'Thông tin' },
-    { label: 'Xác minh' },
-    { label: 'Hoàn tất' },
-  ];
+  readonly stepperSteps = [{ label: 'Thông tin' }, { label: 'Xác minh' }, { label: 'Hoàn tất' }];
 
   readonly areas = [
-    { value: 'north', label: 'Khu vực phía Bắc' },
-    { value: 'central', label: 'Khu vực miền Trung' },
-    { value: 'south', label: 'Khu vực phía Nam' },
+    { value: 'khu-a', label: 'KTX Khu A' },
+    { value: 'khu-b', label: 'KTX Khu B' },
+    { value: 'khu-c', label: 'KTX Khu C' },
   ];
 
   get currentStep(): number {
